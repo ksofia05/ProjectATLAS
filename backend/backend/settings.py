@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'coreapi',
     'tasks',
+    'autenticacion',
 ]
 
 MIDDLEWARE = [
@@ -79,8 +80,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Atlas',
+        'USER': 'usuario_backend',
+        'PASSWORD': 'atlas',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
