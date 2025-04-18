@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar cuenta</title>
+    <link rel="stylesheet" href="{% static 'autenticacion/register.css' %}">
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-box">
+            <div class="logo">
+                <img src="{% static 'autenticacion/logo.png' %}" alt="Logo">
+            </div>
+            <h1>Registrar cuenta</h1>
+            <p>¿Ya estás registrado? <a href="{% url 'login' %}">Iniciar sesión</a></p>
+            <p>¡Vamos a Empezar!<br>Solo necesitamos unos cuantos datos para crear tu cuenta.</p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nombre">Nombres</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Nombres" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellidos</label>
+                    <input type="text" id="apellido" name="apellido" placeholder="Apellidos" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo</label>
+                    <input type="email" id="email" name="email" placeholder="Correo" required>
+                </div>
+                <button type="submit" class="btn">Siguiente</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

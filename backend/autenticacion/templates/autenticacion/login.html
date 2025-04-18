@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="{% static 'autenticacion/login.css' %}">
+    <img src="{% static 'autenticacion/logo.png' %}" alt="Logo">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo">
+                <img src="{% static 'autenticacion/logo.png' %}" alt="Logo">
+            </div>
+            <h1>Iniciar sesión</h1>
+            <p>Bienvenido de nuevo</p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <div class="input-container">
+                        <input type="email" id="email" name="email" placeholder="Correo Electrónico" required>
+                        <span class="icon">@</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-container">
+                        <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                        <span class="icon">👁️</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Ingresar</button>
+            </form>
+            <div class="links">
+                <p>¿No tienes una cuenta? <a href="#">Regístrate</a></p>
+                <p>¿Olvidaste tu contraseña? <a href="#">Recuperar contraseña</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
