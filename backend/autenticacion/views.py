@@ -4,7 +4,11 @@ from .models import  Usuario
 
 # Create your views here.
 
-# Autenticación de usuario
+def login_view(request):
+    return render(request, 'autenticacion/login.html')
+
+
+# Inicio de sesion (aun contiene unos problemas)
 def login_view(request):
     if request.method == 'POST':
         email = request.POST['email']
@@ -14,9 +18,9 @@ def login_view(request):
             # Buscar al usuario por correo electrónico
             usuario = Usuario.objects.get(correoelectronico=email)
             
-            # Verificar la contraseña (esto debería usar hashing en producción)
+            # Aqui se comprueba si la contraseña esta bien
             if usuario.contraseña == password:
-                # Guardar el usuario en la sesión
+                # En teoria, 
                 request.session['usuario_id'] = usuario.idusuario
                 messages.success(request, 'Inicio de sesión exitoso')
                 return redirect('login')  # Por ahora, redirige al mismo formulario
@@ -32,11 +36,11 @@ def login_view(request):
 # Registro de usuario
 def register(request):
     if request.method == 'POST':
-        # Guardar datos del primer paso en la sesión
+        # se guardan los datos basicos del usuario
         request.session['nombre'] = request.POST['nombre']
         request.session['apellido'] = request.POST['apellido']
         request.session['email'] = request.POST['email']
-        return redirect('register2')  # Redirigir al segundo paso
+        return redirect('register2')  # Lleva a la segunda pagina
     return render(request, 'autenticacion/register.html')
 
 def register2(request):
@@ -52,7 +56,7 @@ def register2(request):
             messages.error(request, 'Las contraseñas no coinciden.')
             return redirect('register2')
 
-        # Crear el usuario
+        # se guardan los datos del usuario (lo que sigue le corresponde a back)
         Usuario.objects.create(
             nombre=nombre,
             apellido=apellido,
