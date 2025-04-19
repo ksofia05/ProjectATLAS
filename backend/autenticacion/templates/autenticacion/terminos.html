@@ -1,0 +1,35 @@
+<!-- filepath: c:\PROYECTOATLAS\ProjectATLAS\backend\autenticacion\templates\autenticacion\terminos.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body style="background-color: #0A0A0A;" class="bg-black text-white flex items-center justify-center min-h-screen">
+    <div class="bg-gray-900 p-8 rounded-lg shadow-lg w-full max-w-3xl">
+        <h1 class="text-2xl font-bold text-center mb-4">Términos y Condiciones de ATLAS COMPANY</h1>
+        <p class="text-center text-gray-400 mb-6">Última actualización: 13/04/2025</p>
+        
+        <div class="text-gray-300 text-sm space-y-4">
+            <!-- Sección de Introducción -->
+            <h2 class="text-lg font-semibold text-white">• Introducción</h2>
+            <p>Bienvenido a ATLAS COMPANY. Estos Términos y Condiciones regulan el uso de nuestro software de gestión de inventarioen línea, diseñado especialmente para empresas dedicadas a la reparación de equipos como computadores. Al acceder o utilizar nuestros servicios, usted acepta cumplir con estos términos. Por favor, léalos detenidamente antes de continuar.</p>
+
+            <!-- Sección de Servicios Ofrecidos -->
+            <h2 class="text-lg font-semibold text-white">• Servicios Ofrecidos</h2>
+            <p>ATLAS COMPANY ofrece un sistema en línea para la gestión de inventario, seguimiento de equipos en reparación,asignación de tareas a colaboradores, y registro de clientes. El software está disponible para empresas que deseen digitalizar y optimizar su flujo de trabajo.</p>
+
+            <!-- Sección de Acceso al Servicio -->
+            <h2 class="text-lg font-semibold text-white">• Acceso al Servicio</h2>
+            <p>Para acceder a nuestro sistema, debe crear una cuenta y proporcionar información precisa y actualizada. Usted es responsable de mantener la confidencialidad de sus credenciales de acceso y de todas las actividades que ocurran en su cuenta.</p>
+
+            <!-- Seccion de Uso aceptable -->
+        </div>
+
+        <a href="{% url 'register2' %}" class="text-purple-500 hover:underline block text-center mt-6">Volver</a>
+    </div>
+</body>
+</html>
