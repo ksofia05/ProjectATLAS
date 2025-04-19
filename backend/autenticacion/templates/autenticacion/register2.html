@@ -7,8 +7,8 @@
     <title>Registrar cuenta</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white flex items-center justify-center min-h-screen">
-    <div class="bg-gray-900 p-8 rounded-lg shadow-lg w-96">
+<body style="background-color: #0A0A0A;" class="bg-black text-white flex items-center justify-center min-h-screen">
+    <div style="background-color: #1A1A1A; border:2px solid #232323;" class="bg-gray-900 p-8 rounded-lg shadow-lg w-96">
         <div class="flex justify-center mb-6">
             <img src="{% static 'autenticacion/logo.png' %}" alt="Logo" class="w-12">
         </div>
@@ -45,7 +45,7 @@
                 • Al menos un número
             </p>
             <p class="text-sm text-gray-400 mb-4">
-                Al crear una cuenta, usted acepta los <a href="#" class="text-purple-500 hover:underline">Términos de Servicio</a> y <a href="#" class="text-purple-500 hover:underline">Políticas de Privacidad</a>.
+                Al crear una cuenta, usted acepta los <a href="{% url 'terminos' %}" class="text-purple-500 hover:underline">Términos de Servicio</a> y <a href="{% url 'politicas' %}" class="text-purple-500 hover:underline">Políticas de Privacidad</a>.
             </p>
             <div class="mb-4">
                 <label class="flex items-center">

@@ -66,3 +66,9 @@ def register2(request):
         messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
         return redirect('login')  # Redirigir al inicio de sesión
     return render(request, 'autenticacion/register2.html')
+
+def terminos(request):
+    return render(request, 'autenticacion/terminos.html')
+
+def politicas(request):
+    return render(request, 'autenticacion/politicas.html')
