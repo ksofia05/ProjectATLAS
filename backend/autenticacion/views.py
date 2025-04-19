@@ -51,17 +51,28 @@ def register2(request):
         email = request.session.get('email')
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
+        #accedemos a el valor de la clave terms 
+        terminoservicio_str= request.POST.get('terms')
+        #convertimos el "on" en true
+        terminoservicio = True if terminoservicio_str == 'on' else False 
+        
 
         if password != confirm_password:
             messages.error(request, 'Las contraseñas no coinciden.')
             return redirect('register2')
+
+        estado_predeterminado = 'Activo'
+        suscripcion='Gratuito'
 
         # se guardan los datos del usuario (lo que sigue le corresponde a back)
         Usuario.objects.create(
             nombre=nombre,
             apellido=apellido,
             correoelectronico=email,
-            contraseña=password 
+            contraseña=password,
+            terminoservicio=terminoservicio,
+            estado=estado_predeterminado,
+            suscripcion=suscripcion
         )
         messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
         return redirect('login')  # Redirigir al inicio de sesión
