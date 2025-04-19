@@ -1,14 +1,28 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector("form");
     const inputs = form.querySelectorAll("input[required]");
-    const termsCheckbox = form.querySelector("input[name='terms']"); // Selecciona la casilla de términos 
+    const termsCheckbox = form.querySelector("input[name='terms']"); // Selecciona la casilla de términos
+    const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los iconos de mostrar/ocultar contraseña
+    const submitButton = form.querySelector("button[type='submit']"); // Botón de "Siguiente"
 
-    // valida los campos al escribir
+    // Deshabilita el botón inicialmente
+    submitButton.disabled = true;
+    submitButton.classList.add("opacity-50", "cursor-not-allowed");
+
+    // Valida los campos al escribir
     inputs.forEach((input) => {
-        input.addEventListener("blur", () => {
+        input.addEventListener("input", () => {
             validateField(input);
+            toggleSubmitButton(); // Actualiza el estado del botón
         });
     });
+
+    // Valida la casilla de términos al cambiar
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener("change", () => {
+            toggleSubmitButton(); // Actualiza el estado del botón
+        });
+    }
 
     // Validación al enviar el formulario
     form.addEventListener("submit", (event) => {
@@ -42,13 +56,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // valida los inputs de manera individual, osea cada uno hace la validacion
+    // Valida los inputs de manera individual
     function validateField(input) {
         // Busca si ya existe un mensaje de error
         let errorMessage = input.parentNode.querySelector(".error-message");
 
         // Elimina el mensaje de error si el campo es válido
         if (input.value.trim()) {
+            if (input.id === "nombre" || input.id === "apellido") {
+                if (input.value.length > 45) {
+                    showError(input, "Este campo no puede exceder los 45 caracteres");
+                    return false;
+                }
+            }
+
+            if (input.id === "email") {
+                if (!isValidEmail(input.value)) {
+                    showError(input, "Por favor, ingresa un correo válido (ejemplo@dominio.com)");
+                    return false;
+                }
+            }
+
             if (input.id === "password") {
                 if (!isValidPassword(input.value)) {
                     showError(input, "La contraseña debe tener al menos 8 caracteres y un número");
@@ -124,9 +152,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return passwordRegex.test(password);
     }
 
-    // Función para mostrar/ocultar contraseñas (Hay varios errores)
+    // Función para validar el formato del correo electrónico
+    function isValidEmail(email) {
+        // Validar que el correo tenga un formato válido
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Función para mostrar/ocultar contraseñas
     const togglePasswordVisibility = () => {
-        const toggleIcons = document.querySelectorAll(".toggle-password");
         toggleIcons.forEach((icon) => {
             icon.addEventListener("click", () => {
                 // Selecciona el input dentro del mismo contenedor .relative
@@ -134,21 +168,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (input) {
                     if (input.type === "password") {
                         input.type = "text";
-                        icon.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10S6.477 0 12 0s10 4.477 10 10c0 1.05-.162 2.062-.462 3.025m-1.538 2.538A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10S6.477 0 12 0s10 4.477 10 10c0 1.05-.162 2.062-.462 3.025" />
-                            </svg>`;
+                        icon.innerHTML = `<i class="bi bi-eye-slash"></i>`; // Icono de ojo tachado
                     } else {
                         input.type = "password";
-                        icon.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3-9a9 9 0 100 18 9 9 0 000-18z" />
-                            </svg>`;
+                        icon.innerHTML = `<i class="bi bi-eye"></i>`; // Icono de ojo
                     }
                 }
             });
         });
     };
+
+    // Función para habilitar/deshabilitar el botón de "Siguiente"
+    function toggleSubmitButton() {
+        let isValid = true;
+
+        inputs.forEach((input) => {
+            if (!validateField(input)) {
+                isValid = false;
+            }
+        });
+
+        if (termsCheckbox && !termsCheckbox.checked) {
+            isValid = false;
+        }
+
+        if (isValid) {
+            submitButton.disabled = false;
+            submitButton.classList.remove("opacity-50", "cursor-not-allowed");
+        } else {
+            submitButton.disabled = true;
+            submitButton.classList.add("opacity-50", "cursor-not-allowed");
+        }
+    }
 
     // Llama a la función para inicializar los eventos
     togglePasswordVisibility();
