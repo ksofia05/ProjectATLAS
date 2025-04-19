@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar cuenta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white flex items-center justify-center min-h-screen">
+    <div class="bg-gray-900 p-8 rounded-lg shadow-lg w-96">
+        <div class="flex justify-center mb-6">
+            <img src="{% static 'autenticacion/logo.png' %}" alt="Logo" class="w-12">
+        </div>
+        <h1 class="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
+        <p class="text-center text-gray-400 mb-6">¡Casi listo!<br>Continuemos con la creación de tu contraseña.</p>
+        <form method="POST" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="password" class="block text-gray-400 font-medium mb-1">Crear Contraseña</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" placeholder="Crear Contraseña" required
+                        class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-500 cursor-pointer toggle-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3-9a9 9 0 100 18 9 9 0 000-18z" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="confirm_password" class="block text-gray-400 font-medium mb-1">Confirmar Contraseña</label>
+                <div class="relative">
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmar Contraseña" required
+                        class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-500 cursor-pointer toggle-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3-9a9 9 0 100 18 9 9 0 000-18z" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+            <p class="text-sm text-gray-400 mb-4">
+                • Al menos 8 caracteres<br>
+                • Al menos un número
+            </p>
+            <p class="text-sm text-gray-400 mb-4">
+                Al crear una cuenta, usted acepta los <a href="#" class="text-purple-500 hover:underline">Términos de Servicio</a> y <a href="#" class="text-purple-500 hover:underline">Políticas de Privacidad</a>.
+            </p>
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="terms" required
+                        class="form-checkbox h-5 w-5 text-purple-500 border-gray-700 rounded focus:ring-2 focus:ring-purple-500">
+                    <span class="ml-2 text-gray-400">Acepto términos de servicios y condiciones</span>
+                </label>
+            </div>
+            <button type="submit"
+                class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition">
+                Registrar
+            </button>
+        </form>
+    </div>
+    <script src="{% static 'autenticacion/register.js' %}"></script>
+</body>
+</html>
