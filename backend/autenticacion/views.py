@@ -45,7 +45,7 @@ def register(request):
 
 def register2(request):
     if request.method == 'POST':
-        # Recuperar datos del primer paso desde la sesión
+        # Recuperar datos del primer paso del registro
         nombre = request.session.get('nombre')
         apellido = request.session.get('apellido')
         email = request.session.get('email')
