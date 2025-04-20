@@ -8,4 +8,7 @@ urlpatterns = [
     path('register2/', views.register2, name='register2'),  # Segundo paso del registro
     path('terminos/', views.terminos, name='terminos'), # Ruta para los términos y condiciones
     path('politicas/', views.politicas, name='politicas'), # Ruta para las políticas de privacidad
+    path('simulacion/', views.simulacion, name='simulacion'),
+    path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
+    path('reenviar_enlace/', views.reenviar_enlace, name='reenviar_enlace'),  # Nueva ruta
 ]

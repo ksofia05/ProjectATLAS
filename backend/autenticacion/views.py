@@ -67,8 +67,21 @@ def register2(request):
         return redirect('login')  # Redirigir al inicio de sesión
     return render(request, 'autenticacion/register2.html')
 
+#Terminos y Condiciones
+
 def terminos(request):
     return render(request, 'autenticacion/terminos.html')
 
 def politicas(request):
     return render(request, 'autenticacion/politicas.html')
+
+#Inicio de proyectos (simulacion)
+def simulacion(request):
+    return render(request, 'autenticacion/simulacion.html')
+
+#Recuperar contraseña
+def recuperar_contrasena(request):
+    return render(request, 'autenticacion/recuperar_contrasena.html')
+
+def reenviar_enlace(request):
+    return render(request, 'autenticacion/reenviar_enlace.html')
