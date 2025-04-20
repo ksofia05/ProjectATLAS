@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputs = form.querySelectorAll("input[required]");
     const termsCheckbox = form.querySelector("input[name='terms']"); // Selecciona la casilla de términos
     const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los iconos de mostrar/ocultar contraseña
-    const submitButton = form.querySelector("button[type='submit']"); // Botón de "Siguiente"
+    const submitButton = form.querySelector("button[type='submit']"); // Botón de "Registrar"
 
     // Deshabilita el botón inicialmente
     submitButton.disabled = true;
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (input.id === "password") {
                 if (!isValidPassword(input.value)) {
-                    showError(input, "La contraseña debe tener al menos 8 caracteres y un número");
+                    showError(input, "La contraseña no cumple con los requisitos");
                     return false;
                 }
             }
@@ -147,8 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Función para validar el formato de la contraseña
     function isValidPassword(password) {
-        // Al menos 8 caracteres y al menos un número
-        const passwordRegex = /^(?=.*\d).{8,}$/;
+        // Al menos 8 caracteres, un número, una letra mayúscula y un carácter especial
+        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-]).{8,}$/;
         return passwordRegex.test(password);
     }
 
