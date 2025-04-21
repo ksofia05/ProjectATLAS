@@ -89,13 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
             clearError(passwordInput);
         }
 
-        if (!isValid) {
-            event.preventDefault();
-        } else {
-            // Redirigir al template simulacion.html si todo es válido
-            event.preventDefault(); // Evita el envío del formulario
-            window.location.href = "/autenticacion/simulacion/"; // Cambia la URL según tu configuración
-        }
+      
     });
 
     // Deshabilita el botón al cargar la página
