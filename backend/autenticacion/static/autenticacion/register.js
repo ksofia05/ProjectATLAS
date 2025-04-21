@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.querySelector("form");
-    const inputs = form.querySelectorAll("input[required]");
+    const form = document.querySelector("form"); // Selecciona el formulario
+    const inputs = form.querySelectorAll("input[required]"); // Selecciona todos los inputs requeridos
     const termsCheckbox = form.querySelector("input[name='terms']"); // Selecciona la casilla de términos
-    const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los iconos de mostrar/ocultar contraseña
-    const submitButton = form.querySelector("button[type='submit']"); // Botón de "Registrar"
+    const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los ojitos de mostrar/ocultar contraseña
+    const submitButton = form.querySelector("button[type='submit']"); // Selecciona el botón de envío
 
     // Deshabilita el botón inicialmente
     submitButton.disabled = true;
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return true;
         }
 
-        // Si no existe un mensaje de error, se crea uno nuevo
+        // Si no existe un mensaje de error, se crea uno nuevo (Evitar duplicados)
         if (!errorMessage) {
             errorMessage = document.createElement("span");
             errorMessage.classList.add("error-message");
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
             input.parentNode.appendChild(errorMessage);
         }
 
-        // Actualiza el contenido del mensaje de error
+        // Actualiza el contenido del mensaje de error (No sobreescribir el mensaje anterior)
         errorMessage.textContent = `Por favor, completa el campo ${input.name}`;
         return false;
     }
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.style.fontSize = "0.9rem";
     }
 
-    // Función para mostrar un mensaje de error específico para términos y condiciones
+    // Función para mostrar un mensaje de error específico para los terminos
     function showTermsError(checkbox, message) {
         let errorMessage = checkbox.closest("label").parentNode.querySelector(".terms-error");
 
@@ -148,18 +148,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Función para validar el formato de la contraseña
     function isValidPassword(password) {
         // Al menos 8 caracteres, un número, una letra mayúscula y un carácter especial
-        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-]).{8,}$/;
+        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-]).{8,}$/; //Esto se puede cambiar, pero no se si es lo mejor
         return passwordRegex.test(password);
     }
 
     // Función para validar el formato del correo electrónico
     function isValidEmail(email) {
-        // Validar que el correo tenga un formato válido
+        // Validar que el correo tenga un formato válidoc
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 
-    // Función para mostrar/ocultar contraseñas
+    // Función para mostrar/ocultar contraseñas (ojito)
     const togglePasswordVisibility = () => {
         toggleIcons.forEach((icon) => {
             icon.addEventListener("click", () => {
@@ -168,10 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (input) {
                     if (input.type === "password") {
                         input.type = "text";
-                        icon.innerHTML = `<i class="bi bi-eye-slash"></i>`; // Icono de ojo tachado
+                        icon.innerHTML = `<i class="bi bi-eye-slash"></i>`; // Icono de ojo cerrado
                     } else {
                         input.type = "password";
-                        icon.innerHTML = `<i class="bi bi-eye"></i>`; // Icono de ojo
+                        icon.innerHTML = `<i class="bi bi-eye"></i>`; // Icono de ojo abierto
                     }
                 }
             });
@@ -201,6 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Llama a la función para inicializar los eventos
+    // Esto llama a la función para mostrar/ocultar contraseñas al cargar la página
     togglePasswordVisibility();
 });
