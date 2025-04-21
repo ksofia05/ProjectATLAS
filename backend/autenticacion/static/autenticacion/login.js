@@ -11,18 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return emailRegex.test(email.trim());
     }
 
-    // Función para mostrar/ocultar la contraseña
+    // Función para mostrar/ocultar la contraseña (ojito)
     togglePasswordIcon.addEventListener("click", () => {
         if (passwordInput.type === "password") {
             passwordInput.type = "text";
-            togglePasswordIcon.innerHTML = `<i class="bi bi-eye-slash"></i>`; // Cambia al icono de ojo tachado
+            togglePasswordIcon.innerHTML = `<i class="bi bi-eye-slash"></i>`; // Cambia al icono de ojo cerrado
         } else {
             passwordInput.type = "password";
-            togglePasswordIcon.innerHTML = `<i class="bi bi-eye"></i>`; // Cambia al icono de ojo
+            togglePasswordIcon.innerHTML = `<i class="bi bi-eye"></i>`; // Cambia al icono de ojo abierto
         }
     });
 
-    // Función para mostrar un mensaje de error
+    // Función para mostrar un mensaje de error (se aplica para todos los inputs)
     function showError(input, message) {
         let errorMessage = input.parentNode.querySelector(".error-message");
 
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.textContent = message;
     }
 
-    // Función para eliminar el mensaje de error
+    // Función para eliminar el mensaje de error (igualmente que el anterior, se aplica para todos los inputs)
     function clearError(input) {
         const errorMessage = input.parentNode.querySelector(".error-message");
         if (errorMessage) {
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Función para habilitar o deshabilitar el botón "Ingresar"
+    // Función para habilitar o deshabilitar el botón "Ingresar" (Esto vuelve el boton un poco mas opaco, y el cursor no puede hacer click)
     function toggleSubmitButton() {
         if (isValidEmail(emailInput.value) && passwordInput.value.trim().length >= 8) {
             submitButton.disabled = false;
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Validación en tiempo real para el correo
+    // Validación en tiempo real para el correo (Directamente el usuario ve si su correo es correcto o no) (Aun faltan algunas cosas a mejorar )
     emailInput.addEventListener("input", () => {
         if (!isValidEmail(emailInput.value)) {
             showError(emailInput, "Por favor, ingresa un correo válido (ejemplo@dominio.com)");
@@ -66,12 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleSubmitButton();
     });
 
-    // Validación en tiempo real para la contraseña
+    // Validación en tiempo real para la contraseña (Al igual que el anterior, faltan unas cosas para mejorar en cuanto a la visibilidad)
     passwordInput.addEventListener("input", () => {
         toggleSubmitButton();
     });
 
-    // Validación al enviar el formulario
+    // Validación al enviar el formulario (Aqui es se verifica si el formulario cumple con los requisitos minimos para poder ser enviado a la base de datos)
     form.addEventListener("submit", (event) => {
         let isValid = true;
 
