@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.querySelector("form");
-    const inputs = form.querySelectorAll("input[required]");
+    const form = document.querySelector("form"); // Selecciona el formulario
+    const inputs = form.querySelectorAll("input[required]"); // Selecciona todos los inputs requeridos
     const termsCheckbox = form.querySelector("input[name='terms']"); // Selecciona la casilla de términos
-    const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los iconos de mostrar/ocultar contraseña
-    const submitButton = form.querySelector("button[type='submit']"); // Botón de "Registrar"
+    const toggleIcons = document.querySelectorAll(".toggle-password"); // Selecciona los ojitos de mostrar/ocultar contraseña
+    const submitButton = form.querySelector("button[type='submit']"); // Selecciona el botón de envío
 
     // Deshabilita el botón inicialmente
     submitButton.disabled = true;

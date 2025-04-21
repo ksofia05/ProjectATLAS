@@ -85,3 +85,6 @@ def recuperar_contrasena(request):
 
 def reenviar_enlace(request):
     return render(request, 'autenticacion/reenviar_enlace.html')
+
+def crear_contrasena(request):
+    return render(request, 'autenticacion/crear_contrasena.html')

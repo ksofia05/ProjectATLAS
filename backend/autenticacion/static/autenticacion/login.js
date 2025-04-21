@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             // Redirigir al template simulacion.html si todo es válido
             event.preventDefault(); // Evita el envío del formulario
-            window.location.href = "/autenticacion/simulacion/"; // Cambia la URL según tu configuración
+            window.location.href = "/autenticacion/simulacion/"; 
         }
     });
 
