@@ -100,3 +100,4 @@ def reenviar_enlace(request):
 
 def crear_contrasena(request):
     return render(request, 'autenticacion/crear_contrasena.html')
+
