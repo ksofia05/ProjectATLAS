@@ -5,6 +5,9 @@ const overlay = document.getElementById("overlay");
 const closePopup = document.getElementById("close-popup");
 const content = document.querySelector(".bg-gray-900"); // Contenedor principal
 
+
+// Aun contiene varios problemas esta parte
+
 // Mostrar el pop-up al enviar el formulario
 form.addEventListener("submit", (event) => {
     event.preventDefault(); // Evitar el envío del formulario
