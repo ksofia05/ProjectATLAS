@@ -11,4 +11,5 @@ urlpatterns = [
     path('simulacion/', views.simulacion, name='simulacion'),
     path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'),
     path('reenviar_enlace/', views.reenviar_enlace, name='reenviar_enlace'),  # Nueva ruta
+    
 ]
