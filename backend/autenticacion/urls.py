@@ -11,4 +11,5 @@ urlpatterns = [
     path('simulacion/', views.simulacion, name='simulacion'), # Ruta para la simulación cuando el usuario ya accede al sistema
     path('recuperar_contrasena/', views.recuperar_contrasena, name='recuperar_contrasena'), # Ruta para recuperar la contraseña
     path('reenviar_enlace/', views.reenviar_enlace, name='reenviar_enlace'),  # Ruta para reenviar el enlace de recuperar contraseña
+    path('crear_contrasena/', views.crear_contrasena, name='crear_contrasena'),  # Ruta para cambiar la contraseña
 ]
