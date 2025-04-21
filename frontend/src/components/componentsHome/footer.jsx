@@ -1,3 +1,4 @@
+import { Link, useSubmit } from "react-router-dom";
 import React from "react";
 import logoComplete from "../../../public/img/logoCompleteWhite.svg";
 
@@ -60,12 +61,12 @@ const Footer = () => {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <a href="#" className="hover:text-white transition-colors duration-300">
+            <Link to="/politica-de-privacidad" className="hover:text-white transition-colors duration-300">
               Política de Privacidad
-            </a>
-            <a href="#" className="hover:text-white transition-colors duration-300">
+            </Link>
+            <Link to="/terminos-y-condiciones" className="hover:text-white transition-colors duration-300">
               Términos y Condiciones
-            </a>
+            </Link>
           </div>
         </div>
       </div>
