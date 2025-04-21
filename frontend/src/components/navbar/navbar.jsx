@@ -18,9 +18,9 @@ const Navbar = () => {
           <Link to="/" className="hover:text-gray-300">
             Inicio
           </Link>
-          <Link to="/sobre-nosotros" className="hover:text-gray-300">
+          {/* <Link to="/sobre-nosotros" className="hover:text-gray-300">
             Sobre Nosotros
-          </Link>
+          </Link> */}
         </div>
 
         {/* Botones a la derecha */}

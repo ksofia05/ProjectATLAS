@@ -50,13 +50,7 @@ const WorkSection = () => {
               Gestiona tu microempresa sin inversión, ¡desde cualquier parte!
             </p>
             
-            <div className="flex justify-center md:justify-end mt-6">
-              <button
-                className="text-white font-['Nunito'] bg-purple-700 hover:bg-purple-600 focus:outline-none focus:ring-4 focus:ring-purple-800 font-medium rounded-full text-sm px-6 py-3 text-center transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-700/50"
-              >
-                Conoce más
-              </button>
-            </div>
+            
           </div>
         </div>
       </div>
