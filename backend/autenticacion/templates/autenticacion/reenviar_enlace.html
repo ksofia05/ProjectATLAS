@@ -7,31 +7,35 @@
     <title>Reenviar Enlace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'autenticacion/recuperar_contrasena.css' %}">
+    <link rel="stylesheet" href="{% static 'autenticacion/recuperar_contrasenaa.css' %}">
 </head>
 <body style="background-color: #0A0A0A;" class="bg-black text-white flex items-center justify-center min-h-screen">
     <div style="background-color: #1A1A1A; border: 2px solid #232323;" class="bg-gray-900 p-8 rounded-lg shadow-lg w-96">
-        <div class="text-center">
-            <h2 class="text-2xl font-bold mb-4">¿Todavía no ves el enlace en tu bandeja?</h2>
-            <p class="text-gray-400 mb-6">¿Seguro que escribiste bien tu correo? Si todo está en orden, reenvía el enlace.</p>
-            <form id="resend-form" method="POST" novalidate>
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label for="email" class="block text-gray-400 font-medium mb-1">Correo Electrónico</label>
-                    <div class="relative">
-                        <input type="email" id="email" name="email" placeholder="Correo Electrónico" required
-                            class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <span class="absolute inset-y-0 right-3 flex items-center text-gray-500">
-                            <i class="bi bi-envelope"></i>
-                        </span>
-                    </div>
-                </div>
-                <button type="submit"
-                    class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition">
-                    Reenviar enlace
-                </button>
-            </form>
+        <div class="flex justify-center mb-6">
+            <img src="{% static 'autenticacion/logo.png' %}" alt="Logo" class="w-12">
         </div>
+        <h1 class="text-2xl font-bold text-center mb-4">¿Todavía no ves el enlace en tu bandeja?</h1>
+        <p class="text-center text-gray-400 mb-6">
+            ¿Seguro que escribiste bien tu correo? Si todo está en orden, reenvía el enlace.
+        </p>
+        <form id="resend-form" method="POST" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="email" class="block text-gray-400 font-medium mb-1">Correo Electrónico</label>
+                <div class="relative">
+                    <input type="email" id="email" name="email" placeholder="Correo Electrónico" required
+                        class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-500">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+                </div>
+            </div>
+            <button type="submit"
+                class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition">
+                Reenviar enlace
+            </button>
+        </form>
     </div>
+    <script src="{% static 'autenticacion/reenviar_enlace.js' %}"></script>
 </body>
 </html>
