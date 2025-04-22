@@ -23,14 +23,16 @@
             <div class="mb-4">
                 <label for="email" class="block text-gray-400 font-medium mb-1">Correo Electrónico</label>
                 <div class="relative">
-                    <input type="email" id="email" name="email" placeholder="Correo Electrónico" required
+                    <input type="email" id="email" name="email" placeholder="Correo Electrónico" required 
                         class="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                     <span class="absolute inset-y-0 right-3 flex items-center text-gray-500">
                         <i class="bi bi-envelope"></i>
                     </span>
                 </div>
             </div>
+        
             <button type="submit"
+            
                 class="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition">
                 Enviar enlace
             </button>
@@ -51,6 +53,6 @@
         <p>No ves el correo? Dale un vistazo a tu carpeta de spam, a veces se esconde por ahí.</p>
     </div>
 
-    <script src="{% static 'autenticacion/recuperar_contrasena.js' %}"></script>
+    <script src="{% static 'autenticacion/recuperar_contrasena.js' %}"></script> 
 </body>
 </html>
