@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validar contraseñas al enviar el formulario
     form.addEventListener("submit", (event) => {
         event.preventDefault(); // Evitar el envío del formulario por defecto
-
+        
         if (newPassword.value !== confirmPassword.value) {
             alert("Las contraseñas no coinciden.");
             return;
@@ -61,14 +61,54 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Mostrar el pop-up 
-        popup.classList.remove("hidden");
-        overlay.classList.remove("hidden");
+        // Enviar los datos al servidor usando fetch
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCSRFToken() // Función para obtener el token CSRF
+            },
+            body: new URLSearchParams({
+                'new_password': newPassword.value,
+                'confirm_password': confirmPassword.value
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Mostrar el pop-up de éxito
+                popup.classList.remove("hidden");
+                overlay.classList.remove("hidden");
+            } else {
+                response.json().then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert("Ha ocurrido un error al actualizar la contraseña.");
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Ha ocurrido un error al conectar con el servidor.");
+        });
     });
+
+    // Función para obtener el token CSRF de las cookies
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return value;
+            }
+        }
+        return '';
+    }
 
     // Validar formato de la contraseña
     function isValidPassword(password) {
-        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-]).{8,}$/; //Requisitos para la contraseña
+        const passwordRegex = /^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>_\-]).{8,}$/; // Requisitos para la contraseña
         return passwordRegex.test(password);
     }
 });
