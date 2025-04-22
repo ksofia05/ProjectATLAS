@@ -16,47 +16,75 @@ from django.http import HttpResponse
 
 from .models import  Usuario
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import login, logout
+
 # Create your views here.
 
-def login_view(request):
-    return render(request, 'autenticacion/login.html')
 
-
-# Inicio de sesion (aun contiene unos problemas)
+# Inicio de sesion (mostrar los errores)
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        
-        try:
-            # Buscar al usuario por correo electrónico
-            usuario = Usuario.objects.get(correoelectronico=email)
-            
-            # Aqui se comprueba si la contraseña esta bien
-            if usuario.contraseña == password:
-                # En teoria, 
-                request.session['usuario_id'] = usuario.idusuario
-                messages.success(request, 'Inicio de sesión exitoso')
-                return redirect('login')  # Por ahora, redirige al mismo formulario
-            else:
-                messages.error(request, 'Contraseña incorrecta')
-        except Usuario.DoesNotExist:
-            messages.error(request, 'El usuario no existe')
-    
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if email and password:
+            try:
+                usuario = Usuario.objects.get(correoelectronico=email)
+                if usuario.contraseña == password:
+                    try:
+                        django_user = User.objects.get(username=email)
+                    except User.DoesNotExist:
+                        django_user = User.objects.create_user(username=email, email=email, password=password)
+
+                    login(request, django_user)
+                    # ¡Simplemente comenta o elimina esta línea!
+                    # messages.success(request, 'Sesión exitosa')
+                    return redirect('simulacion')
+                else:
+                    messages.error(request, 'Correo o contraseña incorrecta')
+            except Usuario.DoesNotExist:
+                messages.error(request, 'Correo o contraseña incorrecta')
+
+    # Limpiar los mensajes antes de renderizar el template de login en la petición GET
+    list(messages.get_messages(request))
     return render(request, 'autenticacion/login.html')
 
+@login_required
+def vista_de_simulacion(request):
+    return render(request, 'autenticacion/simulacion.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 
 # Registro de usuario
 def register(request):
     if request.method == 'POST':
-        # se guardan los datos basicos del usuario
-        request.session['nombre'] = request.POST['nombre']
-        request.session['apellido'] = request.POST['apellido']
-        request.session['email'] = request.POST['email']
-        return redirect('register2')  # Lleva a la segunda pagina
-    return render(request, 'autenticacion/register.html')
+        nombre = request.POST['nombre']
+        apellido = request.POST['apellido']
+        email = request.POST['email']
 
+        try:
+            Usuario.objects.get(correoelectronico=email)
+            messages.error(request, 'Este correo electrónico ya está registrado. Por favor, usa otro.')
+            return render(request, 'autenticacion/register.html', {'nombre': nombre, 'apellido': apellido, 'email': email})
+        except Usuario.DoesNotExist:
+            request.session['nombre'] = nombre
+            request.session['apellido'] = apellido
+            request.session['email'] = email
+            return redirect('register2')
+        except Exception as e:
+            messages.error(request, f'Ocurrió un error: {e}')
+            return render(request, 'autenticacion/register.html', {'nombre': nombre, 'apellido': apellido, 'email': email})
+
+    else:
+        # Limpiar los mensajes antes de renderizar el formulario en la petición GET
+        list(messages.get_messages(request))
+        return render(request, 'autenticacion/register.html')
+    
 def register2(request):
     if request.method == 'POST':
         # Recuperar datos del primer paso del registro
