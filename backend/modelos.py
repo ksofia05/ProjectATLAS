@@ -74,7 +74,7 @@ class Tareas(models.Model):
 #     apellido = models.CharField(max_length=45)
 #     estado = models.TextField()  # This field type is a guess.
 #     correoelectronico = models.CharField(db_column='correoElectronico', max_length=45)  # Field name made lowercase.
-#     contraseña = models.CharField(max_length=45)
+#     contraseï¿½a = models.CharField(max_length=45)
 #     rol_idrol = models.ForeignKey('Rol', models.DO_NOTHING, db_column='rol_idRol', blank=True, null=True)  # Field name made lowercase.
 #     suscripcion = models.TextField()  # This field type is a guess.
 #     idusuario = models.AutoField(db_column='idUsuario', primary_key=True)  # Field name made lowercase.

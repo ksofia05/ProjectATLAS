@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import computerImage from "../../../public/img/computersHeader.svg";
 import elipce from "../../../public/img/elipseMoradoHeader.svg";
 import olasHeader from "../../../public/img/olasHeader.svg";
@@ -34,9 +35,9 @@ const Header = () => {
             Gestiona tu microempresa de cómputo fácil y sin inversión.
           </h6>
 
-          <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-4xl transition-all duration-300 shadow-lg hover:shadow-purple-500/50">
+          <Link to="/registrarse" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-4xl transition-all duration-300 shadow-lg hover:shadow-purple-500/50">
             Empieza ahora!
-          </button>
+          </Link>
         </div>
 
         {/* Imagen a la derecha */}
