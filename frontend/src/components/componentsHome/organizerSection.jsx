@@ -5,13 +5,13 @@ const organizerSection = () => {
   return (
     <div className="relative pb-60 ">
       {/* Fondo decorativo */}
-      <div className="absolute inset-0 z-[-10] bg-black  flex items-end">
+      {/* <div className="absolute inset-0 z-[-10] bg-black  flex items-end">
         <img
           src={elipses}
           alt="Elipses"
           className="w-full h-auto object-cover"
         />
-      </div>
+      </div> */}
 
       {/* Contenido principal */}
       <div className="items-center text-center">
