@@ -8,32 +8,39 @@ import DownlandSection from '../components/componentsHome/downlandSection'
 import TestimoniosSection from '../components/componentsHome/testimoniosSection'
 import Footer from '../components/componentsHome/footer'
 import { getTasks } from '../api/tasks.api'
+import { getUsuario } from '../api/usuario.api'
 
 const Homepage = () => {
 
   const [tasks, setTasks] = useState([])
-
+  const [usuario, setUsuario] = useState([])
   useEffect(() => {
     async function fetchTasks() {
         const res = await getTasks()
         console.log(res)
         setTasks(res.data)
     }
-
+    async function fetchUsuarios(){
+      const res=await getUsuario()
+      console.log(res)
+      setUsuario(res.data)
+    }
     fetchTasks();
+    fetchUsuarios();
   }, []);
+
 
   return (
     <>
-    {/* <div>
-      {tasks.map(task => (
-        <div key={task.id}>
-          <h1>{task.title}</h1>
-          <p>{task.description}</p>
+    <div>
+      {usuario.map(usuario => (
+        <div className='text-white' key={usuario.id}>
+          <h1>{usuario.nombre}</h1>
+          <p>{usuario.apellido}</p>
         </div>
       ))}
     </div>
-    <h1 className='text-white'>hola</h1> */}
+    <h1 className='text-white'>hola</h1>
       <Header />
       <OrganizerSection />
       <WorkSection />
