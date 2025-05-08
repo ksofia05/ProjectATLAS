@@ -9,7 +9,7 @@ router.register(r"tasks", views.TaskView, 'tasks')
 
 urlpatterns = [
     path("api/v1/", include(router.urls)),
-    path("docs/", include_docs_urls(title="Tasks API"))
+    path("docs/", include_docs_urls(title="ATLAS API"))
 ]
 
 #esto genera el GET, POST, PUT, DELETE para el modelo Task
