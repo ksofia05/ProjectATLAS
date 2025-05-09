@@ -62,11 +62,34 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Datos enviados:", formData);
-      navigate("/simulacion");
+
+    try {
+      const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Inicio de sesión exitoso");
+        console.log("Usuario autenticado:", data.usuario);
+        navigate("/simulacion");
+      } else {
+        alert(data.error || "Error al iniciar sesión");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("No se pudo conectar con el servidor.");
+
     }
   };
 
