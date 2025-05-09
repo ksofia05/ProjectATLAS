@@ -102,9 +102,9 @@ class Proyecto(models.Model):
 #     administrador = models.CharField(max_length=45, blank=True, null=True)
 #     idrol = models.AutoField(db_column='idRol', primary_key=True)  # Field name made lowercase.
 
-#     class Meta:
-#         managed = False
-#         db_table = 'rol'
+    class Meta:
+        managed = False
+        db_table = 'rol'
 
 
 class Usuariotarea(models.Model):
