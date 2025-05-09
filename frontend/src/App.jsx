@@ -1,13 +1,12 @@
-//Importaciones de Karen (Landing page)
-import React, { use } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Navbar from "./components/navbar/navbar";
-import HomePage from "./pages/homepage"; //Landing page Venta
-// import Resgistrarse from "./components/resgistrarse";
-// import IniciarSesion from "./components/iniciarSesion";
-// import SobreNosotros from "./pages/sobreNosotros"; // ruta quienes somos
-// import PoliticasPrivacidad from "./components/politicasPrivacidad"; // ruta politica de privacidad
-// import TerminosCond from "./components/terminosCond"; // ruta terminos y condiciones
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/navbar/navbar';
+import HomePage from './pages/homepage'; //Landing page Venta
+import Resgistrarse from './components/resgistrarse';
+import IniciarSesion from './components/iniciarSesion';
+import SobreNosotros from './pages/sobreNosotros'; // ruta quienes somos
+import PoliticasPrivacidad from './components/politicasPrivacidad'; // ruta politica de privacidad
+import TerminosCond from './components/terminosCond'; // ruta terminos y condiciones
 
 //Importaciones de Luis (Autenticacion)
 import Login from "./pages/Login";
@@ -24,14 +23,13 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/home" element={<HomePage />} />
         {/* <Route path="/sobre-nosotros" element={<SobreNosotros />} />
         <Route path="/iniciar-sesion" element={<IniciarSesion />} />
         <Route path="/registrarse" element={<Resgistrarse />} />
         <Route path="/politica-de-privacidad" element={<PoliticasPrivacidad />} />
         <Route path="/terminos-y-condiciones" element={<TerminosCond />} /> */}
-
-
         <Route path="/iniciar-sesion" element={<Login />} />
         <Route path="/registrarse" element={<Register />} />
         <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
@@ -42,6 +40,7 @@ const App = () => {
         <Route path="/simulacion" element={<Simulation />} />
       </Routes>
     </BrowserRouter>
+
   );
 };
 

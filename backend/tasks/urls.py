@@ -6,10 +6,12 @@ from tasks import views
 #api versioning
 router = routers.DefaultRouter()
 router.register(r"tasks", views.TaskView, 'tasks')
+router.register(r'usuarios', views.UsuarioViewSet, basename='usuario')  # Registra UsuarioViewSet
+router.register(r'roles', views.RolViewSet, basename='rol')  
 
 urlpatterns = [
     path("api/v1/", include(router.urls)),
-    path("docs/", include_docs_urls(title="Tasks API"))
+    path("docs/", include_docs_urls(title="ATLAS API"))
 ]
 
 #esto genera el GET, POST, PUT, DELETE para el modelo Task

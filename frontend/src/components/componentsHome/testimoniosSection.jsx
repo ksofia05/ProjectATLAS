@@ -35,12 +35,7 @@ const testimoniosSection = () => {
   return (
     <div className="relative w-full py-16">
       <div className="absolute inset-0 z-0 bg-black"></div>
-      {/* Esfera difuminada morada - posicionada en la esquina superior izquierda */}
-      <div className="absolute top-10 left-0 w-96 h-96 rounded-full bg-purple-600 opacity-30 blur-3xl"></div>
-
-      {/* Esfera difuminada azul - posicionada en la esquina inferior derecha */}
-      <div className="absolute bottom-10 -right-15 w-96 h-96 rounded-full bg-blue-600 opacity-30 blur-3xl"></div>
-
+      
       <div className="relative z-10 container mx-auto px-6">
         {/* Título de la sección */}
         <div
