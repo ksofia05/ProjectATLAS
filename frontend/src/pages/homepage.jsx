@@ -1,3 +1,4 @@
+import Navbar from '../components/navbar/navbar'
 import React from 'react'
 import Header from '../components/componentsHome/header'
 import OrganizerSection from '../components/componentsHome/organizerSection'
@@ -10,6 +11,7 @@ import Footer from '../components/componentsHome/footer'
 const homepage = () => {
   return (
     <>
+    <Navbar />
     <Header />
     <OrganizerSection />
     <WorkSection />
