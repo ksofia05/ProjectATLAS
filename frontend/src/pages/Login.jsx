@@ -5,7 +5,7 @@ import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
 
 const Login = () => {
-  const navigate = useNavigate(); // Declarar useNavigate para redirección
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,10 +18,34 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Datos enviados:", formData);
-    navigate("/simulacion"); // Redirigir usando useNavigate
+
+    try {
+      const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Inicio de sesión exitoso");
+        console.log("Usuario autenticado:", data.usuario);
+        navigate("/simulacion");
+      } else {
+        alert(data.error || "Error al iniciar sesión");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("No se pudo conectar con el servidor.");
+    }
   };
 
   return (
