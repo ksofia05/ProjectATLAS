@@ -1,3 +1,4 @@
+import Navbar from '../components/navbar/navbar'
 import React from 'react'
 import { useEffect, useState } from 'react' 
 import Header from '../components/componentsHome/header'
@@ -41,6 +42,7 @@ const Homepage = () => {
       ))}
     </div>
     <h1 className='text-white'>hola</h1>
+      <Navbar />
       <Header />
       <OrganizerSection />
       <WorkSection />
