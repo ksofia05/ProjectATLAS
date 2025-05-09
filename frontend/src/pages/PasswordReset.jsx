@@ -3,19 +3,49 @@ import { Link } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
+import PasswordValidator from "../components/componentsFunctionalities/passwordValidation";
 
 const PasswordReset = () => {
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Controla la ventana flotante
 
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Controla la ventana emergente
+  const [error,setError]= useState("");
+  const [formData,setFormData]=useState({
+    newPassword:"",
+    confirmPassword:"",
+  });
+  const handleNewPasswordChange =(e)=>{
+    const newPassword =e.target.value;
+    setFormData({...formData,newPassword});
+    if(formData.confirmPassword && formData.confirmPassword !== newPassword){
+      setError("Las contraseñas no coinciden")
+    } else{
+      setError("");
+    }
+  };
+  const handleConfirmPasswordChange=(e)=>{
+    const confirmPassword= e.target.value;
+    setFormData({...formData,confirmPassword});
+    if(formData.newPassword && confirmPassword !==formData.newPassword){
+      setError("Las contraseñas no coinciden")
+    }else{
+      setError("");
+    }
+  };
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowSuccessMessage(true); // Muestra la ventana flotante
+    if(formData.newPassword!==formData.confirmPassword){
+      setError("Las contraseñas no coinciden");
+      return;
+    };
+    setError("");
+    setShowSuccessMessage(true);
   };
-
   const closeMessage = () => {
     setShowSuccessMessage(false); // Cierra la ventana flotante
   };
-
+  
   return (
     <FormContainer>
       {!showSuccessMessage ? (
@@ -33,17 +63,23 @@ const PasswordReset = () => {
               type="password"
               name="newPassword"
               icon="👁️"
-            />
+              value={formData.newPassword}
+              onChange={handleNewPasswordChange}
+              />
+            
+            <PasswordValidator password={formData.newPassword} />
+            
             <Input
               label="Confirmar Contraseña"
               type="password"
               name="confirmPassword"
               icon="👁️"
-            />
-            <p className="text-sm text-gray-400 mb-4">
-              <span className="text-purple-500">•</span> Al menos 8 caracteres{" "}
-              <span className="text-purple-500">•</span> Al menos un número
-            </p>
+              value={formData.confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              />
+              {error &&(
+                <p className="text-red-500 text-mb mb-4">{error}</p>
+              )}
             <Button type="submit">Crear contraseña</Button>
           </form>
         </>
