@@ -4,6 +4,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import FormContainer from '../components/FormContainer';
+import PasswordValidator from '../components/componentsFunctionalities/passwordValidation';
 
 
 const Register = () => {
@@ -27,6 +28,7 @@ const Register = () => {
 
   const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Datos enviados:', formData);
@@ -83,6 +85,10 @@ const Register = () => {
             onChange={handleChange}
             icon="👁️"
           />
+
+          <PasswordValidator password={formData.password} />
+
+          
           <Input
             label="Confirmar Contraseña"
             type="password"
@@ -91,6 +97,10 @@ const Register = () => {
             onChange={handleChange}
             icon="👁️"
           />
+
+          {formData.confirmPassword && formData.confirmPassword !==formData.password && (
+            <p className='text-red-500 text-sm mt-1'>Las contraseñas no coinciden</p>
+          )}
           <p className="text-sm text-gray-400 mb-4">
             <span className="text-purple-500">•</span> Al menos 8 caracteres{' '}
             <span className="text-purple-500">•</span> Al menos un número
