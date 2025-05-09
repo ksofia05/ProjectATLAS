@@ -5,23 +5,69 @@ import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
 
 const Login = () => {
-  const navigate = useNavigate(); // Declarar useNavigate para redirección
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({});
+
+  const validateField = (name, value) => {
+    let error = "";
+
+    if (name === "email") {
+      const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+      if (!value) {
+        error = "El correo electrónico es requerido";
+      } else if (!emailRegex.test(value)) {
+        error = "Correo electrónico inválido";
+      }
+    }
+
+    if (name === "password") {
+      if (!value) {
+        error = "La contraseña es requerida";
+      } else if (value.length < 8) {
+        error = "La contraseña debe tener al menos 8 caracteres";
+      }
+    }
+
+    return error;
+  };
 
   const handleChange = ({ target: { name, value } }) => {
     setFormData({
       ...formData,
       [name]: value,
     });
+
+    // Validar el campo en tiempo real
+    const error = validateField(name, value);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error,
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) {
+        newErrors[key] = error;
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Datos enviados:", formData);
-    navigate("/simulacion"); // Redirigir usando useNavigate
+    if (validateForm()) {
+      console.log("Datos enviados:", formData);
+      navigate("/simulacion");
+    }
   };
 
   return (
@@ -35,6 +81,7 @@ const Login = () => {
           name="email"
           value={formData.email}
           onChange={handleChange}
+          errorMessage={errors.email}
           icon="📧"
         />
         <Input
@@ -43,6 +90,7 @@ const Login = () => {
           name="password"
           value={formData.password}
           onChange={handleChange}
+          errorMessage={errors.password}
           icon="👁️"
         />
         <Button type="submit">Ingresar</Button>
