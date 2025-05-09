@@ -17,7 +17,7 @@ import EmailRecovery from "./pages/EmailRecovery";
 import PasswordReset from "./pages/PasswordReset";
 import Terms from "./pages/Terms";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-//import Simulation from "./pages/Simulation";
+import Simulation from "./pages/Simulation";
 
 const App = () => {
 
@@ -39,7 +39,7 @@ const App = () => {
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
-        {/*<Route path="/simulacion" element={<Simulation />} /> */}
+        <Route path="/simulacion" element={<Simulation />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
 
 const Login = () => {
+  const navigate = useNavigate(); // Declarar useNavigate para redirección
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = ({ target: { name, value } }) => {
     setFormData({
       ...formData,
       [name]: value,
@@ -21,6 +21,7 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Datos enviados:", formData);
+    navigate("/simulacion"); // Redirigir usando useNavigate
   };
 
   return (

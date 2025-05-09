@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import FormContainer from '../components/FormContainer';
 
-
 const Register = () => {
+  const navigate = useNavigate(); // Para redirección
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -17,31 +17,37 @@ const Register = () => {
     termsAccepted: false,
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = ({ target: { name, value, type, checked } }) => {
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
   };
 
-  const handleNext = () => setStep(2);
-  const handleBack = () => setStep(1);
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.termsAccepted) {
+      alert('Debes aceptar los términos y condiciones.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden.');
+      return;
+    }
     console.log('Datos enviados:', formData);
+    navigate('/iniciar-sesion'); // Redirigir al inicio de sesión
   };
 
   return (
     <FormContainer>
-      {step === 1 && (
+      {step === 1 ? (
         <>
           <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
           <p className="text-gray-400 text-center mb-6">
             ¿Ya estás registrado?{' '}
-            <a href="/iniciar-sesion" className="text-purple-500 hover:underline">
+            <Link to="/iniciar-sesion" className="text-purple-500 hover:underline">
               Iniciar sesión
-            </a>
+            </Link>
           </p>
           <Input
             label="Nombres"
@@ -67,11 +73,9 @@ const Register = () => {
             onChange={handleChange}
             icon="📧"
           />
-          <Button onClick={handleNext}>Siguiente</Button>
+          <Button onClick={() => setStep(2)}>Siguiente</Button>
         </>
-      )}
-
-      {step === 2 && (
+      ) : (
         <>
           <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
           <p className="text-gray-400 text-center mb-6">¡Casi listo! Continúa con la creación de tu contraseña.</p>
@@ -112,9 +116,12 @@ const Register = () => {
             checked={formData.termsAccepted}
             onChange={handleChange}
           />
-          <Button onClick={handleSubmit} type="submit">
-            Registrar
-          </Button>
+          <div className="flex justify-between">
+            <Button onClick={() => setStep(1)}>Atrás</Button>
+            <Button onClick={handleSubmit} type="submit">
+              Registrar
+            </Button>
+          </div>
         </>
       )}
     </FormContainer>
