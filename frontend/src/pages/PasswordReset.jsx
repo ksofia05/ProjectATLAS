@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
 import PasswordValidator from "../components/componentsFunctionalities/passwordValidation";
 
 const PasswordReset = () => {
+
   const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Controla la ventana emergente
   const [error,setError]= useState("");
   const [formData,setFormData]=useState({
@@ -89,15 +91,15 @@ const PasswordReset = () => {
           >
             ✕
           </button>
-          <h2 className="text-xl font-bold mb-4">Contraseña creada exitosamente!</h2>
+          <h2 className="text-xl font-bold mb-4">¡Contraseña creada exitosamente!</h2>
           <p className="text-gray-400">
             Tu contraseña ha sido restablecida correctamente. Inicia sesión para continuar.
           </p>
           <div className="mt-6">
             <Button>
-              <a href="/iniciar-sesion" className="text-white">
+              <Link to="/iniciar-sesion" className="text-white">
                 Iniciar sesión
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
