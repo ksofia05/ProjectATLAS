@@ -34,3 +34,31 @@ def login_usuario(request):
 
     except Usuario.DoesNotExist:
         return Response({'error': 'Usuario no encontrado'}, status=404)
+
+@api_view(['POST'])
+def registe_usuario(request):
+    if request.method == 'POST':
+        nombre = request.data.get('firstName')
+        apellido = request.data.get('lastName')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        termsAccepted = request.data.get('termsAccepted')
+        # Convertir termsAccepted a booleano
+        terminoservicio = bool(termsAccepted)
+        estado_predeterminado = 'Activo'
+        suscripcion = 'Gratuito'
+        try:
+            Usuario.objects.create(
+                nombre=nombre,
+                apellido=apellido,
+                correoelectronico=email,
+                contraseña=password,
+                terminoservicio=terminoservicio,
+                estado=estado_predeterminado,
+                suscripcion=suscripcion
+            )
+            return Response({'usuario': "cuenta creada"}, status=200)
+        except Exception as e:
+            return Response({'error': f'Error al crear usuario: {str(e)}'}, status=500)
+    else:
+        return Response({'error': 'Método no permitido'}, status=405)
