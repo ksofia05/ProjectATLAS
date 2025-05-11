@@ -41,7 +41,6 @@ const Login = () => {
       [name]: value,
     });
 
-    // Validar el campo en tiempo real
     const error = validateField(name, value);
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -89,14 +88,13 @@ const Login = () => {
     } catch (error) {
       console.error("Error en la solicitud:", error);
       alert("No se pudo conectar con el servidor.");
-
     }
   };
 
   return (
     <FormContainer>
-      <h1 className="text-2xl font-bold text-center mb-4">Iniciar sesión</h1>
-      <p className="text-gray-400 text-center mb-6">Bienvenido de nuevo</p>
+      <h1 className="text-3xl font-bold text-center mb-6 text-white">Iniciar sesión</h1>
+      <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
       <form onSubmit={handleSubmit}>
         <Input
           label="Correo Electrónico"
@@ -118,10 +116,10 @@ const Login = () => {
         />
         <Button type="submit">Ingresar</Button>
       </form>
-      <div className="text-center mt-4">
+      <div className="text-center mt-6">
         <p className="text-gray-400">
           ¿No tienes una cuenta?{" "}
-          <Link to="/registrarse" className="text-purple-500 hover:underline">
+          <Link to="/registrarse" className="text-purple-400 hover:underline">
             Regístrate
           </Link>
         </p>
@@ -129,7 +127,7 @@ const Login = () => {
           ¿Olvidaste tu contraseña?{" "}
           <Link
             to="/recuperar-contrasena"
-            className="text-purple-500 hover:underline"
+            className="text-purple-400 hover:underline"
           >
             Recuperar contraseña
           </Link>
