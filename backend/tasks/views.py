@@ -41,6 +41,8 @@ def registe_usuario(request):
         nombre = request.data.get('firstName')
         apellido = request.data.get('lastName')
         email = request.data.get('email')
+        if Usuario.objects.filter(correoelectronico=email).exists():
+            return Response({'error': 'El correo ya está registrado.'}, status=400)
         password = request.data.get('password')
         termsAccepted = request.data.get('termsAccepted')
         # Convertir termsAccepted a booleano
