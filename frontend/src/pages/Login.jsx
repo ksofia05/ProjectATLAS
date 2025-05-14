@@ -3,8 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import FormContainer from "../components/FormContainer";
-import PasswordInput from "../components/PasswordInput";
-import AnimatedContainer from "../components/AnimatedContainer"; // Importar el contenedor animado
+// import PasswordInput from "../components/PasswordInput";
+// import AnimatedContainer from "../components/AnimatedContainer"; // Importar el contenedor animado
 
 const Login = () => {
   const navigate = useNavigate();
@@ -98,7 +98,6 @@ const Login = () => {
   };
 
   return (
-    <AnimatedContainer>
       <FormContainer>
         <h1 className="text-3xl font-bold text-center mb-6 text-white">Iniciar sesión</h1>
         <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
@@ -112,7 +111,7 @@ const Login = () => {
             errorMessage={errors.email}
             icon="bi-envelope-fill"
           />
-          <PasswordInput
+          <Input
             label="Contraseña"
             name="password"
             value={formData.password}
@@ -139,7 +138,6 @@ const Login = () => {
           </p>
         </div>
       </FormContainer>
-    </AnimatedContainer>
   );
 };
 
