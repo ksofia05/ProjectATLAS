@@ -200,7 +200,7 @@ useEffect(() => {
 
             <PasswordValidator password={formData.password} />
 
-            <PasswordInput
+            <Input
               label="Confirmar Contraseña"
               name="confirmPassword"
               value={formData.confirmPassword}
