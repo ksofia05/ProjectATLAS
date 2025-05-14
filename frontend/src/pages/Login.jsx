@@ -70,6 +70,10 @@ const Login = () => {
       return;
     }
 
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
         method: "POST",
