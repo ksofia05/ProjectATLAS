@@ -5,6 +5,8 @@ import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import FormContainer from '../components/FormContainer';
 import PasswordValidator from '../components/componentsFunctionalities/passwordValidation';
+// import PasswordInput from '../components/PasswordInput';
+// import AnimatedContainer from '../components/AnimatedContainer'; // Importar el nuevo componente
 console.log('Register component rendered')
 const Register = () => {
   const navigate = useNavigate(); // Para redirección
@@ -196,51 +198,46 @@ useEffect(() => {
             icon="👁️"
           />
 
-          <PasswordValidator password={formData.password} />
+            <PasswordValidator password={formData.password} />
 
-          
-          <Input
-            label="Confirmar Contraseña"
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            icon="👁️"
-          />
+            <PasswordInput
+              label="Confirmar Contraseña"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              errorMessage={
+                formData.confirmPassword && formData.confirmPassword !== formData.password
+                  ? 'Las contraseñas no coinciden'
+                  : ''
+              }
+            />
 
-          {formData.confirmPassword && formData.confirmPassword !==formData.password && (
-            <p className='text-red-500 text-sm mt-1'>Las contraseñas no coinciden</p>
-          )}
-          <p className="text-sm text-gray-400 mb-4">
-            <span className="text-purple-500">•</span> Al menos 8 caracteres{' '}
-            <span className="text-purple-500">•</span> Al menos un número
-          </p>
-          <Checkbox
-            label={
-              <>
-                Acepto los{' '}
-                <Link to="/terminos" className="text-purple-500 hover:underline">
-                  Términos de Servicio
-                </Link>{' '}
-                y{' '}
-                <Link to="/politica-de-privacidad" className="text-purple-500 hover:underline">
-                  Políticas de Privacidad
-                </Link>
-              </>
-            }
-            name="termsAccepted"
-            checked={formData.termsAccepted}
-            onChange={handleChange}
-          />
-          <div className="flex justify-between">
-            <Button onClick={() => setStep(1)}>Atrás</Button>
-            <Button onClick={handleSubmit} type="submit">
-              Registrar
-            </Button>
-          </div>
-        </>
-      )}
-    </FormContainer>
+            <Checkbox
+              label={
+                <>
+                  Acepto los{' '}
+                  <Link to="/terminos" className="text-purple-500 hover:underline">
+                    Términos de Servicio
+                  </Link>{' '}
+                  y{' '}
+                  <Link to="/politica-de-privacidad" className="text-purple-500 hover:underline">
+                    Políticas de Privacidad
+                  </Link>
+                </>
+              }
+              name="termsAccepted"
+              checked={formData.termsAccepted}
+              onChange={handleChange}
+            />
+            <div className="flex justify-between space-x-8">
+              <Button onClick={handleBack}>Atrás</Button>
+              <Button onClick={handleSubmit} type="submit">
+                Registrar
+              </Button>
+            </div>
+          </>
+        )}
+      </FormContainer>
   );
 };
 
