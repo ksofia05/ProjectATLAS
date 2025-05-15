@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import FormContainer from "../components/FormContainer";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import FormContainer from "../../components/common/FormContainer";
 
 const PasswordRecovery = () => {
   const [step, setStep] = useState(1); // Aqui inicia la primera vista de recuperar la contraseña

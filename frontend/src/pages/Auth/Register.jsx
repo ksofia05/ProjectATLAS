@@ -1,14 +1,15 @@
-import React, { useState,useEffect  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Input from '../components/Input';
-import Button from '../components/Button';
-import Checkbox from '../components/Checkbox';
-import FormContainer from '../components/FormContainer';
-import PasswordValidator from '../components/componentsFunctionalities/passwordValidation';
-import PasswordInput from '../components/PasswordInput';
-import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../hooks/useRegisterFormPersistence';
-// ...otros imports...
-// import AnimatedContainer from '../components/AnimatedContainer'; // Importar el nuevo componente
+import FormContainer from '../../components/common/FormContainer';
+import Input from '../../components/common/Input';
+import PasswordInput from '../../components/common/PasswordInput';
+import Checkbox from '../../components/common/Checkbox';
+import Button from '../../components/common/Button';
+import PasswordValidator from '../../components/functionalities/passwordValidation';
+import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
+// import AnimatedContainer from '../components/AnimatedContainer';
+
+
 console.log('Register component rendered')
 const Register = () => {
   const navigate = useNavigate(); // Para redirección

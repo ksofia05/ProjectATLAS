@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import FormContainer from "../components/FormContainer";
-import PasswordInput from "../components/PasswordInput";
+import FormContainer from "../../components/common/FormContainer";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import PasswordInput from "../../components/common/PasswordInput";
 // import AnimatedContainer from "../components/AnimatedContainer"; // Importar el contenedor animado
 
 const Login = () => {
