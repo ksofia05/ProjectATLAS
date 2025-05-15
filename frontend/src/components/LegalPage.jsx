@@ -1,6 +1,18 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const LegalPage = ({ title, content }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    if (location.state && location.state.from) {
+      navigate(location.state.from);
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-black text-white relative">
       <div
@@ -13,12 +25,13 @@ const LegalPage = ({ title, content }) => {
         <h1 className="text-3xl font-bold mb-6 text-center">{title}</h1>
         <div className="text-gray-300 space-y-4">{content}</div>
         <div className="mt-6 text-center">
-          <a
-            href="/registrarse"
-            className="text-purple-500 hover:underline"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="text-purple-500 hover:underline bg-transparent border-none cursor-pointer"
           >
             Regresar
-          </a>
+          </button>
         </div>
       </div>
     </div>

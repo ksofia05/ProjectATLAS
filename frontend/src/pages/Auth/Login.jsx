@@ -1,18 +1,28 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import FormContainer from "../components/FormContainer";
-// import PasswordInput from "../components/PasswordInput";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import FormContainer from "../../components/common/FormContainer";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import PasswordInput from "../../components/common/PasswordInput";
 // import AnimatedContainer from "../components/AnimatedContainer"; // Importar el contenedor animado
 
 const Login = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setFormData({
+      email: "",
+      password: "",
+    });
+    setErrors({});
+  }, [location.pathname]);
+
 
   const validateField = (name, value) => {
     let error = "";
@@ -115,12 +125,13 @@ const Login = () => {
             errorMessage={errors.email}
             icon="bi-envelope-fill"
           />
-          <Input
+          <PasswordInput
             label="Contraseña"
             name="password"
             value={formData.password}
             onChange={handleChange}
             errorMessage={errors.password}
+            
           />
           <Button type="submit">Ingresar</Button>
         </form>

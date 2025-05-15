@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import FormContainer from "../components/FormContainer";
-import PasswordValidator from "../components/componentsFunctionalities/passwordValidation";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import FormContainer from "../../components/common/FormContainer";
+import PasswordValidator from "../../components/functionalities/passwordValidation";
+
 
 const PasswordReset = () => {
 
