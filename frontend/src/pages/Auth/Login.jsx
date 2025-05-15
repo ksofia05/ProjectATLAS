@@ -80,10 +80,6 @@ const Login = () => {
       return;
     }
 
-    if (!validateForm()) {
-      return;
-    }
-
     try {
       const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
         method: "POST",
@@ -99,60 +95,81 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Inicio de sesión exitoso");
-        console.log("Usuario autenticado:", data.usuario);
+        setErrors({});
         navigate("/simulacion");
       } else {
-        alert(data.error || "Error al iniciar sesión");
+        // Mostrar el error debajo del campo de contraseña
+        setErrors((prev) => ({
+          ...prev,
+          password: data.error || "Error al iniciar sesión",
+        }));
       }
     } catch (error) {
-      console.error("Error en la solicitud:", error);
-      alert("No se pudo conectar con el servidor.");
+      setErrors((prev) => ({
+        ...prev,
+        password: "No se pudo conectar con el servidor.",
+      }));
     }
   };
+  const isButtonDisabled = () => {
+  return (
+    !formData.email ||
+    !formData.password ||
+    Object.values(errors).some((err) => err)
+  );
+};
+
+
+  
 
   return (
-      <FormContainer>
-        <h1 className="text-3xl font-bold text-center mb-6 text-white">Iniciar sesión</h1>
-        <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Correo Electrónico"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            errorMessage={errors.email}
-            icon="bi-envelope-fill"
-          />
-          <PasswordInput
-            label="Contraseña"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            errorMessage={errors.password}
-            
-          />
-          <Button type="submit">Ingresar</Button>
-        </form>
-        <div className="text-center mt-6">
-          <p className="text-gray-400">
-            ¿No tienes una cuenta?{" "}
-            <Link to="/registrarse" className="text-purple-400 hover:underline">
-              Regístrate
-            </Link>
-          </p>
-          <p className="text-gray-400 mt-2">
-            ¿Olvidaste tu contraseña?{" "}
-            <Link
-              to="/recuperar-contrasena"
-              className="text-purple-400 hover:underline"
-            >
-              Recuperar contraseña
-            </Link>
-          </p>
-        </div>
-      </FormContainer>
+    <FormContainer>
+      <h1 className="text-3xl font-bold text-center mb-6 text-white">Iniciar sesión</h1>
+      <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
+      <form onSubmit={handleSubmit}>
+        <Input
+          label="Correo Electrónico"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          errorMessage={errors.email}
+          icon="bi-envelope-fill"
+        />
+        <Input
+          label="Contraseña"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleChange}
+          errorMessage={errors.password} // Aquí se muestra el error debajo de la contraseña
+        />
+        <Button
+  type="submit"
+  disabled={isButtonDisabled()}
+  className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
+>
+  Ingresar
+</Button>
+      </form>
+      <div className="text-center mt-6">
+        <p className="text-gray-400">
+          ¿No tienes una cuenta?{" "}
+          <Link to="/registrarse" className="text-purple-400 hover:underline">
+            Regístrate
+          </Link>
+        </p>
+        <p className="text-gray-400 mt-2">
+          ¿Olvidaste tu contraseña?{" "}
+          <Link
+            to="/recuperar-contrasena"
+            className="text-purple-400 hover:underline"
+          >
+            Recuperar contraseña
+          </Link>
+        </p>
+      </div>
+    </FormContainer>
   );
 };
 
