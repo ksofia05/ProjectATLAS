@@ -83,31 +83,47 @@ useEffect(() => {
   setIsSubmitDisabled(!(isFilled && !hasLocalErrors && !hasBackendEmailError));
 }, [formData.firstName, formData.lastName, formData.email, errors]);
     
-  const handleNext = () => setStep(2);
+  // const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.termsAccepted) {
-      alert('Debes aceptar los términos y condiciones.');
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden.');
-      return;
-    }
+  const handleNext = async () => {
+  const emailError = validateField("email", formData.email);
+  setErrors(prevErrors => ({ ...prevErrors, email: emailError }));
+
+  if (!emailError && formData.firstName && formData.lastName && formData.email) {
     try {
       const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          termsAccepted: formData.termsAccepted,
-        }),
+        body: JSON.stringify({ checkEmailOnly: true, email: formData.email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStep(2);
+      } else {
+        setErrors(prevErrors => ({ ...prevErrors, email: data.error || 'Este correo ya está registrado.' }));
+      }
+    } catch (error) {
+      console.error("Error al verificar el correo:", error);
+      alert("No se pudo verificar el correo.");
+    }
+  }
+};
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (step === 2) {
+
+    try {
+      const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...formData }), // Enviar todos los datos sin checkEmailOnly
       });
 
       const data = await response.json();
@@ -117,13 +133,10 @@ useEffect(() => {
         console.log("Usuario creado:", data.usuario);
         navigate("/iniciar-sesion");
       } else {
-        // Mostrar error si ya existe el correo u otro error del backend
-      if (data?.error?.includes("correo ya está registrado")) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          email: data.error,
-        }));
-      } else {
+        if (data?.error?.includes("correo ya está registrado")) {
+          setErrors((prevErrors) => ({ ...prevErrors, email: data.error }));
+          setStep(1); // Volver al primer paso para mostrar el error
+        } else {
           alert(data.error || "Error al crear cuenta");
         }
       }
@@ -131,7 +144,8 @@ useEffect(() => {
       console.error("Error en la solicitud:", error);
       alert("No se pudo conectar con el servidor.");
     }
-  };
+  }
+};
 
   return (
     <FormContainer>
@@ -172,13 +186,7 @@ useEffect(() => {
             icon="📧"
           />
           <Button
-            onClick={() => {
-              const isValid = validateForm(); // valida todos los campos y actualiza errores
-              if (isValid) {
-                setStep(2); // solo avanza si es válido
-              }
-            }}
-            
+            onClick={handleNext}
             disabled={isSubmitDisabled}
             className={isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""}
           >
