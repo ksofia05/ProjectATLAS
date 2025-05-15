@@ -18,7 +18,7 @@ const Footer = () => {
           
           {/* Redes Sociales */}
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-gray-300 transition-colors duration-300">
+            <a href="https://www.facebook.com/share/18iNmbceB9/" className="hover:text-gray-300 transition-colors duration-300">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -29,7 +29,7 @@ const Footer = () => {
               </svg>
               <span className="sr-only">Facebook</span>
             </a>
-            <a href="#" className="hover:text-gray-300 transition-colors duration-300">
+            <a href="https://www.instagram.com/atlas_company667/" className="hover:text-gray-300 transition-colors duration-300">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -40,7 +40,7 @@ const Footer = () => {
               </svg>
               <span className="sr-only">Instagram</span>
             </a>
-            <a href="#" className="hover:text-gray-300 transition-colors duration-300">
+            <a href="https://x.com/atlas_667" className="hover:text-gray-300 transition-colors duration-300">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"

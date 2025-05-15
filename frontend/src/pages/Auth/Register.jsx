@@ -119,6 +119,14 @@ useEffect(() => {
 };
  const handleSubmit = async (e) => {
   e.preventDefault();
+  if (!formData.termsAccepted) {
+      alert('Debes aceptar los términos y condiciones.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden.');
+      return;
+    }
 
   if (step === 2) {
 
