@@ -99,6 +99,16 @@ const Login = () => {
       }));
     }
   };
+  const isButtonDisabled = () => {
+  return (
+    !formData.email ||
+    !formData.password ||
+    Object.values(errors).some((err) => err)
+  );
+};
+
+
+  
 
   return (
     <FormContainer>
@@ -122,7 +132,13 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.password} // Aquí se muestra el error debajo de la contraseña
         />
-        <Button type="submit">Ingresar</Button>
+        <Button
+  type="submit"
+  disabled={isButtonDisabled()}
+  className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
+>
+  Ingresar
+</Button>
       </form>
       <div className="text-center mt-6">
         <p className="text-gray-400">
