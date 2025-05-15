@@ -61,10 +61,10 @@ const Footer = () => {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <Link to="/politica-de-privacidad" className="hover:text-white transition-colors duration-300">
+            <Link to="/politica-de-privacidad" state={{ from: "/" }} className="hover:text-white transition-colors duration-300">
               Política de Privacidad
             </Link>
-            <Link to="/terminos-y-condiciones" className="hover:text-white transition-colors duration-300">
+            <Link to="/terminos-y-condiciones" state={{ from: "/" }} className="hover:text-white transition-colors duration-300">
               Términos y Condiciones
             </Link>
           </div>

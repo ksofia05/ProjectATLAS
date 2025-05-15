@@ -5,7 +5,9 @@ import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import FormContainer from '../components/FormContainer';
 import PasswordValidator from '../components/componentsFunctionalities/passwordValidation';
-// import PasswordInput from '../components/PasswordInput';
+import PasswordInput from '../components/PasswordInput';
+import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../hooks/useRegisterFormPersistence';
+// ...otros imports...
 // import AnimatedContainer from '../components/AnimatedContainer'; // Importar el nuevo componente
 console.log('Register component rendered')
 const Register = () => {
@@ -19,6 +21,8 @@ const Register = () => {
     confirmPassword: '',
     termsAccepted: false,
   });
+
+  useRegisterFormPersistence(setFormData, setStep);
 
     const [errors, setErrors] = useState({});
     const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
@@ -46,14 +50,14 @@ const Register = () => {
       }
       return error;
     };
-    const handleChange = ({ target: { name, value } }) => {
+    const handleChange = ({ target: { name, value, type, checked } }) => {
       setFormData({
         ...formData,
-        [name]: value,
+        [name]: type === "checkbox" ? checked : value,
       });
-  
+
       // Validar el campo en tiempo real
-      const error = validateField(name, value);
+      const error = validateField(name, type === "checkbox" ? checked : value);
       setErrors((prevErrors) => ({
         ...prevErrors,
         [name]: error,
@@ -115,6 +119,8 @@ useEffect(() => {
       if (response.ok) {
         alert("creacion de cuenta exitosa");
         console.log("Usuario creado:", data.usuario);
+        localStorage.removeItem('registerFormData'); // Limpia los datos guardados
+        localStorage.removeItem('registerStep');
         navigate("/iniciar-sesion");
       } else {
         // Mostrar error si ya existe el correo u otro error del backend
@@ -151,7 +157,7 @@ useEffect(() => {
             value={formData.firstName}
             onChange={handleChange}
             errorMessage={errors.firstName}
-            icon="👤"
+            
           />
           <Input
             label="Apellidos"
@@ -160,7 +166,7 @@ useEffect(() => {
             value={formData.lastName}
             errorMessage={errors.lastName}
             onChange={handleChange}
-            icon="👤"
+            
           />
           <Input
             label="Correo"
@@ -169,7 +175,7 @@ useEffect(() => {
             value={formData.email}
             errorMessage={errors.email}
             onChange={handleChange}
-            icon="📧"
+            
           />
           <Button
             onClick={() => {
@@ -189,18 +195,18 @@ useEffect(() => {
         <>
           <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
           <p className="text-gray-400 text-center mb-6">¡Casi listo! Continúa con la creación de tu contraseña.</p>
-          <Input
+          <PasswordInput
             label="Crear Contraseña"
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            icon="👁️"
+            
           />
 
             <PasswordValidator password={formData.password} />
 
-            <Input
+            <PasswordInput
               label="Confirmar Contraseña"
               name="confirmPassword"
               value={formData.confirmPassword}
@@ -216,12 +222,21 @@ useEffect(() => {
               label={
                 <>
                   Acepto los{' '}
-                  <Link to="/terminos" className="text-purple-500 hover:underline">
-                    Términos de Servicio
+                  <Link 
+                    to="/terminos" 
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-500 hover:underline"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >Términos de Servicio
                   </Link>{' '}
+
                   y{' '}
-                  <Link to="/politica-de-privacidad" className="text-purple-500 hover:underline">
-                    Políticas de Privacidad
+                  <Link 
+                    to="/politica-de-privacidad" 
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-500 hover:underline"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >Políticas de Privacidad
                   </Link>
                 </>
               }
