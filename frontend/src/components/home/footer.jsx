@@ -64,7 +64,7 @@ const Footer = () => {
             <Link to="/politica-de-privacidad" state={{ from: "/" }} className="hover:text-white transition-colors duration-300">
               Política de Privacidad
             </Link>
-            <Link to="/terminos-y-condiciones" state={{ from: "/" }} className="hover:text-white transition-colors duration-300">
+            <Link to="/terminos" state={{ from: "/" }} className="hover:text-white transition-colors duration-300">
               Términos y Condiciones
             </Link>
           </div>

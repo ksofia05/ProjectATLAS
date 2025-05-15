@@ -4,11 +4,11 @@ import LegalPage from "../../components/LegalPage";
 const Terms = () => {
   const content = (
     <>
-      <p class="text-center text-gray-400 mb-6">
+      <p className="text-center text-gray-400 mb-6">
         Última actualización: 13/04/2025
       </p>
-      <div class="text-gray-300 text-sm space-y-4">
-        <h2 class="text-lg font-semibold text-white">• Introducción</h2>
+      <div className="text-gray-300 text-sm space-y-4">
+        <h2 className="text-lg font-semibold text-white">• Introducción</h2>
         <p>
           Bienvenido a ATLAS COMPANY. Estos Términos y Condiciones regulan el
           uso de nuestro software de gestión de inventarioen línea, diseñado
@@ -18,7 +18,7 @@ const Terms = () => {
           continuar.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Servicios Ofrecidos</h2>
+        <h2 className="text-lg font-semibold text-white">• Servicios Ofrecidos</h2>
         <p>
           ATLAS COMPANY ofrece un sistema en línea para la gestión de
           inventario, seguimiento de equipos en reparación,asignación de tareas
@@ -26,7 +26,7 @@ const Terms = () => {
           para empresas que deseen digitalizar y optimizar su flujo de trabajo.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Acceso al Servicio</h2>
+        <h2 className="text-lg font-semibold text-white">• Acceso al Servicio</h2>
         <p>
           Para acceder a nuestro sistema, debe crear una cuenta y proporcionar
           información precisa y actualizada. Usted es responsable de mantener la
@@ -34,14 +34,14 @@ const Terms = () => {
           actividades que ocurran en su cuenta.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Uso aceptable</h2>
+        <h2 className="text-lg font-semibold text-white">• Uso aceptable</h2>
         <p>
           El usuario se compromete a utilizar el sistema de forma legal y ética.
           Está prohibido utilizar el software para fines ilícitos, enviar
           contenido malicioso o interferir con el funcionamiento del sistema.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Propiedad Intelectual
         </h2>
         <p>
@@ -50,7 +50,7 @@ const Terms = () => {
           reproducción, modificación o distribución sin autorización expresa.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Soporte y Actualizaciones
         </h2>
         <p>
@@ -61,7 +61,7 @@ const Terms = () => {
           disponibilidad del servicio.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Limitaciones de Responsabilidad
         </h2>
         <p>
@@ -70,7 +70,7 @@ const Terms = () => {
           recomienda realizar copias de seguridad periódicas.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Política de Privacidad
         </h2>
         <p>
@@ -79,7 +79,7 @@ const Terms = () => {
           con terceros sin consentimiento, salvo por obligaciones legales.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Cancelación y Terminación
         </h2>
         <p>
@@ -88,7 +88,7 @@ const Terms = () => {
           incumplan estos términos, sin previo aviso.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-white">
           • Modificaciones de los Términos
         </h2>
         <p>
@@ -98,7 +98,7 @@ const Terms = () => {
           aceptación de dichos cambios.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Contacto</h2>
+        <h2 className="text-lg font-semibold text-white">• Contacto</h2>
         <p>
           Si tiene preguntas o comentarios sobre estos Términos y Condiciones,
           puede comunicarse con nosotros a través de:
