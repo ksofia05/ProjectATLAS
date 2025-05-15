@@ -38,29 +38,39 @@ def login_usuario(request):
 @api_view(['POST'])
 def registe_usuario(request):
     if request.method == 'POST':
-        nombre = request.data.get('firstName')
-        apellido = request.data.get('lastName')
+        check_email_only = request.data.get('checkEmailOnly', False)
         email = request.data.get('email')
-        if Usuario.objects.filter(correoelectronico=email).exists():
-            return Response({'error': 'El correo ya está registrado.'}, status=400)
-        password = request.data.get('password')
-        termsAccepted = request.data.get('termsAccepted')
-        # Convertir termsAccepted a booleano
-        terminoservicio = bool(termsAccepted)
-        estado_predeterminado = 'Activo'
-        suscripcion = 'Gratuito'
-        try:
-            Usuario.objects.create(
-                nombre=nombre,
-                apellido=apellido,
-                correoelectronico=email,
-                contraseña=password,
-                terminoservicio=terminoservicio,
-                estado=estado_predeterminado,
-                suscripcion=suscripcion
-            )
-            return Response({'usuario': "cuenta creada"}, status=200)
-        except Exception as e:
-            return Response({'error': f'Error al crear usuario: {str(e)}'}, status=500)
+        if check_email_only:
+            if Usuario.objects.filter(correoelectronico=email).exists():
+                return Response({'error': 'El correo ya está registrado.'}, status=400)
+            return Response({'message': 'El correo está disponible.'}, status=200)
+        else:
+            nombre = request.data.get('firstName')
+            apellido = request.data.get('lastName')
+            password = request.data.get('password')
+            termsAccepted = request.data.get('termsAccepted')
+
+            if not nombre or not apellido or not email or not password or termsAccepted is None:
+                return Response({'error': 'Todos los campos son requeridos para el registro completo.'}, status=400)
+
+            if Usuario.objects.filter(correoelectronico=email).exists():
+                return Response({'error': 'El correo ya está registrado.'}, status=400)
+
+            terminoservicio = bool(termsAccepted)
+            estado_predeterminado = 'Activo'
+            suscripcion = 'Gratuito'
+            try:
+                Usuario.objects.create(
+                    nombre=nombre,
+                    apellido=apellido,
+                    correoelectronico=email,
+                    contraseña=password,
+                    terminoservicio=terminoservicio,
+                    estado=estado_predeterminado,
+                    suscripcion=suscripcion
+                )
+                return Response({'usuario': "cuenta creada"}, status=200)
+            except Exception as e:
+                return Response({'error': f'Error al crear usuario: {str(e)}'}, status=500)
     else:
         return Response({'error': 'Método no permitido'}, status=405)

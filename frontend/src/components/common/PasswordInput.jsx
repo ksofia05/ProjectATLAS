@@ -21,7 +21,7 @@ const PasswordInput = ({ label, name, value, onChange, errorMessage }) => {
           placeholder={label}
         />
         <i
-          className={`absolute right-3 top-3 text-gray-400 text-lg bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} cursor-pointer`}
+          className={`absolute right-3 top-3 text-gray-400 text-lg bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} cursor-pointer`}
           onClick={togglePasswordVisibility}
         ></i>
       </div>

@@ -1,12 +1,15 @@
-import React, { useState,useEffect  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Input from '../components/Input';
-import Button from '../components/Button';
-import Checkbox from '../components/Checkbox';
-import FormContainer from '../components/FormContainer';
-import PasswordValidator from '../components/componentsFunctionalities/passwordValidation';
-// import PasswordInput from '../components/PasswordInput';
-// import AnimatedContainer from '../components/AnimatedContainer'; // Importar el nuevo componente
+import FormContainer from '../../components/common/FormContainer';
+import Input from '../../components/common/Input';
+import PasswordInput from '../../components/common/PasswordInput';
+import Checkbox from '../../components/common/Checkbox';
+import Button from '../../components/common/Button';
+import PasswordValidator from '../../components/functionalities/passwordValidation';
+import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
+// import AnimatedContainer from '../components/AnimatedContainer';
+
+
 console.log('Register component rendered')
 const Register = () => {
   const navigate = useNavigate(); // Para redirección
@@ -19,6 +22,8 @@ const Register = () => {
     confirmPassword: '',
     termsAccepted: false,
   });
+
+  useRegisterFormPersistence(setFormData, setStep);
 
     const [errors, setErrors] = useState({});
     const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
@@ -46,14 +51,14 @@ const Register = () => {
       }
       return error;
     };
-    const handleChange = ({ target: { name, value } }) => {
+    const handleChange = ({ target: { name, value, type, checked } }) => {
       setFormData({
         ...formData,
-        [name]: value,
+        [name]: type === "checkbox" ? checked : value,
       });
-  
+
       // Validar el campo en tiempo real
-      const error = validateField(name, value);
+      const error = validateField(name, type === "checkbox" ? checked : value);
       setErrors((prevErrors) => ({
         ...prevErrors,
         [name]: error,
@@ -83,11 +88,38 @@ useEffect(() => {
   setIsSubmitDisabled(!(isFilled && !hasLocalErrors && !hasBackendEmailError));
 }, [formData.firstName, formData.lastName, formData.email, errors]);
     
-  const handleNext = () => setStep(2);
+  // const handleNext = () => setStep(2);
   const handleBack = () => setStep(1);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.termsAccepted) {
+  const handleNext = async () => {
+  const emailError = validateField("email", formData.email);
+  setErrors(prevErrors => ({ ...prevErrors, email: emailError }));
+
+  if (!emailError && formData.firstName && formData.lastName && formData.email) {
+    try {
+      const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ checkEmailOnly: true, email: formData.email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStep(2);
+      } else {
+        setErrors(prevErrors => ({ ...prevErrors, email: data.error || 'Este correo ya está registrado.' }));
+      }
+    } catch (error) {
+      console.error("Error al verificar el correo:", error);
+      alert("No se pudo verificar el correo.");
+    }
+  }
+};
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formData.termsAccepted) {
       alert('Debes aceptar los términos y condiciones.');
       return;
     }
@@ -95,19 +127,16 @@ useEffect(() => {
       alert('Las contraseñas no coinciden.');
       return;
     }
+
+  if (step === 2) {
+
     try {
       const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          termsAccepted: formData.termsAccepted,
-        }),
+        body: JSON.stringify({ ...formData }), // Enviar todos los datos sin checkEmailOnly
       });
 
       const data = await response.json();
@@ -115,15 +144,14 @@ useEffect(() => {
       if (response.ok) {
         alert("creacion de cuenta exitosa");
         console.log("Usuario creado:", data.usuario);
+        localStorage.removeItem('registerFormData'); // Limpia los datos guardados
+        localStorage.removeItem('registerStep');
         navigate("/iniciar-sesion");
       } else {
-        // Mostrar error si ya existe el correo u otro error del backend
-      if (data?.error?.includes("correo ya está registrado")) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          email: data.error,
-        }));
-      } else {
+        if (data?.error?.includes("correo ya está registrado")) {
+          setErrors((prevErrors) => ({ ...prevErrors, email: data.error }));
+          setStep(1); // Volver al primer paso para mostrar el error
+        } else {
           alert(data.error || "Error al crear cuenta");
         }
       }
@@ -131,7 +159,8 @@ useEffect(() => {
       console.error("Error en la solicitud:", error);
       alert("No se pudo conectar con el servidor.");
     }
-  };
+  }
+};
 
   return (
     <FormContainer>
@@ -151,7 +180,7 @@ useEffect(() => {
             value={formData.firstName}
             onChange={handleChange}
             errorMessage={errors.firstName}
-            icon="👤"
+            
           />
           <Input
             label="Apellidos"
@@ -160,7 +189,7 @@ useEffect(() => {
             value={formData.lastName}
             errorMessage={errors.lastName}
             onChange={handleChange}
-            icon="👤"
+            
           />
           <Input
             label="Correo"
@@ -169,16 +198,10 @@ useEffect(() => {
             value={formData.email}
             errorMessage={errors.email}
             onChange={handleChange}
-            icon="📧"
+            
           />
           <Button
-            onClick={() => {
-              const isValid = validateForm(); // valida todos los campos y actualiza errores
-              if (isValid) {
-                setStep(2); // solo avanza si es válido
-              }
-            }}
-            
+            onClick={handleNext}
             disabled={isSubmitDisabled}
             className={isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""}
           >
@@ -189,18 +212,18 @@ useEffect(() => {
         <>
           <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
           <p className="text-gray-400 text-center mb-6">¡Casi listo! Continúa con la creación de tu contraseña.</p>
-          <Input
+          <PasswordInput
             label="Crear Contraseña"
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            icon="👁️"
+            
           />
 
             <PasswordValidator password={formData.password} />
 
-            <Input
+            <PasswordInput
               label="Confirmar Contraseña"
               name="confirmPassword"
               value={formData.confirmPassword}
@@ -216,12 +239,21 @@ useEffect(() => {
               label={
                 <>
                   Acepto los{' '}
-                  <Link to="/terminos" className="text-purple-500 hover:underline">
-                    Términos de Servicio
+                  <Link 
+                    to="/terminos" 
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-500 hover:underline"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >Términos de Servicio
                   </Link>{' '}
+
                   y{' '}
-                  <Link to="/politica-de-privacidad" className="text-purple-500 hover:underline">
-                    Políticas de Privacidad
+                  <Link 
+                    to="/politica-de-privacidad" 
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-500 hover:underline"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >Políticas de Privacidad
                   </Link>
                 </>
               }
