@@ -30,10 +30,10 @@ def login_usuario(request):
             serializer = UsuarioSerializer(usuario)
             return Response({'usuario': serializer.data}, status=200)
         else:
-            return Response({'error': 'Contraseña incorrecta'}, status=401)
+            return Response({'error': 'correo o contraseña incorrecta'}, status=401)
 
     except Usuario.DoesNotExist:
-        return Response({'error': 'Usuario no encontrado'}, status=404)
+        return Response({'error': 'correo o contraseña incorrecta'}, status=404)
 
 @api_view(['POST'])
 def registe_usuario(request):
