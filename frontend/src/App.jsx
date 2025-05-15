@@ -29,8 +29,7 @@ const App = () => {
         {/* <Route path="/sobre-nosotros" element={<SobreNosotros />} />
         <Route path="/iniciar-sesion" element={<IniciarSesion />} />
         <Route path="/registrarse" element={<Resgistrarse />} />
-        <Route path="/politica-de-privacidad" element={<PoliticasPrivacidad />} />
-        <Route path="/terminos-y-condiciones" element={<TerminosCond />} /> */}
+        <Route path="/politica-de-privacidad" element={<PoliticasPrivacidad />} />*/}       
         <Route path="/iniciar-sesion" element={<Login />} />
         <Route path="/registrarse" element={<Register />} />
         <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
