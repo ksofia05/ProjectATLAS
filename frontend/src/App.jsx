@@ -18,7 +18,7 @@ import PasswordReset from "./pages/Auth/PasswordReset";
 import Terms from "./pages/Legal/Terms";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import Simulation from "./pages/Simulation";
-// import Error404 from "./pages/Error404";
+import Error404 from "./pages/error404";
 import { Toaster } from 'react-hot-toast';
 
 
@@ -44,6 +44,7 @@ const App = () => {
             <Simulation />
           </ProtectedRoute>
         }/>
+        <Route path="*" element={<Error404 />}/>
       </Routes>
       <Toaster />
     </BrowserRouter>

@@ -31,7 +31,7 @@ const Homepage = () => {
 
   return (
     <>
-      <div>
+      {/* <div>
         {usuario.map((usuario) => (
           <div className="text-white" key={usuario.id}>
             <h1>{usuario.nombre}</h1>
@@ -39,7 +39,7 @@ const Homepage = () => {
           </div>
         ))}
       </div>
-      <h1 className="text-white">hola</h1>
+      <h1 className="text-white">hola</h1> */}
       <Navbar />
       <Header />
       <OrganizerSection />
