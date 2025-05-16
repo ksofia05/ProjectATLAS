@@ -136,13 +136,14 @@ const Login = () => {
           errorMessage={errors.email}
           icon="bi-envelope-fill"
         />
-        <Input
+        <PasswordInput
           label="Contraseña"
           name="password"
           type="password"
           value={formData.password}
           onChange={handleChange}
           errorMessage={errors.password} // Aquí se muestra el error debajo de la contraseña
+          icon="bi-eye-fill"
         />
         <Button
   type="submit"
