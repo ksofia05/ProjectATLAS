@@ -1,3 +1,10 @@
+import re
+import uuid
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.html import strip_tags
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 from rest_framework import viewsets # Importa el módulo viewsets de Django REST Framework, que permite crear vistas basadas en conjuntos de datos (viewsets).
 from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
 from .serializer import TaskSerializer,UsuarioSerializer, RolSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
@@ -64,3 +71,55 @@ def registe_usuario(request):
             return Response({'error': f'Error al crear usuario: {str(e)}'}, status=500)
     else:
         return Response({'error': 'Método no permitido'}, status=405)
+    
+
+@api_view(['POST'])
+def recuperacion_contra (request):
+    email=request.data.get('email')
+    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+",email):
+        return Response({'success':False,'message':'Debes ingresar un correo valido'})
+    try:
+        usuario=Usuario.objects.get(correoelectronico=email)
+    except Usuario.DoesNotExist:
+        return Response({'success':False,'message':'No existe una cuenta asociada a este correo'})
+    
+    token= str(uuid.uuid4())
+    request.session['reset_token']=token
+    request.session['reset_email']=email
+
+    reset_url=f"http://localhost:5173/password-reset/{token}?email={email}"
+    asunto='Recuperacion de contrasena'
+    html_content= render_to_string('autenticacion/email_recuperacion.html',{
+        'usuario':usuario,
+        'reset_url':reset_url,
+    })
+    mensaje=strip_tags(html_content)
+
+    send_mail(
+        asunto,
+        mensaje,
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        html_message=html_content,
+        fail_silently=False
+    )
+    return Response({'success':True,'message': 'correo de recuperacion enviado correctamente.'})
+
+@api_view(['POST'])
+def password_reset(request, token=None):
+    token = request.data.get('token')
+    email = request.data.get('email')
+    new_password = request.data.get('new_password')
+
+    if not token or not new_password or not email:
+        return Response({'success': False, 'message': 'Datos incompletos.'}, status=400)
+
+    # Si quieres, puedes validar el token aquí si lo guardas en la base de datos
+
+    try:
+        usuario = Usuario.objects.get(correoelectronico=email)
+        usuario.contraseña = new_password
+        usuario.save()
+        return Response({'success': True, 'message': 'Contraseña restablecida correctamente.'})
+    except Usuario.DoesNotExist:
+        return Response({'success': False, 'message': 'Usuario no encontrado.'}, status=404)
