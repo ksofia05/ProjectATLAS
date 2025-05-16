@@ -1,52 +1,100 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
 import PasswordValidator from "../../components/functionalities/passwordValidation";
 
-
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 const PasswordReset = () => {
-
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Controla la ventana emergente
-  const [error,setError]= useState("");
-  const [formData,setFormData]=useState({
-    newPassword:"",
-    confirmPassword:"",
+  const { token } = useParams();
+  const query = useQuery();
+  const email = query.get("email");
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState("");
+  const [formData, setFormData] = useState({
+    newPassword: "",
+    confirmPassword: "",
   });
-  const handleNewPasswordChange =(e)=>{
-    const newPassword =e.target.value;
-    setFormData({...formData,newPassword});
-    if(formData.confirmPassword && formData.confirmPassword !== newPassword){
-      setError("Las contraseñas no coinciden")
-    } else{
+  const isButtonDisabled=()=>{
+    return(
+      !formData.newPassword ||
+      !formData.confirmPassword ||
+      !PasswordValid ||
+      !ConfirmValid ||
+      isSubmitDisabled);
+  };
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+
+  // Si PasswordValidator no retorna booleano, reemplaza esta línea por tu propia validación
+  const PasswordValid = PasswordValidator({ password: formData.newPassword, onlyReturnValid: true });
+  const ConfirmValid = formData.confirmPassword === formData.newPassword;
+
+  const handleNewPasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, newPassword });
+    if (formData.confirmPassword && formData.confirmPassword !== newPassword) {
+      setError("Las contraseñas no coinciden");
+    } else {
       setError("");
     }
+    setApiError("");
   };
-  const handleConfirmPasswordChange=(e)=>{
-    const confirmPassword= e.target.value;
-    setFormData({...formData,confirmPassword});
-    if(formData.newPassword && confirmPassword !==formData.newPassword){
-      setError("Las contraseñas no coinciden")
-    }else{
+
+  const handleConfirmPasswordChange = (e) => {
+    const confirmPassword = e.target.value;
+    setFormData({ ...formData, confirmPassword });
+    if (formData.newPassword && confirmPassword !== formData.newPassword) {
+      setError("Las contraseñas no coinciden");
+    } else {
       setError("");
     }
+    setApiError("");
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowSuccessMessage(true); // Muestra la ventana flotante
-    if(formData.newPassword!==formData.confirmPassword){
+    setError("");
+    setApiError("");
+
+    if (formData.newPassword !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
-    };
-    setError("");
-    setShowSuccessMessage(true);
+    }
+    if (!PasswordValid) {
+      setApiError("La contraseña no cumple con los requisitos");
+      return;
+    }
+    setIsSubmitDisabled(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/password-reset/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          new_password: formData.newPassword, // <-- aquí el cambio
+          token: token,
+          email:email,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setShowSuccessMessage(true);
+      } else {
+        setApiError(data.message);
+      }
+    } catch (error) {
+      setApiError("Error al restablecer la contraseña. Intenta nuevamente.");
+    }
+    setIsSubmitDisabled(false);
   };
+
   const closeMessage = () => {
-    setShowSuccessMessage(false); // Cierra la ventana flotante
+    setShowSuccessMessage(false);
   };
-  
+
   return (
     <FormContainer>
       {!showSuccessMessage ? (
@@ -66,10 +114,8 @@ const PasswordReset = () => {
               icon="👁️"
               value={formData.newPassword}
               onChange={handleNewPasswordChange}
-              />
-            
+            />
             <PasswordValidator password={formData.newPassword} />
-            
             <Input
               label="Confirmar Contraseña"
               type="password"
@@ -77,11 +123,25 @@ const PasswordReset = () => {
               icon="👁️"
               value={formData.confirmPassword}
               onChange={handleConfirmPasswordChange}
-              />
-              {error &&(
-                <p className="text-red-500 text-mb mb-4">{error}</p>
-              )}
-            <Button type="submit">Crear contraseña</Button>
+            />
+            {error && (
+              <p className="text-red-500 text-mb mb-4">{error}</p>
+            )}
+            {apiError && (
+              <p className="text-red-500 text-mb mb-4">{apiError}</p>
+            )}
+            <Button
+              type="submit"
+              disabled={isButtonDisabled()}
+              className={`${
+                isButtonDisabled()
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              
+            >
+              Crear contraseña
+            </Button>
           </form>
         </>
       ) : (

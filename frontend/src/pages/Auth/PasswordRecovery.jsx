@@ -1,32 +1,41 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { data, Link, useNavigate } from "react-router-dom";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
 
+
 const PasswordRecovery = () => {
-  const [step, setStep] = useState(1); // Aqui inicia la primera vista de recuperar la contraseña
-  const [formData, setFormData] = useState({
-    email: "",
-  });
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const navigate =useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setStep(2); // Este es el segundo paso, donde se muestra el mensaje de que el correo ha sido enviado
+    setMessage("");
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/recuperacionContrasena", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setStep(2);
+      } else {
+        setMessage(data.message);
+      }
+    } catch (error) {
+      setMessage("Error al enviar solicitud. Intenta nuevamente.");
+    }
   };
 
-  const closeMessage = () => {
-    setStep(3); // Este es el tercer paso, y cierra la ventana flotando, pero aun hay errores
-  };
+  const closeMessage = () => setStep(3);
 
+      
   return (
     <FormContainer>
       {step === 1 && (
@@ -38,13 +47,16 @@ const PasswordRecovery = () => {
             Ingresa tu correo electrónico y te enviaremos un enlace para
             restablecer tu contraseña.
           </p>
+          {message && (
+            <p className="text-red-500 text -center mb-4">{message}</p>
+          )}
           <form onSubmit={handleSubmit}>
             <Input
               label="Correo Electrónico"
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={e=> setEmail(e.target.value)}
               icon="📧"
             />
             <Button type="submit">Enviar enlace</Button>
@@ -68,14 +80,6 @@ const PasswordRecovery = () => {
           <div className="mt-4">
             <span className="text-purple-500 text-4xl">✈️</span>
           </div>
-          <div className="mt-6">
-            <Link
-              to="/email-recuperacion"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-            >
-              Simulacion de correo
-            </Link>
-          </div>
         </div>
       )}
 
@@ -88,21 +92,19 @@ const PasswordRecovery = () => {
             ¿Seguro que escribiste bien tu correo? Si todo está en orden,
             reenvía el enlace.
           </p>
-          <form>
+          {message && (
+            <p className="text-red-500 text -center mb-4">{message}</p>
+          )}
+          <form onSubmit={handleSubmit}>
             <Input
               label="Correo Electrónico"
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               icon="📧"
             />
-            <Link
-              to="/email-recuperacion"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 block text-center"
-            >
-              Reenviar enlace
-            </Link>
+             <Button type="submit">Enviar enlace</Button>
           </form>
         </>
       )}
