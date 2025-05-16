@@ -146,12 +146,12 @@ const Login = () => {
           icon="bi-eye-fill"
         />
         <Button
-  type="submit"
-  disabled={isButtonDisabled()}
-  className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
->
-  Ingresar
-</Button>
+          type="submit"
+          disabled={isButtonDisabled()}
+          className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          Ingresar
+        </Button>
       </form>
       <div className="text-center mt-6">
         <p className="text-gray-400">
