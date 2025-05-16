@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { data, Link, useNavigate } from "react-router-dom";
-import Input from "../components/Input";
-import Button from "../components/Button";
-import FormContainer from "../components/FormContainer";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import FormContainer from "../../components/common/FormContainer";
+
 
 const PasswordRecovery = () => {
   const [step, setStep] = useState(1);

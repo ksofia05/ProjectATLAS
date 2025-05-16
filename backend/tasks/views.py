@@ -4,7 +4,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives
 from rest_framework import viewsets # Importa el módulo viewsets de Django REST Framework, que permite crear vistas basadas en conjuntos de datos (viewsets).
 from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
 from .serializer import TaskSerializer,UsuarioSerializer, RolSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
