@@ -3,6 +3,11 @@ import Button from "../components/common/Button";
 import { Link } from "react-router-dom";
 
 const Simulation = () => {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/iniciar-sesion";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center text-white">
       <div className="text-center p-8 bg-gray-800 rounded-lg shadow-lg max-w-md">
@@ -20,6 +25,9 @@ const Simulation = () => {
             <Link to="/registrarse" className="text-white">
               Regresar a Registro de Usuario
             </Link>
+          </Button>
+          <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white">
+            Cerrar sesión
           </Button>
         </div>
       </div>
