@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from "../../assets/LogoTransparente.png";
 
 const FormContainer = ({ children }) => {
   return (
@@ -10,6 +11,9 @@ const FormContainer = ({ children }) => {
         }}
       ></div>
       <div className="relative z-10 bg-[#1E1B2E] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Logo de la empresa" className="h-16 w-auto" />
+        </div>
         {children}
       </div>
     </div>
