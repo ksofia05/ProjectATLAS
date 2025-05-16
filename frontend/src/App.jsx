@@ -18,6 +18,7 @@ import Terms from "./pages/Legal/Terms";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import Simulation from "./pages/Simulation";
 // import Error404 from "./pages/Error404";
+import { Toaster } from 'react-hot-toast';
 
 
 const App = () => {
@@ -39,6 +40,7 @@ const App = () => {
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
         <Route path="/simulacion" element={<Simulation />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   );
 };

@@ -8,7 +8,8 @@ import Button from '../../components/common/Button';
 import PasswordValidator from '../../components/functionalities/passwordValidation';
 import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
 // import AnimatedContainer from '../components/AnimatedContainer';
-
+import Error from '../../components/common/popUp/error';
+import Exitoso from '../../components/common/popUp/Success';
 
 console.log('Register component rendered')
 const Register = () => {
@@ -113,18 +114,18 @@ useEffect(() => {
       }
     } catch (error) {
       console.error("Error al verificar el correo:", error);
-      alert("No se pudo verificar el correo.");
+      Error("No se pudo verificar el correo.");
     }
   }
 };
  const handleSubmit = async (e) => {
   e.preventDefault();
   if (!formData.termsAccepted) {
-      alert('Debes aceptar los términos y condiciones.');
+      Error('Debes aceptar los términos y condiciones.');
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden.');
+      Error('Las contraseñas no coinciden.');
       return;
     }
 
@@ -142,7 +143,7 @@ useEffect(() => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("creacion de cuenta exitosa");
+        Exitoso('creacion de cuenta exitosa');
         console.log("Usuario creado:", data.usuario);
         localStorage.removeItem('registerFormData'); // Limpia los datos guardados
         localStorage.removeItem('registerStep');
@@ -152,12 +153,12 @@ useEffect(() => {
           setErrors((prevErrors) => ({ ...prevErrors, email: data.error }));
           setStep(1); // Volver al primer paso para mostrar el error
         } else {
-          alert(data.error || "Error al crear cuenta");
+          Error(data.error || "Error al crear cuenta");
         }
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      alert("No se pudo conectar con el servidor.");
+      Error("No se pudo conectar con el servidor.");
     }
   }
 };
