@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 // import Navbar from "./components/navbar/navbar";
 import HomePage from "./pages/Home/homepage"; //Landing page Venta
 // import Resgistrarse from "./components/resgistrarse";
@@ -37,7 +38,11 @@ const App = () => {
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
-        <Route path="/simulacion" element={<Simulation />} />
+        <Route path="/simulacion" element={
+          <ProtectedRoute>
+            <Simulation />
+          </ProtectedRoute>
+        }/>
       </Routes>
     </BrowserRouter>
   );

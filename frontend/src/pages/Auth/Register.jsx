@@ -180,7 +180,7 @@ useEffect(() => {
             value={formData.firstName}
             onChange={handleChange}
             errorMessage={errors.firstName}
-            
+            icon={"bi-person-fill"}
           />
           <Input
             label="Apellidos"
@@ -189,7 +189,7 @@ useEffect(() => {
             value={formData.lastName}
             errorMessage={errors.lastName}
             onChange={handleChange}
-            
+            icon={"bi-person-fill"}
           />
           <Input
             label="Correo"
@@ -198,7 +198,7 @@ useEffect(() => {
             value={formData.email}
             errorMessage={errors.email}
             onChange={handleChange}
-            
+            icon={"bi-envelope-fill"}
           />
           <Button
             onClick={handleNext}
