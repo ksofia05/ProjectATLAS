@@ -34,10 +34,11 @@ const App = () => {
         <Route path="/registrarse" element={<Register />} />
         <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
         <Route path="/email-recuperacion" element={<EmailRecovery />} />
-        <Route path="/password-reset" element={<PasswordReset />} />
+        <Route path="/password-reset/:token" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
         <Route path="/simulacion" element={<Simulation />} />
+        
       </Routes>
     </BrowserRouter>
 

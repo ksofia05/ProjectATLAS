@@ -84,6 +84,7 @@ def recuperacion_contra (request):
         return Response({'success':False,'message':'No existe una cuenta asociada a este correo'})
     
     token= str(uuid.uuid4())
+
     request.session['reset_token']=token
     request.session['reset_email']=email
 
@@ -113,9 +114,6 @@ def password_reset(request, token=None):
 
     if not token or not new_password or not email:
         return Response({'success': False, 'message': 'Datos incompletos.'}, status=400)
-
-    # Si quieres, puedes validar el token aquí si lo guardas en la base de datos
-
     try:
         usuario = Usuario.objects.get(correoelectronico=email)
         usuario.contraseña = new_password
