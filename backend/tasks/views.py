@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view # Importa el decorador api_view p
 from .serializer import TaskSerializer,UsuarioSerializer, RolSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
 from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
 from .models import Task,Usuario, Rol # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
+from rest_framework.authtoken.models import Token
 
 
 # Define un conjunto de vistas (viewset) para el modelo Task.
@@ -31,15 +32,19 @@ def login_usuario(request):
     password = request.data.get('password')
     try:
         usuario = Usuario.objects.get(correoelectronico=email)
-
         if usuario.contraseña == password:
+            usuario.token = str(uuid.uuid4())
+            usuario.save()
             serializer = UsuarioSerializer(usuario)
-            return Response({'usuario': serializer.data}, status=200)
+            return Response({'token': usuario.token, 'usuario': serializer.data}, status=200)
         else:
             return Response({'error': 'correo o contraseña incorrecta'}, status=401)
 
     except Usuario.DoesNotExist:
         return Response({'error': 'correo o contraseña incorrecta'}, status=404)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
 
 @api_view(['POST'])
 def registe_usuario(request):

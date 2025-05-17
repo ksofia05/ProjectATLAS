@@ -20,6 +20,7 @@ class Usuario(models.Model):
     suscripcion = models.TextField()  # This field type is a guess.
     idusuario = models.AutoField(db_column='idUsuario', primary_key=True)  # Field name made lowercase.
     terminoservicio = models.BooleanField(db_column='terminoServicio')  # Field name made lowercase.
+    token = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = False
