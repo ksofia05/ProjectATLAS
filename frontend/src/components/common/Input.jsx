@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Input = ({ label, type, name, value, onChange, errorMessage, icon, required }) => {
+const Input = ({ label, type, name, value, onChange, errorMessage, icon, required, containerClassName }) => {
   return (
-    <div className="mb-6">
+    <div className={containerClassName ? containerClassName : "mb-6"}>
       <label htmlFor={name} className="block text-gray-300 font-medium mb-2">{label}</label>
       <div className="relative">
         <input
