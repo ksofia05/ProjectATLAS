@@ -1,37 +1,38 @@
 import React, { useState } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
-import Input from "../../components/common/Input";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import PasswordInput from "../../components/common/PasswordInput";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
 import PasswordValidator from "../../components/functionalities/passwordValidation";
+import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
+import toast from "react-hot-toast";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
+
 const PasswordReset = () => {
   const { token } = useParams();
   const query = useQuery();
   const email = query.get("email");
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [error, setError] = useState("");
   const [apiError, setApiError] = useState("");
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
   });
-  const isButtonDisabled=()=>{
-    return(
-      !formData.newPassword ||
-      !formData.confirmPassword ||
-      !PasswordValid ||
-      !ConfirmValid ||
-      isSubmitDisabled);
-  };
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+  const navigate = useNavigate();
 
-  // Si PasswordValidator no retorna booleano, reemplaza esta línea por tu propia validación
   const PasswordValid = PasswordValidator({ password: formData.newPassword, onlyReturnValid: true });
   const ConfirmValid = formData.confirmPassword === formData.newPassword;
+
+  const isButtonDisabled = () =>
+    !formData.newPassword ||
+    !formData.confirmPassword ||
+    !PasswordValid ||
+    !ConfirmValid ||
+    isSubmitDisabled;
 
   const handleNewPasswordChange = (e) => {
     const newPassword = e.target.value;
@@ -69,102 +70,79 @@ const PasswordReset = () => {
       return;
     }
     setIsSubmitDisabled(true);
+
+    const toastId = showLoadingToast("Cambiando contraseña...");
     try {
       const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/password-reset/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          new_password: formData.newPassword, // <-- aquí el cambio
+          new_password: formData.newPassword,
           token: token,
-          email:email,
+          email: email,
         }),
       });
       const data = await response.json();
+      toast.dismiss(toastId);
+
       if (data.success) {
-        setShowSuccessMessage(true);
+        showSuccessToast("Contraseña cambiada exitosamente");
+        setTimeout(() => {
+          navigate("/iniciar-sesion");
+        }, 1800);
       } else {
+        showErrorToast(data.message || "No se pudo cambiar la contraseña");
         setApiError(data.message);
       }
     } catch (error) {
+      toast.dismiss(toastId);
+      showErrorToast("Error al restablecer la contraseña. Intenta nuevamente.");
       setApiError("Error al restablecer la contraseña. Intenta nuevamente.");
     }
     setIsSubmitDisabled(false);
   };
 
-  const closeMessage = () => {
-    setShowSuccessMessage(false);
-  };
-
   return (
     <FormContainer>
-      {!showSuccessMessage ? (
-        <>
-          <h1 className="text-2xl font-bold text-center mb-4">
-            Crea una nueva contraseña
-          </h1>
-          <p className="text-gray-400 text-center mb-6">
-            Su nueva contraseña debe ser diferente de la utilizada anteriormente
-            y debe cumplir con los requisitos.
-          </p>
-          <form onSubmit={handleSubmit}>
-            <Input
-              label="Nueva Contraseña"
-              type="password"
-              name="newPassword"
-              icon="👁️"
-              value={formData.newPassword}
-              onChange={handleNewPasswordChange}
-            />
-            <PasswordValidator password={formData.newPassword} />
-            <Input
-              label="Confirmar Contraseña"
-              type="password"
-              name="confirmPassword"
-              icon="👁️"
-              value={formData.confirmPassword}
-              onChange={handleConfirmPasswordChange}
-            />
-            {error && (
-              <p className="text-red-500 text-mb mb-4">{error}</p>
-            )}
-            {apiError && (
-              <p className="text-red-500 text-mb mb-4">{apiError}</p>
-            )}
-            <Button
-              type="submit"
-              disabled={isButtonDisabled()}
-              className={`${
-                isButtonDisabled()
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              
-            >
-              Crear contraseña
-            </Button>
-          </form>
-        </>
-      ) : (
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg text-center relative">
-          <button
-            onClick={closeMessage}
-            className="absolute top-2 right-2 text-purple-500 hover:text-purple-700"
-          >
-            ✕
-          </button>
-          <h2 className="text-xl font-bold mb-4">¡Contraseña creada exitosamente!</h2>
-          <p className="text-gray-400">
-            Tu contraseña ha sido restablecida correctamente. Inicia sesión para continuar.
-          </p>
-          <div className="mt-6">
-            <Button>
-              <Link to="/iniciar-sesion" className="text-white">
-                Iniciar sesión
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
+      <h1 className="text-2xl font-bold text-center mb-4">
+        Crea una nueva contraseña
+      </h1>
+      <p className="text-gray-400 text-center mb-6">
+        Su nueva contraseña debe ser diferente de la utilizada anteriormente
+        y debe cumplir con los requisitos.
+      </p>
+      <form onSubmit={handleSubmit}>
+        <PasswordInput
+          label="Nueva Contraseña"
+          type="password"
+          name="newPassword"
+          icon="bi-eye-fill"
+          value={formData.newPassword}
+          onChange={handleNewPasswordChange}
+        />
+        <PasswordValidator password={formData.newPassword} />
+        <PasswordInput
+          label="Confirmar Contraseña"
+          type="password"
+          name="confirmPassword"
+          icon="bi-eye-fill"
+          value={formData.confirmPassword}
+          onChange={handleConfirmPasswordChange}
+        />
+        {error && (
+          <p className="text-red-500 text-sm mt-1 mb-0">{error}</p>
+        )}
+        {apiError && (
+          <p className="text-red-500 text-sm mt-1 mb-0">{apiError}</p>
+        )}
+        <Button
+          type="submit"
+          disabled={isButtonDisabled()}
+          className={`w-full mt-6 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          Crear contraseña
+        </Button>
+      </form>
     </FormContainer>
   );
 };

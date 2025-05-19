@@ -1,41 +1,43 @@
 import React, { useState } from "react";
-import { data, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
-
+import toast from 'react-hot-toast';
+import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 
 const PasswordRecovery = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const navigate =useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-
+    const toastId = showLoadingToast("Enviando enlace...");
     try {
       const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/recuperacionContrasena", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      
       const data = await response.json();
+      toast.dismiss(toastId);
       if (data.success) {
-        setStep(2);
+        showSuccessToast("¡Enlace enviado!");
+        setStep(3);
       } else {
+        showErrorToast(data.message || "No se pudo enviar el correo");
         setMessage(data.message);
       }
     } catch (error) {
+      toast.dismiss(toastId);
+      showErrorToast("Error al enviar solicitud. Intenta nuevamente.");
       setMessage("Error al enviar solicitud. Intenta nuevamente.");
     }
   };
 
-  const closeMessage = () => setStep(3);
-
-      
   return (
     <FormContainer>
       {step === 1 && (
@@ -47,43 +49,25 @@ const PasswordRecovery = () => {
             Ingresa tu correo electrónico y te enviaremos un enlace para
             restablecer tu contraseña.
           </p>
-          {message && (
-            <p className="text-red-500 text -center mb-4">{message}</p>
-          )}
           <form onSubmit={handleSubmit}>
             <Input
               label="Correo Electrónico"
               type="email"
               name="email"
               value={email}
-              onChange={e=> setEmail(e.target.value)}
-              icon="📧"
+              onChange={e => setEmail(e.target.value)}
+              icon="bi-envelope-fill"
+              containerClassName="mb-0"
             />
-            <Button type="submit">Enviar enlace</Button>
+            {message && (
+            <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
+          )}
+            <Button type="submit" className="w-full mt-4">Enviar enlace</Button>
           </form>
         </>
       )}
 
-      {step === 2 && (
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg text-center relative">
-          <button
-            onClick={closeMessage}
-            className="absolute top-2 right-2 text-purple-500 hover:text-purple-700"
-          >
-            ✕
-          </button>
-          <h2 className="text-xl font-bold mb-4">El correo ha sido enviado!</h2>
-          <p className="text-gray-400">
-            No ves el correo? Dale un vistazo a tu carpeta de spam, a veces se
-            esconde por ahí.
-          </p>
-          <div className="mt-4">
-            <span className="text-purple-500 text-4xl">✈️</span>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && ( //Correcciones por hacer
+      {step === 3 && (
         <>
           <h1 className="text-2xl font-bold text-center mb-4">
             ¿Todavía no ves el enlace en tu bandeja?
@@ -92,9 +76,7 @@ const PasswordRecovery = () => {
             ¿Seguro que escribiste bien tu correo? Si todo está en orden,
             reenvía el enlace.
           </p>
-          {message && (
-            <p className="text-red-500 text -center mb-4">{message}</p>
-          )}
+          
           <form onSubmit={handleSubmit}>
             <Input
               label="Correo Electrónico"
@@ -102,9 +84,13 @@ const PasswordRecovery = () => {
               name="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              icon="📧"
+              icon="bi-envelope-fill"
+              containerClassName="mb-0"
             />
-             <Button type="submit">Enviar enlace</Button>
+            {message && (
+            <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
+          )}
+            <Button type="submit" className="w-full mt-4" >Enviar enlace</Button>
           </form>
         </>
       )}

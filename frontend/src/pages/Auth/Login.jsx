@@ -4,7 +4,8 @@ import FormContainer from "../../components/common/FormContainer";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
-// import AnimatedContainer from "../components/AnimatedContainer"; // Importar el contenedor animado
+import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const location = useLocation();
@@ -23,10 +24,8 @@ const Login = () => {
     setErrors({});
   }, [location.pathname]);
 
-
   const validateField = (name, value) => {
     let error = "";
-
     if (name === "email") {
       const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
       if (!value) {
@@ -35,7 +34,6 @@ const Login = () => {
         error = "Correo electrónico inválido";
       }
     }
-
     if (name === "password") {
       if (!value) {
         error = "La contraseña es requerida";
@@ -43,7 +41,6 @@ const Login = () => {
         error = "La contraseña debe tener al menos 8 caracteres";
       }
     }
-
     return error;
   };
 
@@ -52,7 +49,6 @@ const Login = () => {
       ...formData,
       [name]: value,
     });
-
     const error = validateField(name, value);
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -68,18 +64,16 @@ const Login = () => {
         newErrors[key] = error;
       }
     });
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
       return;
     }
-
+    const toastId = showLoadingToast("Ingresando...");
     try {
       const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
         method: "POST",
@@ -91,39 +85,41 @@ const Login = () => {
           password: formData.password,
         }),
       });
-
       const data = await response.json();
-
+      toast.dismiss(toastId);
       if (response.ok) {
         if (data.token) {
           localStorage.setItem("token", data.token);
         }
         setErrors({});
-        navigate("/simulacion");
+        showSuccessToast("¡Ingreso exitoso!");
+        setTimeout(() => {
+          navigate("/simulacion");
+        }, 1200);
       } else {
-        // Mostrar el error debajo del campo de contraseña
+        showErrorToast(data.error || "Error al iniciar sesión");
         setErrors((prev) => ({
           ...prev,
           password: data.error || "Error al iniciar sesión",
         }));
       }
     } catch (error) {
+      toast.dismiss(toastId);
+      showErrorToast("No se pudo conectar con el servidor.");
       setErrors((prev) => ({
         ...prev,
         password: "No se pudo conectar con el servidor.",
       }));
     }
   };
+
   const isButtonDisabled = () => {
-  return (
-    !formData.email ||
-    !formData.password ||
-    Object.values(errors).some((err) => err)
-  );
-};
-
-
-  
+    return (
+      !formData.email ||
+      !formData.password ||
+      Object.values(errors).some((err) => err)
+    );
+  };
 
   return (
     <FormContainer>
@@ -145,7 +141,7 @@ const Login = () => {
           type="password"
           value={formData.password}
           onChange={handleChange}
-          errorMessage={errors.password} // Aquí se muestra el error debajo de la contraseña
+          errorMessage={errors.password}
           icon="bi-eye-fill"
         />
         <Button
