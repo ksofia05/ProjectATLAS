@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'coreapi',
     'tasks',
-    'autenticacion',
+    'proyectos',
 ]
 
 MIDDLEWARE = [
