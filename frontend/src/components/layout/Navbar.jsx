@@ -1,0 +1,68 @@
+import React, { useState, useRef, useEffect } from "react";
+import UserMenu from "./UserMenu";
+
+const Navbar = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const userRef = useRef(null);
+
+  // La ventana emergente del usuario se cierra al hacer clic en cualquier parte de la pantalla
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userRef.current && !userRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
+
+  return (
+    <nav className="w-full bg-black border-b border-gray-800 px-8 pr-8 py-6 flex items-center justify-between relative">
+      {/* Título */}
+      <h1 className="text-2xl font-bold text-white">Proyectos</h1>
+
+      {/* Botón y perfil */}
+      <div className="flex items-center gap-10">
+        {/* Botón Actualizar Plan */}
+        <button
+          className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-xl shadow transition-all"
+        >
+          Actualizar Plan
+        </button>
+
+        {/* Perfil de usuario */}
+        <div
+          className="flex items-center gap-2 cursor-pointer relative"
+          ref={userRef}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <img
+            src="https://randomuser.me/api/portraits/men/32.jpg"
+            alt="Usuario"
+            className="w-8 h-8 rounded-full object-cover"
+          />
+          <div className="text-right">
+            <div className="text-sm font-semibold text-white text-right">
+              Luis Fernando<br/>Nuñez Yunda
+            </div>
+            
+          </div>
+          {/* Menú desplegable */}
+          <UserMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
+        </div>
+
+        {/* Notificación */}
+        <div className="relative">
+          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+          <i className="bi bi-bell text-xl text-white"></i>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
