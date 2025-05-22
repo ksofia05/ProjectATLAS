@@ -21,7 +21,7 @@ const Navbar = () => {
   }, [menuOpen]);
 
   return (
-    <nav className="w-full bg-black border-b border-gray-800 px-8 pr-8 py-6 flex items-center justify-between relative">
+    <nav className="w-full bg-gray-950 border-b border-gray-800 px-8 pr-8 py-6 flex items-center justify-between relative">
       {/* Título */}
       <h1 className="text-2xl font-bold text-white">Proyectos</h1>
 

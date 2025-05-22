@@ -4,7 +4,7 @@ import logo from "../../assets/LogoTransparente.png";
 
 const Sidebar = () => {
   return (
-    <aside className="bg-[#181825] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
+    <aside className="bg-gradient-to-l from-[#181825] via-[#181825]  to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
       {/* Logo y título */}
       <div>
         <div className="flex items-center gap-3 mb-10">
