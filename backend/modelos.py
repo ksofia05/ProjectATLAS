@@ -85,16 +85,16 @@ class Tareas(models.Model):
 #         db_table = 'Usuario'
 
 
-class Proyecto(models.Model):
-    nombreproyecto = models.CharField(db_column='nombreProyecto', max_length=30)  # Field name made lowercase.
-    fechacreacion = models.DateField(db_column='fechaCreacion')  # Field name made lowercase.
-    enlace = models.CharField(blank=True, null=True)
-    id_usuario = models.ForeignKey(Usuario, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
-    id_proyecto = models.AutoField(primary_key=True)
+# class Proyecto(models.Model):
+#     nombreproyecto = models.CharField(db_column='nombreProyecto', max_length=30)  # Field name made lowercase.
+#     fechacreacion = models.DateField(db_column='fechaCreacion')  # Field name made lowercase.
+#     enlace = models.CharField(blank=True, null=True)
+#     id_usuario = models.ForeignKey(Usuario, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
+#     id_proyecto = models.AutoField(primary_key=True)
 
-    class Meta:
-        managed = False
-        db_table = 'proyecto'
+#     class Meta:
+#         managed = False
+#         db_table = 'proyecto'
 
 
 # class Rol(models.Model):
