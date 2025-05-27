@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserMenu from "./UserMenu";
+import Searchbar from "./Searchbar";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,8 +26,14 @@ const Navbar = () => {
       {/* Título */}
       <h1 className="text-2xl font-bold text-white">Proyectos</h1>
 
+      {/*Campo de busqueda*/}
+      <div className="flex-grow max-w-md mx-8">
+        <Searchbar placeholder="Buscar..." />
+      </div>
+
       {/* Botón y perfil */}
       <div className="flex items-center gap-10">
+        
         {/* Botón Actualizar Plan */}
         <button
           className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-xl shadow transition-all"
