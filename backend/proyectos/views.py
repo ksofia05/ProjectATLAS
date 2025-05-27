@@ -15,5 +15,19 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
 
+@api_view(['POST'])
+def save_proyect(request):
+    if request.method=='POST':
+        proyecto=request.data.get('nombreproyecto')
+        try:
+            Proyecto.objects.create(
+                nombreproyecto=proyecto
+            )
+            return Response({'nombre': "proyecto creada"}, status=200)
+        except Exception as e:
+            return Response({'error': f'Error al crear proyecto: {str(e)}'}, status=500)
+       
+        
+
 
 # Create your views here.
