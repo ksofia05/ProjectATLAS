@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {showErrorToast } from "../../components/common/popUp/Loading";
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
-
   if (!visible) return null;
 
   const handleSubmit =async (e) => {
@@ -15,7 +14,8 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
         const response = await fetch("http://localhost:8000/tasks/api/v1/Proyecto/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombreproyecto: nombre }),
+          body: JSON.stringify({ nombreproyecto: nombre}),
+          'Authorization': `Token ${localStorage.getItem('token')}`
         });
         if (response.ok) {
           alert("proyecto creado") 
