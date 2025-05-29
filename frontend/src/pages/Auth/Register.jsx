@@ -9,6 +9,7 @@ import PasswordValidator from '../../components/functionalities/passwordValidati
 import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
+import { client } from '../../supabase/client';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -118,35 +119,92 @@ const Register = () => {
       return;
     }
 
-    if (step === 2) {
-      const toastId = showLoadingToast("Registrándose...");
-      try {
-        const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...formData }),
-        });
-        const data = await response.json();
-        toast.dismiss(toastId);
+if (step === 2) {    const toastId = showLoadingToast("Registrando...");
 
-        if (response.ok) {
-          showSuccessToast('¡Cuenta creada exitosamente!');
-          localStorage.removeItem('registerFormData');
-          localStorage.removeItem('registerStep');
-          navigate("/iniciar-sesion");
-        } else {
-          if (data?.error?.includes("correo ya está registrado")) {
-            setErrors((prevErrors) => ({ ...prevErrors, email: data.error }));
-            setStep(1);
-          } else {
-            showErrorToast(data.error || "Error al crear cuenta");
+    try {
+      // registrar en Supabase Auth
+      const { data: authData, error: authError } = await client.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            nombre: formData.firstName,
+            apellido: formData.lastName
           }
         }
-      } catch (error) {
+      });
+
+      if (authError) {
         toast.dismiss(toastId);
-        showErrorToast("No se pudo conectar con el servidor.");
+        
+        // Manejo específico de errores
+        if (authError.message.includes('User already registered')) {
+          showErrorToast('Este correo ya está registrado.');
+          setStep(1);
+          setErrors(prev => ({ ...prev, email: 'Este correo ya está registrado.' }));
+        } else {
+          showErrorToast(authError.message || "Error al registrar.");
+        }
+        return;
       }
+
+      // guardar en tabla Usuario
+      if (authData.user) {
+        const { data: userData, error: dbError } = await client
+          .from('Usuario')
+          .insert([
+            {
+              auth_user_id: authData.user.id, // UUID de Supabase Auth
+              nombre: formData.firstName,
+              apellido: formData.lastName,
+              correoElectronico: formData.email,
+              estado: 'Activo',
+              suscripcion: 'Gratuito',
+              terminoServicio: 'TRUE'
+            }
+          ])
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('Error al guardar en tabla Usuario:', dbError);
+          
+          toast.dismiss(toastId);
+          showErrorToast("Error al completar el registro en la base de datos.");
+          return;
+        }
+
+        console.log('Usuario guardado en BD:', userData);
+        
+        await client.auth.updateUser({
+          data: { 
+            usuario_db_id: userData.id // Guardar tu ID int para fácil acceso
+          }
+        });
+      }
+
+      toast.dismiss(toastId);
+
+      // Limpiar localStorage (por si acaso)
+      localStorage.removeItem('registerFormData');
+      localStorage.removeItem('registerStep');
+
+      if (authData.session) {
+        showSuccessToast("¡Cuenta creada y sesión iniciada!");
+        navigate("/iniciar-sesion");
+      } else {
+        showSuccessToast("¡Cuenta creada! Verifica tu correo para iniciar sesión.");
+        navigate("/verificar-correo");
+      }
+
+    } catch (err) {
+      toast.dismiss(toastId);
+      showErrorToast("Error inesperado al registrar.");
+      console.error('Error en registro:', err);
     }
+  };
+
+  
   };
 
   return (
