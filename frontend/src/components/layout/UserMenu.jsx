@@ -1,9 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {client} from '../../supabase/client'
+import { useAuth } from "../../hooks/useAuth";
 
 const UserMenu = ({ visible, onClose }) => {
   const navigate = useNavigate();
+
+  const { user } = useAuth();
 
   const handleLogout = async () => {
     try{
@@ -20,6 +23,18 @@ const UserMenu = ({ visible, onClose }) => {
     }
   };
 
+  const getUserName = () => {
+    if(!user) return "Loading...";
+    const metaData = user.user_metadata;
+    return `${metaData.nombre} ${metaData.apellido}`
+  };
+
+  const getUserEmail = () => {
+    if(!user) return "Loading...";
+    const metaData = user.user_metadata;
+    return metaData.email;
+  }
+
   if (!visible) return null;
 
   return (
@@ -32,8 +47,8 @@ const UserMenu = ({ visible, onClose }) => {
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="flex-1">
-          <div className="text-lg font-semibold text-white">Luis Nuñez</div>
-          <div className="text-xs text-gray-400">yundaluis4@gmail.com</div>
+          <div className="text-lg font-semibold text-white">{getUserName()}</div>
+          <div className="text-xs text-gray-400"> {getUserEmail()} </div>
         </div>
         <button
           className="ml-auto bg-gray-800 text-gray-200 px-3 py-1 rounded-lg text-xs whitespace-nowrap hover:bg-[#7c2ae8] hover:text-white transition"
