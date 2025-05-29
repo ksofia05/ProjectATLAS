@@ -21,5 +21,5 @@ urlpatterns = [
     path('api/v1/register/', registe_usuario),
     path('api/v1/recuperacionContrasena', recuperacion_contra), 
     path('api/v1/password-reset/', password_reset),
-    path('api/v1/save_proyect/', save_proyect),
+    path('api/v1/save_proyect/', save_proyect,name='save_proyect'),
 ]

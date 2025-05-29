@@ -4,30 +4,37 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   if (!visible) return null;
 
-  const handleSubmit =async (e) => {
+  const handleSubmit = async (e) => {
+    const token = localStorage.getItem('token');
+    console.log("TOKEN ENVIADO:", token);
     e.preventDefault();
-    if (!nombre.trim()) { 
+    if (!nombre.trim()) {
       showErrorToast('Por favor, ingresa un nombre para el proyecto.');
       return;
     }
     try {
-        const response = await fetch("http://localhost:8000/tasks/api/v1/Proyecto/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombreproyecto: nombre}),
-          'Authorization': `Token ${localStorage.getItem('token')}`
-        });
-        if (response.ok) {
-          alert("proyecto creado") 
-          onClose();
-        }
-      const data = await response.json();
-      console.log('proyecto guardado con éxito:', data);
-      console.log(`proyecto "${data.nombre}" guardado con éxito!`);
-      setNombre(''); 
-      } catch (error) {
-        console.error("Error al guardar proyecto :", error);
+      const response = await fetch("http://localhost:8000/tasks/api/v1/save_proyect/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Token ${token}` // <-- MOVIDO AQUÍ DENTRO
+        },
+        body: JSON.stringify({ nombreproyecto: nombre }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('proyecto guardado con éxito:', data);
+        console.log(`proyecto "${data.nombre}" guardado con éxito!`);
+        alert("proyecto creado");
+        onClose();
+        setNombre('');
+      } else {
+        const errorData = await response.json();
+        console.error('Error al guardar proyecto:', errorData);
       }
+    } catch (error) {
+      console.error("Error al guardar proyecto :", error);
+    }
   };
 
 
