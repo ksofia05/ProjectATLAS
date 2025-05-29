@@ -15,12 +15,10 @@ const InventoryCard = () => {
       onClick={handleClick}
       className="rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm hover:border-white/70 transition-colors duration-200"
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-white text-2xl font-bold font-['Nunito']">Inventario Área Computo</h2>
       </div>
       
-      {/* Stats */}
       <div className="flex items-center gap-6 mb-3">
         <div className="flex items-center gap-2 text-gray-400">
           <Users size={18} />

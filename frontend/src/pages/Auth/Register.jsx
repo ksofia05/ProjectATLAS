@@ -185,17 +185,18 @@ if (step === 2) {    const toastId = showLoadingToast("Registrando...");
 
       toast.dismiss(toastId);
 
-      // Limpiar localStorage (por si acaso)
+      // Limpiar localStorage
       localStorage.removeItem('registerFormData');
       localStorage.removeItem('registerStep');
 
+      // Cerrar cualquier sesión que se haya creado automáticamente
       if (authData.session) {
-        showSuccessToast("¡Cuenta creada y sesión iniciada!");
-        navigate("/iniciar-sesion");
-      } else {
-        showSuccessToast("¡Cuenta creada! Verifica tu correo para iniciar sesión.");
-        navigate("/verificar-correo");
+        await client.auth.signOut();
       }
+
+      // Siempre redirigir al login, independientemente del estado de la sesión
+      showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
+      navigate("/iniciar-sesion");
 
     } catch (err) {
       toast.dismiss(toastId);
