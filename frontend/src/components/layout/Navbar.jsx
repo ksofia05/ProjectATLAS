@@ -27,7 +27,7 @@ const Navbar = () => {
       <h1 className="text-2xl font-bold text-white">Proyectos</h1>
 
       {/*Campo de busqueda*/}
-      <div className="flex-grow max-w-md mx-8">
+      <div className="flex-grow max-w-100 mx-8 shadow-lg">
         <Searchbar placeholder="Buscar..." />
       </div>
 

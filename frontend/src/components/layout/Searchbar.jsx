@@ -9,7 +9,7 @@ const Searchbar = ({ placeholder = "Buscar..." }) => {
     };
 
     return (
-        <div className="searchContainer">
+        <div className="searchContainer ">
             <Input
             type="text"
             name="search"
@@ -17,8 +17,12 @@ const Searchbar = ({ placeholder = "Buscar..." }) => {
             value={searchTerm}
             onChange={handleSearchChange}
             placeholder={placeholder}
+            icon="bi-search"
             containerClassName="mb-0"
+            onIconClick={() => alert("Buscar:", searchTerm)}
+            inputClassName="rounded=full py-1 h-8 text-sm"
             />
+
         </div>
     );
 
