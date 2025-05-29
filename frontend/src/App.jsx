@@ -20,6 +20,7 @@ import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import Simulation from "./pages/Simulation";
 import Error404 from "./pages/error404";
 import { Toaster } from 'react-hot-toast';
+import Dashboard from "./pages/Dashboard";
 
 
 const App = () => {
@@ -42,6 +43,11 @@ const App = () => {
         <Route path="/simulacion" element={
           <ProtectedRoute>
             <Simulation />
+          </ProtectedRoute>
+        }/>
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
           </ProtectedRoute>
         }/>
         <Route path="*" element={<Error404 />}/>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import construccionImg from "../../assets/LogoSinProyecto.png";
 import ModalNewProject from "./ModalNewProject";
+import CardProjects from "../cardProjects";
 
 const CreateProjectPanel = ({ onCreate }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,6 +34,7 @@ const CreateProjectPanel = ({ onCreate }) => {
         </div>
         {/* Panel sin proyectos */}
         <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+          {/* <CardProjects /> */}
           <img
             src={construccionImg}
             alt="Sin proyectos"
@@ -44,14 +46,14 @@ const CreateProjectPanel = ({ onCreate }) => {
           <p className="text-gray-300 text-center text-lg">
             Crea tu primer proyecto para comenzar a colaborar con tu equipo.
           </p>
-        </div>
+        </div>  
       </div>
-      {/* Modal */}
+     {/* Modal */}
       <ModalNewProject
         visible={modalOpen}
         onClose={() => setModalOpen(false)}
         onCreate={handleCreate}
-      />
+      /> 
     </div>
   );
 };

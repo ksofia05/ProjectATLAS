@@ -1,19 +1,29 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {client} from '../../supabase/client'
 
 const UserMenu = ({ visible, onClose }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    if (onClose) onClose();
-    navigate("/iniciar-sesion");
+  const handleLogout = async () => {
+    try{
+      const { error } = await client.auth.signOut();
+      if (error) {
+        console.error("Error al cerrar sesión:", error);
+        return;
+      }
+      localStorage.clear();
+      if(onClose) onClose();
+      navigate('/iniciar-sesion', {replace: true})
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
 
   if (!visible) return null;
 
   return (
-    <div className="absolute right-0 top-14 z-50 w-80 bg-[#181825] rounded-2xl shadow-2xl border border-gray-700 p-4">
+        <div className="absolute right-0 top-14 z-50 w-80 bg-[#181825] rounded-2xl shadow-2xl border border-gray-700 p-4">
       {/* Perfil */}
       <div className="flex items-center gap-4 mb-4">
         <img
