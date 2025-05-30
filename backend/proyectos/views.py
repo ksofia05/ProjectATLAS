@@ -7,6 +7,7 @@ from rest_framework.response import Response # Importa la clase Response para de
 from .models import Proyect,Proyecto # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
 from tasks.models import Rol,Usuario
 from rest_framework.response import Response
+import jwt
 
 # Define un conjunto de vistas (viewset) para el modelo Task.
 class ProyectView(viewsets.ModelViewSet):
@@ -17,6 +18,37 @@ class ProyectoViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
 
+# @api_view(['POST'])
+# def save_proyect(request):
+#     auth_header = request.headers.get('Authorization')
+#     if auth_header and auth_header.startswith('Token'):
+#         token = auth_header.split(' ')[1]
+#         print(f"Token recibido: {token}")
+#         try:
+#             usuario = Usuario.objects.get(token=token)
+#             print(f"Token recibido: {usuario.token}")
+
+#             # Solo asigna el rol si el usuario no tiene uno
+#             if not usuario.rol_idrol:
+#                 rol = Rol.objects.create(nombre='administrador')
+#                 print(f"Rol creado: {rol.idrol} - {rol.nombre}")
+#                 usuario.rol_idrol = rol
+#                 usuario.save()
+#             else:
+#                 rol = usuario.rol_idrol
+#                 print(f"Usuario ya tiene rol: {rol.idrol} - {rol.nombre}")
+
+#             proyecto = Proyecto.objects.create(
+#                 nombreproyecto=request.data.get('nombreproyecto'),
+#                 id_usuario=usuario
+#             )
+#             return Response({'mensaje': 'Proyecto creado con éxito', 'nombre': proyecto.nombreproyecto}, status=201)
+#         except Usuario.DoesNotExist:
+#             return Response({'error': 'Token inválido'}, status=401)
+#     else:
+#         return Response({'error': 'Token no enviado'}, status=401)
+
+
 @api_view(['POST'])
 def save_proyect(request):
     auth_header = request.headers.get('Authorization')
@@ -24,18 +56,20 @@ def save_proyect(request):
         token = auth_header.split(' ')[1]
         print(f"Token recibido: {token}")
         try:
-            usuario = Usuario.objects.get(token=token)
-            print(f"Token recibido: {usuario.token}")
+            decoded = jwt.decode(token, options={"verify_signature": False})
+            user_uuid = decoded.get('sub')  # <-- Aquí obtienes el UUID del usuario
+            if not user_uuid:
+                return Response({'error': 'Token sin id'}, status=401)
+            usuario = Usuario.objects.get(uuid_supabase=user_uuid)  # <-- Busca por UUID
+            print(f"Usuario autenticado: {usuario}")
 
             # Solo asigna el rol si el usuario no tiene uno
             if not usuario.rol_idrol:
                 rol = Rol.objects.create(nombre='administrador')
-                print(f"Rol creado: {rol.idrol} - {rol.nombre}")
                 usuario.rol_idrol = rol
                 usuario.save()
             else:
                 rol = usuario.rol_idrol
-                print(f"Usuario ya tiene rol: {rol.idrol} - {rol.nombre}")
 
             proyecto = Proyecto.objects.create(
                 nombreproyecto=request.data.get('nombreproyecto'),
@@ -43,8 +77,10 @@ def save_proyect(request):
             )
             return Response({'mensaje': 'Proyecto creado con éxito', 'nombre': proyecto.nombreproyecto}, status=201)
         except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=401)
+        except Exception as e:
+            print(e)
             return Response({'error': 'Token inválido'}, status=401)
     else:
         return Response({'error': 'Token no enviado'}, status=401)
-
 # Create your views here.

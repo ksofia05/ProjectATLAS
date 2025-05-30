@@ -115,7 +115,8 @@ const Login = () => {
         return;
       }
       
-      if (data.user) {
+      if (data.user && data.session) {
+        localStorage.setItem('token', data.session.access_token);
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
         

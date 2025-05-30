@@ -21,6 +21,7 @@ class Usuario(models.Model):
     idusuario = models.AutoField(db_column='idUsuario',primary_key=True)  # Field name made lowercase.
     terminoservicio = models.BooleanField(db_column='terminoServicio')  # Field name made lowercase.
     token = models.CharField(max_length=255, blank=True, null=True)
+    uuid_supabase = models.UUIDField(unique=False, null=True, blank=True)
 
     class Meta:
         db_table = 'Usuario'
