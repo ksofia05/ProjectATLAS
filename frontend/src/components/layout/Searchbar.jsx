@@ -18,7 +18,7 @@ const Searchbar = ({ placeholder = "Buscar..." }) => {
             onChange={handleSearchChange}
             placeholder={placeholder}
             containerClassName="mb-0"
-            />
+            />  
         </div>
     );
 
