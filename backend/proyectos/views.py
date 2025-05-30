@@ -15,6 +15,7 @@ class ProyectView(viewsets.ModelViewSet):
     queryset = Proyect.objects.all() # Define el conjunto de datos (queryset) que se usará en este viewset, en este caso, todos los objetos del modelo Task.
 
 class ProyectoViewSet(viewsets.ModelViewSet):
+    queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
 
     def get_queryset(self):
