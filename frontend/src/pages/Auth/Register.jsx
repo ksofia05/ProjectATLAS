@@ -154,6 +154,7 @@ if (step === 2) {    const toastId = showLoadingToast("Registrando...");
           .from('Usuario')
           .insert([
             {
+              uuid_supabase: authData.user.id,
               auth_user_id: authData.user.id, // UUID de Supabase Auth
               nombre: formData.firstName,
               apellido: formData.lastName,

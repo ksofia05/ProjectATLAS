@@ -15,6 +15,7 @@ const UserMenu = ({ visible, onClose }) => {
         console.error("Error al cerrar sesión:", error);
         return;
       }
+      localStorage.removeItem('token');
       localStorage.clear();
       if(onClose) onClose();
       navigate('/iniciar-sesion', {replace: true})

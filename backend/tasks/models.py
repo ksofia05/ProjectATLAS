@@ -16,22 +16,21 @@ class Usuario(models.Model):
     estado = models.TextField()  # This field type is a guess.
     correoelectronico = models.CharField(db_column='correoElectronico', max_length=45)  # Field name made lowercase.
     contraseña = models.CharField(max_length=45)
-    rol_idrol = models.ForeignKey('Rol', models.DO_NOTHING, db_column='rol_idRol', blank=True, null=True)  # Field name made lowercase.
+    rol_idrol = models.ForeignKey('Rol', models.CASCADE, db_column='rol_idRol', blank=True, null=True)  # Field name made lowercase.
     suscripcion = models.TextField()  # This field type is a guess.
-    idusuario = models.AutoField(db_column='idUsuario', primary_key=True)  # Field name made lowercase.
+    idusuario = models.AutoField(db_column='idUsuario',primary_key=True)  # Field name made lowercase.
     terminoservicio = models.BooleanField(db_column='terminoServicio')  # Field name made lowercase.
     token = models.CharField(max_length=255, blank=True, null=True)
+    uuid_supabase = models.UUIDField(unique=False, null=True, blank=True)
 
     class Meta:
-        managed = False
         db_table = 'Usuario'
 
 class Rol(models.Model):
-    nombre = models.CharField(max_length=45,null=True)
-    idrol = models.AutoField(db_column='idRol', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45,null=False, blank=False)
+    idrol = models.AutoField( primary_key=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'rol'
 
 
