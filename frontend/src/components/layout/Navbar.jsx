@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserMenu from "./UserMenu";
-import Searchbar from "./Searchbar";
 import { useAuth } from "../../hooks/useAuth";
 
 const Navbar = () => {
@@ -37,10 +36,6 @@ const Navbar = () => {
       {/* Título */}
       <h1 className="text-2xl font-bold text-white">Proyectos</h1>
 
-      {/*Campo de busqueda*/}
-      <div className="flex-grow max-w-md mx-8">
-        <Searchbar placeholder="Buscar..." />
-      </div>
 
       {/* Botón y perfil */}
       <div className="flex items-center gap-10">
