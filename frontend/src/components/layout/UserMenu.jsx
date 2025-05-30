@@ -39,7 +39,7 @@ const UserMenu = ({ visible, onClose }) => {
   if (!visible) return null;
 
   return (
-        <div className="absolute right-0 top-14 z-50 w-80 bg-[#181825] rounded-2xl shadow-2xl border border-gray-700 p-4">
+        <div className="absolute right-0 top-14 z-50 w-80 bg-gradient-to-br from-[#29293f] via-[#1d1d2c] via-[#1a1a27] via-[#1a1a27] to-[#1a1a27] rounded-2xl shadow-2xl border border-gray-700 p-4">
       {/* Perfil */}
       <div className="flex items-center gap-4 mb-4">
         <img

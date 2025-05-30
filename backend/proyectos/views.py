@@ -15,18 +15,15 @@ class ProyectView(viewsets.ModelViewSet):
     queryset = Proyect.objects.all() # Define el conjunto de datos (queryset) que se usará en este viewset, en este caso, todos los objetos del modelo Task.
 
 class ProyectoViewSet(viewsets.ModelViewSet):
-    queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
 
-# @api_view(['POST'])
-# def save_proyect(request):
-#     auth_header = request.headers.get('Authorization')
-#     if auth_header and auth_header.startswith('Token'):
-#         token = auth_header.split(' ')[1]
-#         print(f"Token recibido: {token}")
-#         try:
-#             usuario = Usuario.objects.get(token=token)
-#             print(f"Token recibido: {usuario.token}")
+    def get_queryset(self):
+        queryset = Proyecto.objects.all()
+        user_id = self.request.query_params.get('id_usuario')
+        if user_id:
+            queryset = queryset.filter(id_usuario=user_id)
+        return queryset
+
 
 #             # Solo asigna el rol si el usuario no tiene uno
 #             if not usuario.rol_idrol:
