@@ -8,7 +8,7 @@ const Simulation = () => {
     console.log("Crear nuevo proyecto");
   };
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc--950 ">
+    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />

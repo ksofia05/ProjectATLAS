@@ -6,6 +6,7 @@ import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
+import { client } from '../../supabase/client';
 
 const Login = () => {
   const location = useLocation();
@@ -17,12 +18,22 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    // Verificar si el usuario ya está autenticado
+    const checkAuth = async () => {
+      const { data: { user } } = await client.auth.getUser();
+      if (user) {
+        navigate("/simulacion");
+      }
+    };
+    
+    checkAuth();
+    
     setFormData({
       email: "",
       password: "",
     });
     setErrors({});
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   const validateField = (name, value) => {
     let error = "";
@@ -73,38 +84,50 @@ const Login = () => {
     if (!validateForm()) {
       return;
     }
+    
     const toastId = showLoadingToast("Ingresando...");
+    
     try {
-      const response = await fetch("http://localhost:8000/tasks/api/v1/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      const { data, error } = await client.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
       });
-      const data = await response.json();
+      
       toast.dismiss(toastId);
-      if (response.ok) {
-        if (data.token) {
-          localStorage.setItem("token", data.token);
+      
+      if (error) {
+        let errorMessage = "Error al iniciar sesión";
+        
+        // Personalizar mensajes de error según el tipo
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
+        } else if (error.message.includes("Too many requests")) {
+          errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
+        
+        showErrorToast(errorMessage);
+        setErrors((prev) => ({
+          ...prev,
+          password: errorMessage,
+        }));
+        return;
+      }
+      
+      if (data.user) {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
+        
+        // Esperar un momento para que se complete la autenticación
         setTimeout(() => {
           navigate("/simulacion");
         }, 1200);
-      } else {
-        showErrorToast(data.error || "Error al iniciar sesión");
-        setErrors((prev) => ({
-          ...prev,
-          password: data.error || "Error al iniciar sesión",
-        }));
       }
+      
     } catch (error) {
       toast.dismiss(toastId);
+      console.error("Error de login:", error);
       showErrorToast("No se pudo conectar con el servidor.");
       setErrors((prev) => ({
         ...prev,
