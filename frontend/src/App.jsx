@@ -22,7 +22,6 @@ import Error404 from "./pages/error404";
 import { Toaster } from 'react-hot-toast';
 import Dashboard from "./pages/Dashboard";
 
-
 const App = () => {
   return (
     <BrowserRouter>
@@ -46,6 +45,11 @@ const App = () => {
           </ProtectedRoute>
         }/>
         <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }/>
+        <Route path="/dashboard/:id" element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
