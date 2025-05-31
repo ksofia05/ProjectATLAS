@@ -14,21 +14,51 @@ const CreateProjectPanel = ({ onCreate }) => {
 
   useEffect(() => {
     const fetchUserProjects = async () => {
+      console.log("Ejecutando fetchUserProjects");
+      console.log("user:", user);
+      const email = user?.email || user?.user_metadata?.email;
+      console.log("email:", email);
       try {
         setLoadingProjects(true);
-        const response = await axios.get(
-          "http://localhost:8000/tasks/api/v1/Proyecto/"
+        const email = user?.email || user?.user_metadata?.email;
+        if (!email) {
+          setProjects([]);
+          setLoadingProjects(false);
+          return;
+        }
+
+        // 1.  Se cambio esto, ahora se obtiene el usuario por correo electrónico
+        const usuarioResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
-        setProjects(response.data);
+        console.log("usuarioResponse.data:", usuarioResponse.data);
+        const usuarioDb = usuarioResponse.data[0];
+
+        if (!usuarioDb || !usuarioDb.idusuario) {
+          setProjects([]);
+          setLoadingProjects(false);
+          return;
+        }
+
+        const usuarioId = usuarioDb.idusuario;
+
+        // 2. Aqui ahora se obtiene los proyectos del usuario por su ID
+        console.log("Consultando proyectos para usuarioId:", usuarioId);
+        const proyectosResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+        );
+        console.log("proyectosResponse.data:", proyectosResponse.data);
+        setProjects(proyectosResponse.data);
+        console.log("Proyectos recibidos:", proyectosResponse.data);
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error("Error al obtener proyectos:", error);
         setProjects([]);
       } finally {
         setLoadingProjects(false);
       }
     };
-    fetchUserProjects();
-  }, []);
+    if (user) fetchUserProjects();
+  }, [user]);
 
   const handleCreate = (nombreProyecto) => {
     setModalOpen(false);
@@ -37,10 +67,10 @@ const CreateProjectPanel = ({ onCreate }) => {
 
   const getUserDisplayName = () => {
     if (!user) return "Usuario";
-    return user.user_metadata?.nombre;
+    return user.user_metadata?.nombre || user.email || "Usuario";
   };
 
-  // Filtrar proyectos según el término de búsqueda
+  //  La busqueda del proyecto se realiza por medio de su nombre
   const filteredProjects = projects.filter(project =>
     project.nombreproyecto.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -94,8 +124,8 @@ const CreateProjectPanel = ({ onCreate }) => {
           </div>
         )}
 
-        {/* Mostrar SIEMPRE el mensaje de "Sin proyectos creados" */}
-        {!loadingProjects && (
+        {/* Esta parte la modifica anny, mostrando los componentes respectivos cuando se crea un proyecto */}
+        {!loadingProjects && projects.length === 0 && (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
             <img
               src={construccionImg}
