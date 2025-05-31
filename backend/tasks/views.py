@@ -21,6 +21,16 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
+
+    # Ahora existe la posibilidad de filtrar los usuarios por correo electrónico con el nuevo método get_queryset.
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        correo = self.request.query_params.get('correoelectronico')
+        if correo:
+            queryset = queryset.filter(correoelectronico=correo)
+        return queryset
+    # Fin del método get_queryset
+
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
