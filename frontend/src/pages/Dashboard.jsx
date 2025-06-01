@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/layout/Sidebar';
 import Navbar from '../components/layout/Navbar';
+import SendColaboration from '../components/layout/SendColaborations';
 
 
 const Dashboard = () => {
@@ -21,6 +22,7 @@ const Dashboard = () => {
           {id && (
             <p className="ml-4 text-lg text-purple-400">Proyecto seleccionado: {id}</p>
           )}
+          <SendColaboration/>
         </div>
       </div>
     </div>

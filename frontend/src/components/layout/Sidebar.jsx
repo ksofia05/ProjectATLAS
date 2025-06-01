@@ -1,10 +1,20 @@
-import React from "react";
+// Sidebar.jsx
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/LogoTransparente.png";
+import ModalNuevoProyecto from "./ModalNewProject"; // ¡Asegúrate de que esta ruta sea correcta!
+import ProjectList from './ProjectList'; // Importa el componente ProjectList
 
 const Sidebar = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateProject = (projectName) => {
+    console.log("Simulando creación de proyecto:", projectName);
+    setIsModalOpen(false);
+  };
+
   return (
-    <aside className="bg-gradient-to-l from-[#181825] via-[#181825]  to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
+    <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
       {/* Logo y título */}
       <div>
         <div className="flex items-center gap-3 mb-10">
@@ -12,20 +22,22 @@ const Sidebar = () => {
           <span className="text-3xl font-bold tracking-wide">ATLAS</span>
         </div>
 
-        {/* Proyectos Admin */}
+        {}
         <div className="mb-8">
           <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
-          <ul className="text-sm text-gray-300 list-decimal list-inside pl-2">
-            <li>Sin proyectos aún</li>
-            <li>Haz clic en "Nuevo Proyecto"</li>
-            <li>Invita a tu equipo</li>
-            <li>¡A trabajar!</li>
+          {}
+          <ProjectList />
+          {}
+          <ul className="text-sm text-gray-300 list-decimal list-inside pl-2 mt-2">
+            <li className="cursor-pointer hover:text-[#7c2ae8]" onClick={() => setIsModalOpen(true)}>
+              Haz clic en "Nuevo Proyecto"
+            </li>
           </ul>
         </div>
 
         <hr className="border-t border-[#7c2ae8] opacity-40 my-6" />
 
-        {/* Proyectos Colaborador */}
+      
         <div>
           <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
           <p className="text-sm text-gray-400">
@@ -60,6 +72,13 @@ const Sidebar = () => {
           </div>
         </footer>
       </div>
+
+      {/* Modal del Nuevo Proyecto */}
+      <ModalNuevoProyecto
+        visible={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={handleCreateProject}
+      />
     </aside>
   );
 };

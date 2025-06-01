@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
+
 from pathlib import Path
+import os
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -154,3 +157,5 @@ EMAIL_HOST_PASSWORD= 'bnzd bbvb xgzn aegm'
 DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
 
 
+os.environ['SUPABASE_URL'] = "https://ukpjvbvzqmehjormyrza.supabase.co"
+os.environ['SUPABASE_SERVICE_ROLE'] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrcGp2YnZ6cW1laGpvcm15cnphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjQ1NzQ1MCwiZXhwIjoyMDYyMDMzNDUwfQ.Wex6pOxwagRhdI-DO7QYXPhRrcwBtIxrgwd6K6kqgvw"
