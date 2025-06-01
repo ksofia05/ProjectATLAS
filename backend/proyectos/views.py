@@ -24,6 +24,18 @@ class ProyectoViewSet(viewsets.ModelViewSet):
         if user_id:
             queryset = queryset.filter(id_usuario=user_id)
         return queryset
+    
+class ProyectoUUIDViewSet(viewsets.ModelViewSet):
+    queryset = Proyecto.objects.all()
+    serializer_class = ProyectoSerializer
+
+    def get_queryset(self):
+        
+        uuid_supabase = self.request.query_params.get('uuid_supabase')
+        if uuid_supabase:
+            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase)
+        return Proyecto.objects.none()
+
 
 
 #             # Solo asigna el rol si el usuario no tiene uno

@@ -1,4 +1,8 @@
+import json
+from logging import config
+import os
 import re
+from supabase import create_client
 import uuid
 from django.core.mail import send_mail
 from django.conf import settings
@@ -135,3 +139,24 @@ def password_reset(request, token=None):
         return Response({'success': True, 'message': 'Contraseña restablecida correctamente.'})
     except Usuario.DoesNotExist:
         return Response({'success': False, 'message': 'Usuario no encontrado.'}, status=404)
+    
+
+@api_view(['POST'])
+def invite_colaborador(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email requerido'})
+    try:
+        supabase_url = os.environ.get('SUPABASE_URL')
+        supabase_key = os.environ.get('SUPABASE_SERVICE_ROLE')
+     
+
+        if not supabase_url or not supabase_key:
+            return Response({'error': 'Variables de entorno no definidas'}, status=500)
+        supabase = create_client(supabase_url, supabase_key)
+        result = supabase.auth.admin.invite_user_by_email(email)
+        if getattr(result, "error", None):
+            return Response({'error': str(result.error)}, status=400)
+        return Response({'message': 'Invitación enviada correctamente'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
