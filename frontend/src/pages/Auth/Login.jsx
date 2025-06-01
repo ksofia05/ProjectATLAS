@@ -22,7 +22,7 @@ const Login = () => {
     const checkAuth = async () => {
       const { data: { user } } = await client.auth.getUser();
       if (user) {
-        navigate("/simulacion");
+        navigate("/dashboard-create-project");
       }
     };
     
@@ -122,7 +122,7 @@ const Login = () => {
         
         // Esperar un momento para que se complete la autenticación
         setTimeout(() => {
-          navigate("/simulacion");
+          navigate("/dashboard-create-project");
         }, 1200);
       }
       
