@@ -1,82 +1,85 @@
-// Sidebar.jsx
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/LogoTransparente.png";
-import ModalNuevoProyecto from "./ModalNewProject"; // ¡Asegúrate de que esta ruta sea correcta!
-import ProjectList from './ProjectList'; // Importa el componente ProjectList
 
-const Sidebar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleCreateProject = (projectName) => {
-    console.log("Simulando creación de proyecto:", projectName);
-    setIsModalOpen(false);
-  };
+const Sidebar = ({
+  showLogo = true,
+  menuItems = [],
+  showProjectsBlock = false,
+  projectsBlock = null,
+  footerLinks = true,
+  children,
+}) => {
+  const location = useLocation();
 
   return (
     <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
-     
       <div>
-        <div className="flex items-center gap-3 mb-10">
-          <img src={logo} alt="Logo ATLAS" className="w-16 h-16 object-contain" />
-          <span className="text-3xl font-bold tracking-wide">ATLAS</span>
-        </div>
-        <div className="mb-8">
-          <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
-          
-          <ProjectList />
-        
-          <ul className="text-sm text-gray-300 list-decimal list-inside pl-2 mt-2">
-            <li className="cursor-pointer hover:text-[#7c2ae8]" onClick={() => setIsModalOpen(true)}>
-              Haz clic en "Nuevo Proyecto"
-            </li>
-          </ul>
-        </div>
+        {showLogo && (
+          <div className="flex items-center gap-3 mb-10">
+            <img src={logo} alt="Logo ATLAS" className="w-12 h-12 object-contain" />
+            <span className="text-3xl font-bold tracking-wide">ATLAS</span>
+          </div>
+        )}
 
-        <hr className="border-t border-[#7c2ae8] opacity-40 my-6" />
+        {showProjectsBlock && (
+          <div className="font-medium text-gray-300">{projectsBlock}</div>
+        )}
 
-      
-        <div>
-          <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
-          <p className="text-sm text-gray-400">
-            Aún no formas parte de ningún proyecto.<br />
-            pide acceso a un administrador.
-          </p>
-        </div>
+        {menuItems.length > 0 && (
+          <nav>
+            <ul className="flex flex-col gap-2">
+              {menuItems.map((item) => {
+                // Determina si el ítem está activo
+                const isActive = item.to === "/dashboard"
+                  ? (
+                      location.pathname === "/dashboard" ||
+                      /^\/dashboard\/\d+$/.test(location.pathname)
+                    )
+                  : location.pathname.startsWith(item.to);
+
+                return (
+                  <li key={item.label}>
+                    <Link
+                      to={item.to}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                        isActive
+                          ? "bg-[#232336] text-white"
+                          : "text-gray-300 hover:bg-[#232336] hover:text-white"
+                      }`}
+                    >
+                      {item.icon && <i className={item.icon + " text-xl"}></i>}
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
+
+        {children}
       </div>
 
-
-      <div>
-        <hr className="border-t border-[#7c2ae8] opacity-40 my-6" />
+      {footerLinks && (
         <footer className="text-xs text-gray-500">
           <div className="mb-2">&copy; 2025 AtlasCo.</div>
           <div>
-            <Link
-              to="/terminos"
-              className="underline hover:text-[#7c2ae8]"
-            >
-              Términos y Condiciones
+            <Link to="/terminos" className="underline hover:text-[#7c2ae8]">
+              Términos de Servicio
             </Link>
             {" y "}
-            <Link
-              to="/politica-de-privacidad"
-              className="underline hover:text-[#7c2ae8]"
-            >
+            <Link to="/politica-de-privacidad" className="underline hover:text-[#7c2ae8]">
               Políticas de Privacidad
             </Link>
           </div>
           <div>
-            <a href="#" className="underline hover:text-[#7c2ae8]">Acerca de nosotros</a>
+            <Link to="/sobre-nosotros" className="underline hover:text-[#7c2ae8]">
+              Acerca de nosotros
+            </Link>
           </div>
         </footer>
-      </div>
-
-    
-      <ModalNuevoProyecto
-        visible={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateProject}
-      />
+      )}
     </aside>
   );
 };
