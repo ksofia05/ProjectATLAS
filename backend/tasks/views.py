@@ -24,6 +24,14 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        correo = self.request.query_params.get('correoelectronico')
+        if correo:
+            queryset = queryset.filter(correoelectronico=correo)
+            return queryset
+
+
     
 
 @api_view(['POST'])

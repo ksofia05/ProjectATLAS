@@ -4,6 +4,8 @@ import ModalNewProject from "./ModalNewProject";
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 import Searchbar from "./Searchbar";
+import InventoryCard from "../cardProjects"; // Ajusta la ruta si es necesario
+import CreateProjectCard from "../cardProjects"; // Ajusta la ruta si es necesario
 
 const CreateProjectPanel = ({ onCreate }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,9 +32,10 @@ const CreateProjectPanel = ({ onCreate }) => {
     fetchUserProjects();
   }, []);
 
-  const handleCreate = (nombreProyecto) => {
+  const handleCreate = (nuevoProyecto) => {
     setModalOpen(false);
-    if (onCreate) onCreate(nombreProyecto);
+    setProjects((prevProjects) => [...prevProjects, nuevoProyecto]); // Agrega el nuevo proyecto
+    if (onCreate) onCreate(nuevoProyecto);
   };
 
   const getUserDisplayName = () => {
@@ -95,7 +98,14 @@ const CreateProjectPanel = ({ onCreate }) => {
         )}
 
         {/* Mostrar SIEMPRE el mensaje de "Sin proyectos creados" */}
-        {!loadingProjects && (
+        {!loadingProjects && projects.length > 0 ? (
+          <div className="flex flex-wrap gap-10">
+            {projects.map((project) => (
+              <InventoryCard key={project.id} project={project} />
+            ))}
+            <CreateProjectCard />
+          </div>
+        ) : (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
             <img
               src={construccionImg}
@@ -108,12 +118,6 @@ const CreateProjectPanel = ({ onCreate }) => {
             <p className="text-gray-300 text-center text-lg">
               Crea tu primer proyecto para comenzar a colaborar con tu equipo.
             </p>
-            <ModalNewProject
-              visible={modalOpen}
-              onClose={() => setModalOpen(false)}
-              onCreate={handleCreate}
-              user={user}
-            />
           </div>
         )}
       </div>

@@ -25,12 +25,20 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
         const data = await response.json();
         console.log('proyecto guardado con éxito:', data);
         console.log(`proyecto "${data.nombre}" guardado con éxito!`);
-        alert("proyecto creado");
+        showSuccessToast("Proyecto creado con éxito.");
         onClose();
         setNombre('');
+        if (onCreate) {
+        onCreate(data.proyecto); // Pasa el proyecto recién creado
+        }
       } else {
         const errorData = await response.json();
         console.error('Error al guardar proyecto:', errorData);
+
+        if (errorData.mensaje === 'ya tiene un proyecto asociado a su cuenta') {
+          showErrorToast('Ya tienes un proyecto asociado a tu cuenta.');
+          setNombre('');
+        }
       }
     } catch (error) {
       console.error("Error al guardar proyecto :", error);

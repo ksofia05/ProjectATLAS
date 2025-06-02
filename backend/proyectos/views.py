@@ -25,28 +25,6 @@ class ProyectoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(id_usuario=user_id)
         return queryset
 
-
-#             # Solo asigna el rol si el usuario no tiene uno
-#             if not usuario.rol_idrol:
-#                 rol = Rol.objects.create(nombre='administrador')
-#                 print(f"Rol creado: {rol.idrol} - {rol.nombre}")
-#                 usuario.rol_idrol = rol
-#                 usuario.save()
-#             else:
-#                 rol = usuario.rol_idrol
-#                 print(f"Usuario ya tiene rol: {rol.idrol} - {rol.nombre}")
-
-#             proyecto = Proyecto.objects.create(
-#                 nombreproyecto=request.data.get('nombreproyecto'),
-#                 id_usuario=usuario
-#             )
-#             return Response({'mensaje': 'Proyecto creado con éxito', 'nombre': proyecto.nombreproyecto}, status=201)
-#         except Usuario.DoesNotExist:
-#             return Response({'error': 'Token inválido'}, status=401)
-#     else:
-#         return Response({'error': 'Token no enviado'}, status=401)
-
-
 @api_view(['POST'])
 def save_proyect(request):
     auth_header = request.headers.get('Authorization')
@@ -60,20 +38,30 @@ def save_proyect(request):
                 return Response({'error': 'Token sin id'}, status=401)
             usuario = Usuario.objects.get(uuid_supabase=user_uuid)  # <-- Busca por UUID
             print(f"Usuario autenticado: {usuario}")
-
-            # Solo asigna el rol si el usuario no tiene uno
-            if not usuario.rol_idrol:
-                rol = Rol.objects.create(nombre='administrador')
-                usuario.rol_idrol = rol
-                usuario.save()
+            if Proyecto.objects.filter(id_usuario=usuario).exists(): 
+                print("ya tiene un proyecto asociado")
+                return Response({'mensaje': 'ya tiene un proyecto asociado a su cuenta'}, status=400)
             else:
-                rol = usuario.rol_idrol
-
-            proyecto = Proyecto.objects.create(
-                nombreproyecto=request.data.get('nombreproyecto'),
-                id_usuario=usuario
-            )
-            return Response({'mensaje': 'Proyecto creado con éxito', 'nombre': proyecto.nombreproyecto}, status=201)
+                # Solo asigna el rol si el usuario no tiene uno
+                if not usuario.rol_idrol:
+                    rol = Rol.objects.create(nombre='administrador')
+                    usuario.rol_idrol = rol
+                    usuario.save()
+                else:
+                    rol = usuario.rol_idrol
+                    
+                proyecto = Proyecto.objects.create(
+                    nombreproyecto=request.data.get('nombreproyecto'),
+                    id_usuario=usuario
+                )
+            return Response({'mensaje': 'Proyecto creado con éxito',
+                'proyecto': {
+                'id': proyecto.id_proyecto,
+                'nombreproyecto': proyecto.nombreproyecto,
+                'fechacreacion': proyecto.fechacreacion,
+                'enlace': proyecto.enlace
+                },
+            'nombre': proyecto.nombreproyecto}, status=201)
         except Usuario.DoesNotExist:
             return Response({'error': 'Usuario no encontrado'}, status=401)
         except Exception as e:
