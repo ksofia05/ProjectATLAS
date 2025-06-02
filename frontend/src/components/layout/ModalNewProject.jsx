@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {showErrorToast } from "../../components/common/popUp/Loading";
+import {showErrorToast,showSuccessToast } from "../../components/common/popUp/Loading";
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   if (!visible) return null;

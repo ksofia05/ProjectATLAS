@@ -3,20 +3,20 @@ import { Users, Edit, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 
-const InventoryCard = () => {
+const InventoryCard = ({project}) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate('/dashboard');
   };
-
+  if (!project) return null;
   return (
     <button 
       onClick={handleClick}
       className="rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm hover:border-white/70 transition-colors duration-200"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-white text-2xl font-bold font-['Nunito']">Inventario Área Computo</h2>
+        <h2 className="text-white text-2xl font-bold font-['Nunito']"> {project.nombreproyecto}</h2>
       </div>
       
       <div className="flex items-center gap-6 mb-3">
@@ -63,11 +63,13 @@ const CreateProjectCard = () => {
   );
 };
  
-const CardProjects = () => {
+const CardProjects = ({ projects = [] }) => {
   return (
     <div className="p-0">
       <div className="flex flex-col sm:flex-row gap-10 items-start">
-        <InventoryCard />
+        {projects.map((project) => (
+          <InventoryCard key={project.id || project.id_proyecto} project={project} />
+        ))}
         <CreateProjectCard />
       </div>
     </div>
