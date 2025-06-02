@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { getTasks } from "../../api/tasks.api";
 import { getUsuario } from "../../api/usuario.api";
-import Navbar from "../../components/navbar/navbar";
+import Navbar from "../../components/home/navbar";
 import Header from "../../components/home/header";
 import OrganizerSection from "../../components/home/organizerSection";
 import WorkSection from "../../components/home/workSection";

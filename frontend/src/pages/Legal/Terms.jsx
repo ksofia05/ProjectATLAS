@@ -1,5 +1,5 @@
 import React from "react";
-import LegalPage from "../../components/LegalPage";
+import LegalPage from "../../components/legal/LegalPage";
 
 const Terms = () => {
   const content = (
@@ -18,7 +18,9 @@ const Terms = () => {
           continuar.
         </p>
 
-        <h2 className="text-lg font-semibold text-white">• Servicios Ofrecidos</h2>
+        <h2 className="text-lg font-semibold text-white">
+          • Servicios Ofrecidos
+        </h2>
         <p>
           ATLAS COMPANY ofrece un sistema en línea para la gestión de
           inventario, seguimiento de equipos en reparación,asignación de tareas
@@ -26,7 +28,9 @@ const Terms = () => {
           para empresas que deseen digitalizar y optimizar su flujo de trabajo.
         </p>
 
-        <h2 className="text-lg font-semibold text-white">• Acceso al Servicio</h2>
+        <h2 className="text-lg font-semibold text-white">
+          • Acceso al Servicio
+        </h2>
         <p>
           Para acceder a nuestro sistema, debe crear una cuenta y proporcionar
           información precisa y actualizada. Usted es responsable de mantener la

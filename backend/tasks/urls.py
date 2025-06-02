@@ -3,8 +3,8 @@ from rest_framework.documentation import include_docs_urls
 from rest_framework import routers
 from tasks import views as task_views
 from proyectos import views as proyectos_views
-from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset
-from proyectos.views import save_proyect
+from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invite_colaborador
+from proyectos.views import save_proyect, ProyectoUUIDViewSet
 
 #api versioning
 router = routers.DefaultRouter()
@@ -13,6 +13,7 @@ router.register(r"Proyect", proyectos_views.ProyectView, 'proyect')
 router.register(r'usuarios', task_views.UsuarioViewSet, basename='usuario')
 router.register(r'roles', task_views.RolViewSet, basename='rol')   
 router.register(r'Proyecto', proyectos_views.ProyectoViewSet, basename='proyecto') 
+router.register(r'ProyectoUUID', ProyectoUUIDViewSet, basename='proyecto-uuid')
 
 urlpatterns = [
     path("api/v1/", include(router.urls)),
@@ -22,4 +23,5 @@ urlpatterns = [
     path('api/v1/recuperacionContrasena', recuperacion_contra), 
     path('api/v1/password-reset/', password_reset),
     path('api/v1/save_proyect/', save_proyect,name='save_proyect'),
+    path('api/invitar/', invite_colaborador),
 ]

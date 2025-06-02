@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import {client} from '../../supabase/client'
 import { useAuth } from "../../hooks/useAuth";
+import ButtonGrey from "../common/ButtonGrey";
 
 const UserMenu = ({ visible, onClose }) => {
   const navigate = useNavigate();
@@ -51,11 +52,7 @@ const UserMenu = ({ visible, onClose }) => {
           <div className="text-lg font-semibold text-white">{getUserName()}</div>
           <div className="text-xs text-gray-400"> {getUserEmail()} </div>
         </div>
-        <button
-          className="ml-auto bg-gray-800 text-gray-200 px-3 py-1 rounded-lg text-xs whitespace-nowrap hover:bg-[#7c2ae8] hover:text-white transition"
-        >
-          Ver perfil
-        </button>
+        <ButtonGrey className="px-3 py-2 font-semibold text-sm">Ver perfil</ButtonGrey>
       </div>
 
       <hr className="border-gray-700 my-3" />

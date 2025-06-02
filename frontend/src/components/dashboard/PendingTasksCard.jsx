@@ -1,0 +1,54 @@
+import React from "react";
+import ButtonGrey from "../common/ButtonGrey";
+import UserTaskRow from "../common/UserTaskRow";
+
+const collaborators = [
+  { initials: "JP", name: "Juan Perez", pending: 5 },
+  { initials: "CR", name: "Camila Rojas", pending: 3 },
+  { initials: "JD", name: "Juan Diego", pending: 1 },
+];
+
+export default function PendingTasksCard() {
+  return (
+    <div className="bg-[#181825] rounded-2xl px-9 py-8 w-[400px] shadow-lg flex flex-col justify-between min-h-[260px] border border-[#232336]">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="text-xl font-bold text-white leading-tight">
+            Trabajos Pendientes
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-base text-gray-300 font-semibold">(Colaboradores)</span>
+            <i className="bi bi-tools text-gray-300 text-lg"></i>
+          </div>
+        </div>
+        <ButtonGrey className="px-5 py-2 font-semibold text-base">
+          Ver detalles
+        </ButtonGrey>
+      </div>
+      <div className="flex flex-col gap-3 mb-3">
+        {collaborators.map((col) => (
+          <UserTaskRow
+            key={col.name}
+            initials={col.initials}
+            name={col.name}
+            rightContent={`${col.pending} Pendiente(s)`}
+            rightContentClass="text-red-300"
+          />
+        ))}
+        <div className="flex items-center gap-2 pl-2">
+          <span className="text-xl text-gray-400">•••</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
+        <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
+          <i className="bi bi-people-fill text-lg"></i>
+          <span className="text-white font-bold">12</span> Colaboradores
+        </div>
+        <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
+          <i className="bi bi-tools text-lg"></i>
+          <span className="text-white font-bold">18</span> Trabajos
+        </div>
+      </div>
+    </div>
+  );
+}
