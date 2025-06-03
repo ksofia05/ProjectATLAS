@@ -7,7 +7,7 @@ const InventoryCard = ({project}) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/dashboard');
+    navigate(`/dashboard/${project.id_proyecto}`);
   };
   if (!project) return null;
   return (
