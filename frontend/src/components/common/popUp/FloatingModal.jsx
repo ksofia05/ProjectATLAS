@@ -12,7 +12,7 @@ const FloatingModal = ({ children, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div
         className={`relative bg-[#18162b] rounded-2xl shadow-2xl p-8 max-w-md w-full
           ${isClosing ? "animate-floatModalOut" : "animate-floatModalIn"}`}
