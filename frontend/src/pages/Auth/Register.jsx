@@ -10,9 +10,11 @@ import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hoo
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
+import { useLocation } from 'react-router-dom';
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,6 +24,10 @@ const Register = () => {
     confirmPassword: '',
     termsAccepted: false,
   });
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next") || "/dashboard-create-project";
+
 
   useRegisterFormPersistence(setFormData, setStep);
 
@@ -197,7 +203,7 @@ if (step === 2) {    const toastId = showLoadingToast("Registrando...");
 
       // Siempre redirigir al login, independientemente del estado de la sesión
       showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
-      navigate("/iniciar-sesion");
+      navigate(`/iniciar-sesion?next=${encodeURIComponent(next)}`);
 
     } catch (err) {
       toast.dismiss(toastId);

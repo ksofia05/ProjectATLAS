@@ -38,6 +38,14 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        correo = self.request.query_params.get('correoelectronico')
+        if correo:
+            queryset = queryset.filter(correoelectronico=correo)
+            return queryset
+
+
     
 
 @api_view(['POST'])
@@ -150,23 +158,36 @@ def password_reset(request, token=None):
     except Usuario.DoesNotExist:
         return Response({'success': False, 'message': 'Usuario no encontrado.'}, status=404)
     
-
 @api_view(['POST'])
-def invite_colaborador(request):
-    email = request.data.get('email')
-    if not email:
-        return Response({'error': 'Email requerido'})
+def invitacion_colaborador (request):
+    email=request.data.get('email')
+    nombre_invitador = request.data.get('nombre_invitador')
+    id_proyecto= request.data.get('id_proyecto')
+    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+",email):
+        return Response({'success':False,'message':'Debes ingresar un correo valido'})
+    if not nombre_invitador or not id_proyecto:
+        return Response({'success': False, 'messagge':'Faltan datos de invitador o proyecto'})
     try:
-        supabase_url = os.environ.get('SUPABASE_URL')
-        supabase_key = os.environ.get('SUPABASE_SERVICE_ROLE')
-     
+        usuario = Usuario.objects.get(correoelectronico=email)
+        if usuario.rol_idrol and usuario.rol_idrol.nombre.lower() == 'administrador':
+            return Response({'success': False, 'message': 'Administrador no puede tener mas de un proyecto.'}, status=400)
+    except Usuario.DoesNotExist:
+        pass 
+    invitacion_url=f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+    asunto='Invitacion a colaborar en un proyecto'
+    html_content= render_to_string('mensajeColabo.html',{
+        'email':email,
+        'nombre_invitador':nombre_invitador,
+        'invitacion_url': invitacion_url,
+    })
+    mensaje=strip_tags(html_content)
 
-        if not supabase_url or not supabase_key:
-            return Response({'error': 'Variables de entorno no definidas'}, status=500)
-        supabase = create_client(supabase_url, supabase_key)
-        result = supabase.auth.admin.invite_user_by_email(email)
-        if getattr(result, "error", None):
-            return Response({'error': str(result.error)}, status=400)
-        return Response({'message': 'Invitación enviada correctamente'})
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    send_mail(
+        asunto,
+        mensaje,
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        html_message=html_content,
+        fail_silently=False
+    )
+    return Response({'success':True,'message': 'correo de recuperacion enviado correctamente.'})

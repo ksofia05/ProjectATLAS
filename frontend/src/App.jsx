@@ -24,7 +24,10 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 
 import DashboardCreateProject from "./pages/DashboardCreateProject";
 import Error404 from "./pages/error404";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from 'react-hot-toast';
+import Dashboard from "./pages/Dashboard";
+import NoTenerCuenta from "./components/common/notenercuenta";
+import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 
 const App = () => {
   return (
@@ -39,6 +42,8 @@ const App = () => {
         <Route path="/password-reset/:token" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
+        <Route path="/notenercuenta" element={<NoTenerCuenta />} />
+        <Route path="/invitacion-proyecto/:id" element={<InvitacionProyectoRoute />} />
         <Route
           path="/dashboard-create-project"
           element={

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div style="background-color: #374151;">
+        <div style="background-color: #374151;">
+            <div style="background-color:#fff;padding:24px;border-radius:12px;max-width:420px;width:100%;margin:24px auto">
+                <h2 style="font-size:20px;font-weight:bold;margin-bottom:16px;text-align:center">Hola</h2>
+                <p style="color:#374151;margin-bottom:16px;text-align:center">{{ nombre_invitador }}Te han invitado a unirte a un pruyecto comdo colaborador. Para continuar, haz click en el boton que aparece a continuacion</p>
+                <div style="margin:24px 0;text-align:center">
+                    <a href="{{ invitacion_url }}" style="display:inline-block;background-color:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;text-align:center">Unirse al proyecto</a>
+
+                </div>
+                <p style="color:#6b7280;font-size:12px;text-align:center"> si tienes problemas para entrar por el boton, copia y pega la siguiente URL en tu navegador: </p>
+                <p style="word-break:break-all;font-size:12px;text-align:center">
+                    <a href="{{ invitacion_url }}" target="_blank">{{ invitacion_url }}</a>
+                </p>
+                <div style="margin-top:24px;text-align:center;font-size:12px;color:#9ca3af">
+                    <p>Este es un correo electrónico automático, no responda a este mensaje.</p>
+                    <p>© 2025 Atlas. Todos los derechos reservados.</p>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
