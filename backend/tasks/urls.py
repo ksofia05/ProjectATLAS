@@ -3,7 +3,7 @@ from rest_framework.documentation import include_docs_urls
 from rest_framework import routers
 from tasks import views as task_views
 from proyectos import views as proyectos_views
-from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invite_colaborador
+from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador
 from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects
 
 #api versioning
@@ -24,5 +24,5 @@ urlpatterns = [
     path('api/v1/password-reset/', password_reset),
     path('api/v1/save_proyect/', save_proyect,name='save_proyect'),
     path('api/v1/save_proyect/', get_user_projects,name='get_user_projects'),
-    path('api/invitar/', invite_colaborador),
+    path('api/v1/invitacionColaborador/', invitacion_colaborador, name='invitacion_colborador')
 ]

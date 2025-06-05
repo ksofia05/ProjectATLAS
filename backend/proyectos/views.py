@@ -33,7 +33,7 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
         
         uuid_supabase = self.request.query_params.get('uuid_supabase')
         if uuid_supabase:
-            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase)
+            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase, id_usuario__rol_idrol__nombre='administrador')
         return Proyecto.objects.none()
 
 
