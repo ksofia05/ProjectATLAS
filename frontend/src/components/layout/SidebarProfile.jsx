@@ -33,15 +33,15 @@ export default function SidebarProfile() {
         <div className="text-left w-full text-gray-300">
           <h3 className="text-base font-semibold mb-2">Detalles del Perfil</h3>
           <p className="mb-2">
-            <span className="font-bold text-white">Nombre:</span>{" "}
+            <span className="font-bold text-gray-300">Nombre:</span>{" "}
             {nombres} {apellidos}
           </p>
           <p className="mb-2">
-            <span className="font-bold text-white">Email:</span>{" "}
+            <span className="font-bold text-gray-300">Email:</span>{" "}
             {correo}
           </p>
           <p>
-            <span className="font-bold text-white">Teléfono:</span>{" "}
+            <span className="font-bold text-gray-300">Teléfono:</span>{" "}
             {telefono ? telefono : <span className="italic text-gray-400">No registrado</span>}
           </p>
         </div>
