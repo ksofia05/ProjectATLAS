@@ -167,7 +167,8 @@ if (step === 2) {    const toastId = showLoadingToast("Registrando...");
               correoElectronico: formData.email,
               estado: 'Activo',
               suscripcion: 'Gratuito',
-              terminoServicio: 'TRUE'
+              terminoServicio: 'TRUE',
+              rol_idRol: 31,
             }
           ])
           .select()
