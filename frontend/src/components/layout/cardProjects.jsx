@@ -1,22 +1,18 @@
 import React from 'react'
 import { Users, Edit, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
 
 const InventoryCard = ({project}) => {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate(`/dashboard/${project.id_proyecto}`);
-  };
   if (!project) return null;
   return (
-    <button 
-      onClick={handleClick}
-      className="rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm hover:border-white/70 transition-colors duration-200"
+    <a
+      href={`/dashboard/${project.id_proyecto}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm hover:border-white/70 transition-colors duration-200 block"
+      style={{ textDecoration: "none" }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-white text-2xl font-bold font-['Nunito']"> {project.nombreproyecto}</h2>
+        <h2 className="text-white text-2xl font-bold font-['Nunito']">{project.nombreproyecto}</h2>
       </div>
       
       <div className="flex items-center gap-6 mb-3">
@@ -34,15 +30,12 @@ const InventoryCard = ({project}) => {
       <div className="text-gray-400 text-sm">
         <span className="text-white font-medium">Última Actividad:</span> Ayer, 4:24 PM
       </div>
-    </button>
+    </a>
   );
 };
 
-
-
 const CreateProjectCard = () => {
-
-    const handleClick = () => {
+  const handleClick = () => {
     console.log('Click en "Crear nuevo proyecto"');
   };
 
