@@ -5,6 +5,7 @@ import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
 import Input from "../../components/common/Input";
 import { useAuth } from "../../hooks/useAuth";
+import UpdateProfilePhotoModal from "../../components/layout/UpdateProfilePhotoModal";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -13,9 +14,11 @@ export default function ProfilePage() {
   const nombres = user?.user_metadata?.nombre || "";
   const apellidos = user?.user_metadata?.apellido || "";
   const correo = user?.email || user?.user_metadata?.email || "";
+  const telefono = user?.user_metadata?.telefono || "";
   // Contraseña: por seguridad, nunca la traes del backend, solo para edición
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [showPhotoModal, setShowPhotoModal] = React.useState(false);
 
   if (isLoading) {
     return <div className="text-white text-center mt-10">Cargando...</div>;
@@ -23,7 +26,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 relative">
-      <SidebarProfile />
+      <SidebarProfile onPhotoClick={() => setShowPhotoModal(true)} />
       <div className="flex-1 flex flex-col relative">
         <main className="flex-1 flex flex-col py-16 px-18">
           {/* Encabezado: botón y título */}
@@ -54,7 +57,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="block text-gray-300 mb-2">Numero Telefónico:</label>
-                      <Input placeholder="Registra un número" readOnly />
+                      <Input value={telefono} placeholder="Registra un número" readOnly />
                     </div>
                     <div>
                       <label className="block text-gray-300 mb-2">Contraseña:</label>
@@ -87,6 +90,12 @@ export default function ProfilePage() {
           </div>
         </main>
       </div>
+      {showPhotoModal && (
+        <UpdateProfilePhotoModal
+          onClose={() => setShowPhotoModal(false)}
+          onSave={() => setShowPhotoModal(false)}
+        />
+      )}
     </div>
   );
 }
