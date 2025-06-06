@@ -2,6 +2,7 @@ import React from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { Outlet } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 const menuItems = [
   { label: "Dashboard", icon: "bi bi-house-door-fill", to: "." },
@@ -11,6 +12,9 @@ const menuItems = [
 ];
 
 const DashboardLayout = () => {
+  const { user } = useAuth(); 
+  const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "";
+
   return (
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
       <Sidebar showLogo={true} menuItems={menuItems} footerLinks={true} />
@@ -18,7 +22,7 @@ const DashboardLayout = () => {
         <Navbar
           showShareButton={true}
           showUpgradeButton={false}
-          title="Bienvenido/a"
+          title={`Bienvenido/a${firstName ? " " + firstName : ""}`}
           subtitle="Aquí, Las estadísticas de esta semana!"
         />
         <div className="flex-1 p-8">

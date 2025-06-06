@@ -25,7 +25,6 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 import DashboardCreateProject from "./pages/DashboardCreateProject";
 import Error404 from "./pages/error404";
 import { Toaster } from 'react-hot-toast';
-import Dashboard from "./pages/Dashboard";
 import NoTenerCuenta from "./components/common/notenercuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 
@@ -78,4 +77,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 
