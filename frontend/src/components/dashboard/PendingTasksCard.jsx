@@ -10,7 +10,7 @@ const collaborators = [
 
 export default function PendingTasksCard() {
   return (
-    <div className="bg-[#181825] rounded-2xl px-9 py-8 w-[400px] shadow-lg flex flex-col justify-between min-h-[260px] border border-[#232336]">
+    <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-2xl px-9 py-8 w-[400px] shadow-lg shadow-purple-500/50  flex flex-col justify-between min-h-[260px] border border-[#232336]">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h3 className="text-xl font-bold text-white leading-tight">
@@ -42,11 +42,11 @@ export default function PendingTasksCard() {
       <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
         <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
           <i className="bi bi-people-fill text-lg"></i>
-          <span className="text-white font-bold">12</span> Colaboradores
+          <span className="text-gray-300 font-bold">12</span> Colaboradores
         </div>
         <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
           <i className="bi bi-tools text-lg"></i>
-          <span className="text-white font-bold">18</span> Trabajos
+          <span className="text-gray-300 font-bold">18</span> Trabajos
         </div>
       </div>
     </div>
