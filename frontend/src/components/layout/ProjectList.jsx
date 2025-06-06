@@ -1,7 +1,4 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 import { useAuth } from '../../hooks/useAuth';
 
@@ -90,13 +87,15 @@ const ProjectList = () => {
   return (
     <ul className="text-sm text-gray-300 pl-2">
       {projects.map(project => (
-        <li key={project.id_proyecto}> {}
-          <Link
-            to={`/dashboard/${project.id_proyecto}`} 
+        <li key={project.id_proyecto}>
+          <a
+            href={`/dashboard/${project.id_proyecto}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="hover:text-[#7c2ae8] underline"
           >
             {project.nombreproyecto}
-          </Link>
+          </a>
         </li>
       ))}
     </ul>

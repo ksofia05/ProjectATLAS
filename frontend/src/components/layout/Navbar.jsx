@@ -5,7 +5,12 @@ import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
 
-const Navbar = ({ showShareButton = false, showUpgradeButton = true }) => {
+const Navbar = ({
+  showShareButton = false,
+  showUpgradeButton = true,
+  title = "Proyectos",
+  subtitle = "",
+}) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
@@ -42,8 +47,13 @@ const Navbar = ({ showShareButton = false, showUpgradeButton = true }) => {
 
   return (
     <nav className="w-full bg-gray-950 border-b border-gray-800 px-10 pr-12 py-6 flex items-center justify-between relative mb-2">
-      {/* Título */}
-      <h1 className="text-2xl font-bold text-white">Proyectos</h1>
+      {/* Título y subtítulo */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">{title}</h1>
+        {subtitle && (
+          <p className="text-gray-400 text-base">{subtitle}</p>
+        )}
+      </div>
 
       {/* Botones y perfil */}
       <div className="flex items-center gap-8">
@@ -57,7 +67,7 @@ const Navbar = ({ showShareButton = false, showUpgradeButton = true }) => {
               Compartir
             </ButtonGrey>
             <SendColaboration
-              open={showShareModal} // <-- CORREGIDO
+              open={showShareModal}
               onClose={handleClose}
               userName={userName}
               projectId={projectId}

@@ -1,0 +1,92 @@
+import React from "react";
+import SidebarProfile from "../../components/layout/SidebarProfile";
+import BackButton from "../../components/common/BackButton";
+import Button from "../../components/common/Button";
+import PasswordInput from "../../components/common/PasswordInput";
+import Input from "../../components/common/Input";
+import { useAuth } from "../../hooks/useAuth";
+
+export default function ProfilePage() {
+  const { user, isLoading } = useAuth();
+
+  // Extrae los datos del usuario según cómo los guardes en Supabase/Auth
+  const nombres = user?.user_metadata?.nombre || "";
+  const apellidos = user?.user_metadata?.apellido || "";
+  const correo = user?.email || user?.user_metadata?.email || "";
+  // Contraseña: por seguridad, nunca la traes del backend, solo para edición
+  const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+
+  if (isLoading) {
+    return <div className="text-white text-center mt-10">Cargando...</div>;
+  }
+
+  return (
+    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 relative">
+      <SidebarProfile />
+      <div className="flex-1 flex flex-col relative">
+        <main className="flex-1 flex flex-col items-center justify-center py-16 px-8">
+          {/* Encabezado: botón y título */}
+          <div className="w-full max-w-5xl flex items-center gap-4 mb-8">
+            <BackButton
+              className="w-12 h-12 flex items-center justify-center bg-[#232336] hover:bg-[#2d2d44] text-white rounded-full shadow-lg transition-colors duration-200"
+              iconClassName="text-2xl"
+            />
+            <h2 className="text-3xl font-bold text-white">Editar perfil</h2>
+          </div>
+          <div className="w-full max-w-5xl flex flex-col md:flex-row gap-12">
+            <section className="flex-1">
+              <hr className="border-gray-700 mb-8" />
+              <div className="bg-[#181825] rounded-3xl p-10 shadow-lg">
+                <form>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                      <label className="block text-gray-300 mb-2">Nombres:</label>
+                      <Input value={nombres} readOnly />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Apellidos:</label>
+                      <Input value={apellidos} readOnly />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Correo Electrónico:</label>
+                      <Input value={correo} readOnly />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Numero Telefónico:</label>
+                      <Input placeholder="Registra un número" readOnly />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Contraseña:</label>
+                      <PasswordInput
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="********"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Confirmar Contraseña:</label>
+                      <PasswordInput
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="********"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col md:flex-row justify-end gap-4">
+                    <Button className="bg-purple-600 hover:bg-purple-700 px-8 py-3 rounded-xl font-bold text-white">
+                      Actualizar contraseña
+                    </Button>
+                    <Button className="bg-purple-600 hover:bg-purple-700 px-8 py-3 rounded-xl font-bold text-white">
+                      Guardar Cambios
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
