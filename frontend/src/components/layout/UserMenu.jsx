@@ -20,7 +20,7 @@ const UserMenu = ({ visible, onClose }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/iniciar-sesion");
     if (onClose) onClose();
   };
 
