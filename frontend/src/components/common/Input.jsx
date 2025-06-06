@@ -13,7 +13,7 @@ const Input = ({ label, type, name, value, onChange, errorMessage, icon, require
           onChange={onChange}
           required={required}
           className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errorMessage ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
-          placeholder={label || label}
+          placeholder={placeholder}
         />
         {icon && (
           <button

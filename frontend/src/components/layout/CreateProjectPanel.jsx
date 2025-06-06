@@ -106,7 +106,7 @@ const handleCreate = (nuevoProyecto) => {
       {/* Searchbar */}
       <div className="mb-8">
         <Searchbar
-          placeholder="Buscar proyecto..."
+          placeholder="Busca un proyecto por nombre..."
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           filteredProjects={filteredProjects}
@@ -124,8 +124,39 @@ const handleCreate = (nuevoProyecto) => {
         </button>
       </div>
 
-      {/* Loader solo si está cargando */}
-      {loadingProjects && (
+      {/* Renderizado condicional de proyectos */}
+      {!loadingProjects ? (
+        projects.length === 0 ? (
+          // No hay proyectos en absoluto
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+            <img
+              src={construccionImg}
+              alt="Sin proyectos"
+              className="w-32 mb-6"
+            />
+            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+              Sin proyectos creados
+            </h3>
+            <p className="text-gray-300 text-center text-lg">
+              Crea tu primer proyecto para comenzar a colaborar con tu equipo.
+            </p>
+          </div>
+        ) : filteredProjects.length > 0 ? (
+          // Hay proyectos y la búsqueda tiene resultados
+          <CardProjects projects={filteredProjects} />
+        ) : (
+          // Hay proyectos, pero la búsqueda no tiene resultados
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+              No se encontraron proyectos
+            </h3>
+            <p className="text-gray-300 text-center text-lg">
+              Prueba con otro nombre o revisa tu búsqueda.
+            </p>
+          </div>
+        )
+      ) : (
+        // Loader
         <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
           <p className="text-gray-300 text-center text-lg">
@@ -133,34 +164,6 @@ const handleCreate = (nuevoProyecto) => {
           </p>
         </div>
       )}
-
-      {/* Sin proyectos */}
-       {!loadingProjects ? (
-         filteredProjects.length > 0 ? (
-           <CardProjects projects={filteredProjects} />
-         ) : (
-           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-             <img
-               src={construccionImg}
-               alt="Sin proyectos"
-               className="w-32 mb-6"
-             />
-             <h3 className="text-2xl font-bold text-white mb-2 text-center">
-               Sin proyectos creados
-             </h3>
-             <p className="text-gray-300 text-center text-lg">
-               Crea tu primer proyecto para comenzar a colaborar con tu equipo.
-             </p>
-           </div>
-         )
-       ) : (
-         <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
-           <p className="text-gray-300 text-center text-lg">
-             Cargando tus proyectos...
-           </p>
-         </div>
-       )}
     </div>
 
     {/* Modal para crear un nuevo proyecto */}
