@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import UpdateProfilePhotoModal from "./UpdateProfilePhotoModal";
 
 export default function SidebarProfile() {
   const { user, isLoading } = useAuth();
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
-  // Aqui estoy extrayendo los datos del usuario (Tengo un problema)
+  // Extraer datos del usuario
   const nombres = user?.user_metadata?.nombre || "";
   const apellidos = user?.user_metadata?.apellido || "";
   const correo = user?.email || user?.user_metadata?.email || "";
-  // El teléfono no se pide al registrarse, así que lo dejamos vacío o como placeholder
   const telefono = user?.user_metadata?.telefono || "";
+  const fotoPerfil =
+    user?.user_metadata?.fotoPerfil ||
+    "https://randomuser.me/api/portraits/men/32.jpg";
 
   return (
     <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
@@ -18,9 +22,11 @@ export default function SidebarProfile() {
         <div className="flex flex-col items-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-8">Mi perfil</h2>
           <img
-            src="https://randomuser.me/api/portraits/men/32.jpg"
+            src={fotoPerfil}
             alt="Perfil"
-            className="w-32 h-32 rounded-full object-cover border-4 border-gray-700 mb-4"
+            className="w-32 h-32 rounded-full object-cover border-4 border-gray-700 mb-4 cursor-pointer"
+            onClick={() => setShowPhotoModal(true)}
+            title="Actualizar foto de perfil"
           />
         </div>
         <hr className="border-gray-700 w-full mb-6" />
@@ -58,6 +64,12 @@ export default function SidebarProfile() {
           </a>
         </div>
       </footer>
+      {showPhotoModal && (
+        <UpdateProfilePhotoModal
+          onClose={() => setShowPhotoModal(false)}
+          onSave={() => setShowPhotoModal(false)}
+        />
+      )}
     </aside>
   );
 }
