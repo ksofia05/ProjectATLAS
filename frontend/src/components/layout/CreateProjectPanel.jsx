@@ -4,9 +4,7 @@ import ModalNewProject from "../layout/ModalNewProject";
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 import Searchbar from "./Searchbar";
-import InventoryCard from "../layout/cardProjects"; // Ajusta la ruta si es necesario
-import CreateProjectCard from "../layout/cardProjects"; // Ajusta la ruta si es necesario
-import CardProjects from "../layout/cardProjects"; // Ajusta la ruta si es necesario
+import CardProjects from "../layout/cardProjects";
 
 const CreateProjectPanel = ({ onCreate }) => {
   const [modalOpen, setModalOpen] = useState(false);

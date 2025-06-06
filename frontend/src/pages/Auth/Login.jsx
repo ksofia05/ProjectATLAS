@@ -8,6 +8,7 @@ import { showLoadingToast, showSuccessToast, showErrorToast } from "../../compon
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
 
+
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ const Login = () => {
     });
     setErrors({});
   }, [location.pathname, navigate]);
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next") || "/dashboard-create-project";
 
   const validateField = (name, value) => {
     let error = "";
@@ -122,7 +126,7 @@ const Login = () => {
         
         // Esperar un momento para que se complete la autenticación
         setTimeout(() => {
-          navigate("/dashboard-create-project");
+          navigate(next);
         }, 1200);
       }
       
