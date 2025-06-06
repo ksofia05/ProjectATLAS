@@ -28,19 +28,19 @@ export default function ProfilePage() {
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 relative">
       <SidebarProfile onPhotoClick={() => setShowPhotoModal(true)} />
       <div className="flex-1 flex flex-col relative">
-        <main className="flex-1 flex flex-col py-16 px-18">
+        <main className="flex-1 flex flex-col py-6 px-6">
           {/* Encabezado: botón y título */}
-          <div className="w-full max-w-5xl flex items-center justify-left gap-4 mb-9">
+          <div className="w-full max-w-5xl flex items-center justify-left gap-4 mb-5 px-4">
             <BackButton
               className="w-12 h-12 flex items-center justify-center bg-[#232336] hover:bg-[#2d2d44] text-white rounded-full shadow-lg transition-colors duration-200"
               iconClassName="text-2xl"
             />
-            <h2 className="text-3xl font-bold text-white">Editar perfil</h2>
+            <h2 className="text-2xl font-bold text-white">Editar perfil</h2>
           </div>
           <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12">
             <section className="flex-1">
               <hr className="border-gray-700 mb-12" />
-              <div className="max-w-5xl ml-60 mr-60 mt-20 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
+              <div className="max-w-5xl w-full ml-30 mr-20 mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
                 <form>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
