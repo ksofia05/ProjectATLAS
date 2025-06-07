@@ -45,10 +45,10 @@ export default function DashboardMain() {
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-white mb-2">
+      <h2 className="text-3xl font-bold text-white mb-2">
         {loading ? "Cargando..." : `Dashboard - ${projectName}`}
       </h2>
-      <p className="text-gray-400 mb-8">
+      <p className="text-gray-300 mb-8">
         Hola {firstName}, ¿Qué deseas hacer el día de hoy?
       </p>
       <div className="flex flex-wrap gap-8 mb-8">

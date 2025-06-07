@@ -10,7 +10,7 @@ const collaborators = [
 
 export default function PendingTasksCard() {
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-2xl px-9 py-8 w-[400px] shadow-lg shadow-purple-500/50  flex flex-col justify-between min-h-[260px] border border-[#232336]">
+    <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-[#232336] rounded-2xl px-9 py-8 w-[400px] shadow-lg flex flex-col justify-between min-h-[260px] dashboard-hover-shadow">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h3 className="text-xl font-bold text-white leading-tight">

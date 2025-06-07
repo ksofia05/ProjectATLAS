@@ -1,8 +1,14 @@
 import React from "react";
+import CollaboratorsTable from "../../components/dashboard/CollaboratorsTable";
+
 export default function CollaboratorsPage() {
   return (
-    <div className="text-white text-2xl font-bold p-10">
-      Simulación de lo que se vería en Colaboradores
+    <div className="px-8">
+      <h1 className="text-3xl font-bold text-white mb-2">Colaboradores</h1>
+      <p className="text-gray-300 mb-8">
+        Aquí, administra el trabajo de tus empleados!
+      </p>
+      <CollaboratorsTable />
     </div>
   );
 }
