@@ -26,7 +26,7 @@ const CalendarCard = ({
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg">
+    <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-3">
           <h3 className="text-2xl font-bold">Calendario</h3>
