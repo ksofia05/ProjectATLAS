@@ -13,10 +13,19 @@ class Proyect(models.Model):
 class Proyecto(models.Model):
     nombreproyecto = models.CharField(db_column='nombreproyecto', max_length=30)  # Field name made lowercase.
     fechacreacion = models.DateTimeField(db_column='fechacreacion', auto_now_add=True)  # Field name made lowercase.
-    enlace = models.CharField(blank=True, null=True)
     id_usuario = models.ForeignKey(Usuario, models.CASCADE, db_column='id_usuario')
     id_proyecto = models.AutoField(models.CASCADE,primary_key=True)
 
     class Meta:
         db_table = 'proyecto'
+
+class ColaboradorProyecto(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE)
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'colaborador_proyecto'
+        unique_together = ('usuario', 'proyecto')
+    # Puedes agregar más campos si quieres (por ejemplo, rol dentro del proyecto)
 # Create your models here.
