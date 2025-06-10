@@ -22,6 +22,7 @@ class Usuario(models.Model):
     terminoservicio = models.BooleanField(db_column='terminoServicio')  # Field name made lowercase.
     token = models.CharField(max_length=255, blank=True, null=True)
     uuid_supabase = models.UUIDField(unique=False, null=True, blank=True)
+    enlacePerfil = models.URLField(blank=True, null=True)
 
     class Meta:
         db_table = 'Usuario'

@@ -17,7 +17,7 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Token ${token}` // <-- MOVIDO AQUÍ DENTRO
+          "Authorization": `Bearer ${token}` // <-- MOVIDO AQUÍ DENTRO
         },
         body: JSON.stringify({ nombreproyecto: nombre }),
       });

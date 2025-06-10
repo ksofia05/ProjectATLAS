@@ -6,6 +6,8 @@ import PasswordInput from "../../components/common/PasswordInput";
 import Input from "../../components/common/Input";
 import { useAuth } from "../../hooks/useAuth";
 import UpdateProfilePhotoModal from "../../components/layout/UpdateProfilePhotoModal";
+import { showErrorToast } from "../../components/common/popUp/Loading";
+import { client } from "../../supabase/client";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -19,6 +21,22 @@ export default function ProfilePage() {
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPhotoModal, setShowPhotoModal] = React.useState(false);
+  
+  const handlePasswordUpdate = async (e) => {
+  e.preventDefault(); 
+  if (password !== confirmPassword) {
+    showErrorToast("Las contraseñas no coinciden");
+    return;
+  }
+  const { error } = await client.auth.updateUser({ password });
+  if (error) {
+    alert("Error al actualizar la contraseña: " + error.message);
+  } else {
+    alert("Contraseña actualizada correctamente");
+    setPassword("");
+    setConfirmPassword("");
+  }
+  };
 
   if (isLoading) {
     return <div className="text-white text-center mt-10">Cargando...</div>;
@@ -80,7 +98,9 @@ export default function ProfilePage() {
                     <Button className="bg-gradient-to-r from-purple-700  to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white">
                       Actualizar contraseña
                     </Button>
-                    <Button className="bg-gradient-to-r from-purple-700  to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white">
+                    <Button className="bg-gradient-to-r from-purple-700  to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white"
+                      onClick={handlePasswordUpdate}
+                      >
                       Guardar Cambios
                     </Button>
                   </div>
