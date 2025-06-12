@@ -58,7 +58,7 @@ export default function ProfilePage() {
           <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12 ">
             <section className="flex-1">
               <hr className="border-gray-700 mb-12" />
-              <div className="max-w-5xl w-full mx-70 mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
+              <div className="max-w-5xl w-full mx-auto mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
                 <form>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
