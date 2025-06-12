@@ -55,10 +55,10 @@ export default function ProfilePage() {
             />
             <h2 className="text-2xl font-bold text-white">Editar perfil</h2>
           </div>
-          <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12">
+          <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12 ">
             <section className="flex-1">
               <hr className="border-gray-700 mb-12" />
-              <div className="max-w-5xl w-full ml-30 mr-20 mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
+              <div className="max-w-5xl w-full mx-70 mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
                 <form>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
@@ -93,16 +93,15 @@ export default function ProfilePage() {
                         placeholder="********"
                       />
                     </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row justify-end gap-4">
-                    <Button className="bg-gradient-to-r from-purple-700  to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white">
-                      Actualizar contraseña
-                    </Button>
-                    <Button className="bg-gradient-to-r from-purple-700  to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white"
-                      onClick={handlePasswordUpdate}
+                    <div></div>
+                    <div>
+                      <Button
+                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white"
+                        onClick={handlePasswordUpdate}
                       >
-                      Guardar Cambios
-                    </Button>
+                        Guardar Cambios
+                      </Button>
+                    </div>
                   </div>
                 </form>
               </div>

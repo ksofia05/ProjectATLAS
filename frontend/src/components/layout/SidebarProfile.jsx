@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import UpdateProfilePhotoModal from "./UpdateProfilePhotoModal";
+import userAtlas from "../../assets/atlasUser.png"
 
 export default function SidebarProfile() {
   const { user, isLoading } = useAuth();
@@ -13,7 +14,7 @@ export default function SidebarProfile() {
   const telefono = user?.user_metadata?.telefono || "";
   const fotoPerfil =
     user?.user_metadata?.fotoPerfil ||
-    "https://randomuser.me/api/portraits/men/32.jpg";
+    {userAtlas};
 
   return (
     <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
@@ -22,7 +23,7 @@ export default function SidebarProfile() {
         <div className="flex flex-col items-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-8">Mi perfil</h2>
           <img
-            src={fotoPerfil}
+            src={userAtlas}
             alt="Perfil"
             className="w-32 h-32 rounded-full object-cover border-4 border-gray-700 mb-4 cursor-pointer"
             onClick={() => setShowPhotoModal(true)}

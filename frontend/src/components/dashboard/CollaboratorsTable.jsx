@@ -111,7 +111,7 @@ export default function CollaboratorsTable() {
               if (value === "excel") exportToExcel(colaboradoresVisibles);
               if (value === "pdf") exportToPDF(colaboradoresVisibles);
             }}
-            buttonClassName="px-5 py-2 font-semibold text-base"
+            buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
             icon={<i className="bi bi-download mr-2"></i>}
           />
         </div>
@@ -130,7 +130,7 @@ export default function CollaboratorsTable() {
             buttonLabel="Estado"
             options={opcionesEstado}
             onSelect={setEstadoSeleccionado}
-            buttonClassName="px-4 py-2 font-semibold text-base flex items-center gap-2"
+            buttonClassName="px-4 py-2 font-semibold hover:shadow shadow-[#8d49e7] text-base flex items-center gap-2"
           />
         </div>
       </div>
