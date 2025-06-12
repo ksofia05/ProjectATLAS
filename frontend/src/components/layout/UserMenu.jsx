@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import ButtonGrey from "../common/ButtonGrey";
+import userAtlas from "../../assets/atlasUser.png"
 
 const UserMenu = ({ visible, onClose }) => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const UserMenu = ({ visible, onClose }) => {
 >
   <div className="flex items-center gap-4 mb-4">
     <img
-      src="https://randomuser.me/api/portraits/men/32.jpg"
+      src={userAtlas}
       alt="Usuario"
       className="w-14 h-14 rounded-full object-cover"
     />

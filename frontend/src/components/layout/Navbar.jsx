@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
+import userAtlas from "../../assets/atlasUser.png"
 
 const Navbar = ({
   showShareButton = false,
@@ -93,7 +94,7 @@ const Navbar = ({
           onClick={() => setMenuOpen((open) => !open)}
         >
           <img
-            src="https://randomuser.me/api/portraits/men/32.jpg"
+            src={userAtlas}
             alt="Usuario"
             className="w-11 h-11 rounded-full object-cover"
           />
