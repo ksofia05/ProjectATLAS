@@ -28,13 +28,15 @@ class ProyectoViewSet(viewsets.ModelViewSet):
 class ProyectoUUIDViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
-
     def get_queryset(self):
-        
         uuid_supabase = self.request.query_params.get('uuid_supabase')
         if uuid_supabase:
-            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase, id_usuario__rol_idrol__nombre='administrador')
+            usuario=Usuario.objects.get(uuid_supabase=uuid_supabase)
+            if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
+                return Proyecto.objects.filter(id_usuario=usuario)
         return Proyecto.objects.none()
+    
+
 
 
 @api_view(['POST'])
