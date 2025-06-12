@@ -12,29 +12,25 @@ const colaboradoresInicial = [
   {
     nombre: "Karen Sofia",
     apellido: "Lizcano Torres",
-    telefono: "305 364 3047",
-    rol: "Colaborador",
+    correo: "karen.lizcano@example.com",
     estado: "Activo",
   },
   {
     nombre: "Dilan Francisco",
     apellido: "Rojas Pinilla",
-    telefono: "311 804 3208",
-    rol: "Colaborador",
+    correo: "dilan.rojas@example.com",
     estado: "Inactivo",
   },
   {
     nombre: "Daniel Orlando",
     apellido: "Velasquez Ramirez",
-    telefono: "301 243 3967",
-    rol: "Colaborador",
+    correo: "daniel.velasquez@example.com",
     estado: "Activo",
   },
   {
     nombre: "Juan David",
     apellido: "Garzon Sanchez",
-    telefono: "310 589 2939",
-    rol: "Colaborador",
+    correo: "juan.garzon@example.com",
     estado: "Activo",
   },
 ];
@@ -140,8 +136,7 @@ export default function CollaboratorsTable() {
             <tr className="border-b border-[#232336]">
               <th className="py-2 px-3 font-semibold text-center">Nombre</th>
               <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-              <th className="py-2 px-3 font-semibold text-center">Telefono</th>
-              <th className="py-2 px-3 font-semibold text-center">Rol</th>
+              <th className="py-2 px-3 font-semibold text-center">Correo</th>
               <th className="py-2 px-3 font-semibold text-center">Estado</th>
               <th className="py-2 px-3 text-center"></th>
             </tr>
@@ -154,8 +149,7 @@ export default function CollaboratorsTable() {
               >
                 <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
                 <td className="py-2 px-3 text-center">{c.apellido}</td>
-                <td className="py-2 px-3 text-center">{c.telefono}</td>
-                <td className="py-2 px-3 text-center">{c.rol}</td>
+                <td className="py-2 px-3 text-center">{c.correo}</td>
                 <td className="py-2 px-3 flex items-center gap-4 justify-center">
                   <span
                     className={
