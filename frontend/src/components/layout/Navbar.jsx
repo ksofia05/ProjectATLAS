@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
+import userAtlas from "../../assets/atlasUser.png"
 
 const Navbar = ({
   showShareButton = false,
@@ -46,7 +47,8 @@ const Navbar = ({
   }, [menuOpen]);
 
   return (
-    <nav className="w-full bg-gray-950 border-b border-gray-800 px-10 pr-12 py-6 flex items-center justify-between relative mb-2">
+    <nav className="w-full bg-gray-950 px-10 pr-12 py-6 border-b border-gray-800 flex items-center justify-between relative mb-2">
+
       {/* Título y subtítulo */}
       <div>
         <h1 className="text-2xl font-bold text-white">{title}</h1>
@@ -92,7 +94,7 @@ const Navbar = ({
           onClick={() => setMenuOpen((open) => !open)}
         >
           <img
-            src="https://randomuser.me/api/portraits/men/32.jpg"
+            src={userAtlas}
             alt="Usuario"
             className="w-11 h-11 rounded-full object-cover"
           />
@@ -112,6 +114,7 @@ const Navbar = ({
         </div>
       </div>
     </nav>
+    
   );
 };
 

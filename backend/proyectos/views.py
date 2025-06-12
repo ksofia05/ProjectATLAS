@@ -40,12 +40,13 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 def save_proyect(request):
     auth_header = request.headers.get('Authorization')
-    if auth_header and auth_header.startswith('Token'):
+    if auth_header and (auth_header.startswith('Bearer') or auth_header.startswith('Token')):
         token = auth_header.split(' ')[1]
         print(f"Token recibido: {token}")
         try:
             decoded = jwt.decode(token, options={"verify_signature": False})
-            user_uuid = decoded.get('sub')
+            print("Payload decodificado:", decoded)
+            user_uuid = decoded.get('sub') or decoded.get('user_id') or decoded.get('id')
             if not user_uuid:
                 return Response({'error': 'Token sin id'}, status=401)
             
@@ -61,7 +62,7 @@ def save_proyect(request):
 
             # Crear proyecto
             if not usuario.rol_idrol:
-                rol = Rol.objects.create(nombre='administrador')
+                rol = Rol.objects.get(idrol=1)
                 usuario.rol_idrol = rol
                 usuario.save()
             else:
@@ -76,7 +77,10 @@ def save_proyect(request):
                                  'id': proyecto.id_proyecto,
                                  'nombreproyecto': proyecto.nombreproyecto,
                                  'fechacreacion': proyecto.fechacreacion,
+<<<<<<< HEAD
                                 #  'enlace': proyecto.enlace
+=======
+>>>>>>> 758c5a9465631b06d157e4dfe36ac6cc5844a502
                              },
                              'nombre': proyecto.nombreproyecto}, status=201)
         except Exception as e:
@@ -116,7 +120,7 @@ def get_user_projects(request):
                 'id': proyecto.id_proyecto,
                 'nombreproyecto': proyecto.nombreproyecto,
                 'fechacreacion': proyecto.fechacreacion,
-                # 'enlace': proyecto.enlace,
+                # o
             }
             for proyecto in proyectos
         ]
