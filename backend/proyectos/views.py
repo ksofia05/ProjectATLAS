@@ -30,12 +30,12 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
     serializer_class = ProyectoSerializer
 
     def get_queryset(self):
-        
         uuid_supabase = self.request.query_params.get('uuid_supabase')
         if uuid_supabase:
-            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase, id_usuario__rol_idrol__nombre='administrador')
+            usuario = Usuario.objects.get(uuid_supabase=uuid_supabase)
+            if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
+                return Proyecto.objects.filter(id_usuario=usuario)
         return Proyecto.objects.none()
-
 
 @api_view(['POST'])
 def save_proyect(request):
@@ -76,7 +76,7 @@ def save_proyect(request):
                                  'id': proyecto.id_proyecto,
                                  'nombreproyecto': proyecto.nombreproyecto,
                                  'fechacreacion': proyecto.fechacreacion,
-                                 'enlace': proyecto.enlace
+                                #  'enlace': proyecto.enlace
                              },
                              'nombre': proyecto.nombreproyecto}, status=201)
         except Exception as e:
@@ -116,7 +116,7 @@ def get_user_projects(request):
                 'id': proyecto.id_proyecto,
                 'nombreproyecto': proyecto.nombreproyecto,
                 'fechacreacion': proyecto.fechacreacion,
-                'enlace': proyecto.enlace,
+                # 'enlace': proyecto.enlace,
             }
             for proyecto in proyectos
         ]
