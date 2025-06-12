@@ -68,6 +68,7 @@ export default function SidebarProfile() {
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
           onSave={() => setShowPhotoModal(false)}
+           user={user}
         />
       )}
     </aside>

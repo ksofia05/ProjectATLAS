@@ -88,14 +88,17 @@ const ProjectList = () => {
     <ul className="text-sm text-gray-300 pl-2">
       {projects.map(project => (
         <li key={project.id_proyecto}>
-          <a
-            href={`/dashboard/${project.id_proyecto}`}
+          <div>
+            <a
+            onClick={()=> window.open(`/dashboard/${project.id_proyecto}`, '_blank')}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-[#7c2ae8] underline"
+            className="hover:text-[#7c2ae8] underline cursor-pointer"
           >
             {project.nombreproyecto}
           </a>
+          </div>
+          
         </li>
       ))}
     </ul>

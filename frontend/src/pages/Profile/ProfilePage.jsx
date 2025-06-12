@@ -94,6 +94,7 @@ export default function ProfilePage() {
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
           onSave={() => setShowPhotoModal(false)}
+           user={user}
         />
       )}
     </div>

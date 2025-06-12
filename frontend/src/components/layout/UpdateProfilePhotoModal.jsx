@@ -1,9 +1,62 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import FloatingModal from "../common/popUp/FloatingModal";
 import Button from "../common/Button";
+import { client as supabase } from "../../supabase/client"; // Ajusta la ruta si es necesario
 
-const UpdateProfilePhotoModal = ({ onClose, onSave }) => {
+const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
   const fileInputRef = useRef();
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  setUploading(true);
+  console.log("USER:", user);
+  // ...existing code...
+const fileExt = file.name.split('.').pop();
+const filePath = `fotosPerfiles/perfil_${user.id}_${Date.now()}.${fileExt}`;
+
+// 1. Subir archivo al bucket usando filePath
+const { data, error } = await supabase.storage
+  .from("atlas")
+  .upload(filePath, file, { upsert: true });
+
+console.log("UPLOAD DATA:", data);
+console.log("UPLOAD ERROR:", error);
+
+if (error) {
+  alert("Error al subir la imagen: " + error.message);
+  setUploading(false);
+  return;
+}
+
+// 2. Obtener la URL pública usando filePath
+const { data: publicUrlData } = supabase
+  .storage
+  .from("atlas")
+  .getPublicUrl(filePath);
+
+const publicUrl = publicUrlData.publicUrl;
+
+// ...resto igual...
+// ...existing code...
+
+    // 3. Actualizar el perfil del usuario en Supabase Auth
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { fotosPerfiles: publicUrl }
+    });
+
+    setUploading(false);
+
+    if (updateError) {
+      alert("Error al actualizar el perfil");
+      return;
+    }
+
+    if (onSave) onSave(publicUrl);
+    onClose();
+  };
 
   return (
     <FloatingModal onClose={onClose}>
@@ -24,27 +77,21 @@ const UpdateProfilePhotoModal = ({ onClose, onSave }) => {
           <Button
             className="mt-2 bg-gray-700 hover:bg-gray-600 max-w-xs"
             onClick={() => fileInputRef.current.click()}
+            disabled={uploading}
           >
-            Examinar archivos
+            {uploading ? "Subiendo..." : "Examinar archivos"}
           </Button>
           <input
             type="file"
             ref={fileInputRef}
             className="hidden"
             accept="image/*"
-            // onChange={handleFileChange}
+            onChange={handleFileChange}
           />
         </div>
         <div className="flex gap-4 w-full mt-4">
           <Button className="bg-gray-700 hover:bg-gray-600" onClick={onClose}>
             Cancelar
-          </Button>
-          <Button
-            type="submit"
-            className="bg-[#7c2ae8] hover:bg-[#5a1bb7]"
-            onClick={onSave}
-          >
-            Guardar
           </Button>
         </div>
       </div>
