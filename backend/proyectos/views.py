@@ -77,10 +77,6 @@ def save_proyect(request):
                                  'id': proyecto.id_proyecto,
                                  'nombreproyecto': proyecto.nombreproyecto,
                                  'fechacreacion': proyecto.fechacreacion,
-<<<<<<< HEAD
-                                #  'enlace': proyecto.enlace
-=======
->>>>>>> 758c5a9465631b06d157e4dfe36ac6cc5844a502
                              },
                              'nombre': proyecto.nombreproyecto}, status=201)
         except Exception as e:
