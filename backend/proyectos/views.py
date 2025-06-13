@@ -4,7 +4,7 @@ from rest_framework import viewsets # Importa el módulo viewsets de Django REST
 from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
 from .serializer import ProyectSerializer,ProyectoSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
 from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
-from .models import Proyect,Proyecto # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
+from .models import Proyect,Proyecto, ColaboradorProyecto # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
 from tasks.models import Rol,Usuario
 from proyectos.models import ColaboradorProyecto
 from rest_framework.response import Response
@@ -29,13 +29,15 @@ class ProyectoViewSet(viewsets.ModelViewSet):
 class ProyectoUUIDViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
-
     def get_queryset(self):
-        
         uuid_supabase = self.request.query_params.get('uuid_supabase')
         if uuid_supabase:
-            return Proyecto.objects.filter(id_usuario__uuid_supabase=uuid_supabase, id_usuario__rol_idrol__nombre='administrador')
+            usuario=Usuario.objects.get(uuid_supabase=uuid_supabase)
+            if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
+                return Proyecto.objects.filter(id_usuario=usuario)
         return Proyecto.objects.none()
+    
+
 
 
 @api_view(['POST'])
@@ -126,6 +128,58 @@ def get_user_projects(request):
     except Exception as e:
         print(e)
         return Response({'error': 'Error al obtener proyectos'}, status=500)
+    
+
+@api_view(['POST'])
+def asociar_colaborador(request):
+    email=request.data.get('email')
+    id_proyecto=request.data.get('id_proyecto')
+    if not email or not id_proyecto:
+        return Response({'error':'Faltan datos'}, status=400)
+    try:
+        usuario = Usuario.objects.get(correoelectronico=email)
+        rol_colaborador = Rol.objects.get(idrol=2)  
+        if usuario.rol_idrol != rol_colaborador:
+            usuario.rol_idrol = rol_colaborador
+            usuario.save()
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        ColaboradorProyecto.objects.get_or_create(usuario=usuario, proyecto=proyecto)
+        return Response({'success':True})
+    except Exception as e:
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def info_proyecto_colaboradores(request):
+    id_proyecto = request.query_params.get('id_proyecto')
+    if not id_proyecto:
+        return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
+    try:
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        colaboradores= ColaboradorProyecto.objects.filter(proyecto=proyecto)
+        colaboradores_data=[]
+        for colab in colaboradores:
+            usuario=colab.usuario
+            colaboradores_data.append({
+                "nombre":usuario.nombre,
+                "apellido": usuario.apellido,
+                "correo": usuario.correoelectronico,
+                "rol": "administrador" if usuario.rol_idrol and usuario.rol_idrol.idrol == 1 else "colaborador"
+            })
+            if proyecto.id_usuario:
+                admin = proyecto.id_usuario
+                if not any(c['correo']==admin.correoelectronico for c in colaboradores_data):
+                    colaboradores_data.insert(0,{
+                        "nombre": admin.nombre,
+                        "apellido": admin.apellido,
+                        "correo": admin.correoelectronico,
+                        "rol": "Administrador"
+                    })
+        return Response({
+            "nombreproyecto": proyecto.nombreproyecto,
+            "colaboradores": colaboradores_data
+        })
+    except Exception as e:
+        return Response({'error': str(e)},status=400)
 # Create your views here.
 
 

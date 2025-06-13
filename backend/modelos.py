@@ -8,6 +8,8 @@
 from django.db import models
 
 
+
+
 class Agendamiento(models.Model):
     cliente_dni = models.ForeignKey('Cliente', models.DO_NOTHING, db_column='Cliente_dni', blank=True, null=True)  # Field name made lowercase.
     usuario = models.ForeignKey('Usuario', models.DO_NOTHING, db_column='Usuario_id', blank=True, null=True)  # Field name made lowercase.
