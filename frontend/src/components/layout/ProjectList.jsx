@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; 
-import { useAuth } from '../../hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
 
 const ProjectList = () => {
-  const [projects, setProjects] = useState([]); 
+  const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectError, setProjectError] = useState(null);
 
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth(); 
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchUserProjects = async () => {
@@ -17,33 +17,31 @@ const ProjectList = () => {
       if (!isAuthenticated || !user) {
         setLoadingProjects(false);
         setProjects([]);
-        setProjectError(null); 
+        setProjectError(null);
         return;
       }
 
       setLoadingProjects(true);
       setProjectError(null);
-      setProjects([]); 
+      setProjects([]);
 
       try {
-       
-        const uuidSupabase= user.id;
+        const uuidSupabase = user.id;
 
-       
         const response = await axios.get(
-          `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}` 
+          `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}`
         );
 
         const projectsData = response.data;
 
         if (projectsData && projectsData.length > 0) {
-          setProjects(projectsData); 
+          setProjects(projectsData);
         } else {
-          setProjects([]); 
+          setProjects([]);
         }
       } catch (error) {
-        console.error('Error al cargar proyectos del usuario:', error);
-        setProjectError(error.message || 'Error al cargar proyectos.');
+        console.error("Error al cargar proyectos del usuario:", error);
+        setProjectError(error.message || "Error al cargar proyectos.");
         setProjects([]);
       } finally {
         setLoadingProjects(false);
@@ -51,9 +49,7 @@ const ProjectList = () => {
     };
 
     fetchUserProjects();
-  }, [user, isAuthenticated, authLoading]); 
-                                          
-
+  }, [user, isAuthenticated, authLoading]);
 
   if (authLoading || loadingProjects) {
     return (
@@ -63,7 +59,6 @@ const ProjectList = () => {
     );
   }
 
-
   if (projectError) {
     return (
       <ul className="text-sm text-red-400 pl-2">
@@ -71,7 +66,6 @@ const ProjectList = () => {
       </ul>
     );
   }
-
 
   if (!isAuthenticated || projects.length === 0) {
     return (
@@ -83,22 +77,22 @@ const ProjectList = () => {
     );
   }
 
-
   return (
     <ul className="text-sm text-gray-300 pl-2">
-      {projects.map(project => (
+      {projects.map((project) => (
         <li key={project.id_proyecto}>
           <div>
             <a
-            onClick={()=> window.open(`/dashboard/${project.id_proyecto}`, '_blank')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[#7c2ae8] underline cursor-pointer"
-          >
-            {project.nombreproyecto}
-          </a>
+              onClick={() =>
+                window.open(`/dashboard/${project.id_proyecto}`, "_blank")
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#7c2ae8] underline cursor-pointer"
+            >
+              {project.nombreproyecto}
+            </a>
           </div>
-          
         </li>
       ))}
     </ul>

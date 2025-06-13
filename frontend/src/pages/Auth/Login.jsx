@@ -124,6 +124,19 @@ const Login = () => {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
         
+        if( next && next.startsWith("/dashboard/") ){
+          const idProyecto = next.split("/dashboard/")[1];
+          try{
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/",{
+              method: "POST",
+              headers:{"Content-Type": "application/json"},
+              body: JSON.stringify({ idProyecto: idProyecto, email:formData.email})
+            });
+          } catch(err){
+            showErrorToast("Error al asociar colaborador al proyecto.");
+          }
+        } 
+        
         // Esperar un momento para que se complete la autenticación
         setTimeout(() => {
           navigate(next);

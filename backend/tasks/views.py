@@ -12,7 +12,8 @@ from rest_framework import viewsets # Importa el módulo viewsets de Django REST
 from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
 from .serializer import TaskSerializer,UsuarioSerializer, RolSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
 from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
-from .models import Task,Usuario, Rol # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
+from tasks.models import Task,Usuario, Rol # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
+from proyectos.models import Proyecto
 from rest_framework.authtoken.models import Token
 
 
@@ -160,17 +161,21 @@ def password_reset(request, token=None):
     
 @api_view(['POST'])
 def invitacion_colaborador (request):
+    
     email=request.data.get('email')
     nombre_invitador = request.data.get('nombre_invitador')
     id_proyecto= request.data.get('id_proyecto')
+
+    
     if not email or not re.match(r"[^@]+@[^@]+\.[^@]+",email):
         return Response({'success':False,'message':'Debes ingresar un correo valido'})
     if not nombre_invitador or not id_proyecto:
         return Response({'success': False, 'messagge':'Faltan datos de invitador o proyecto'})
     try:
-        usuario = Usuario.objects.get(correoelectronico=email)
-        if usuario.rol_idrol and usuario.rol_idrol.nombre.lower() == 'administrador':
-            return Response({'success': False, 'message': 'Administrador no puede tener mas de un proyecto.'}, status=400)
+        usuario_invitado = Usuario.objects.get(correoelectronico=email)
+        if usuario_invitado.rol_idrol and int(usuario_invitado.rol_idrol.idrol) == 1:
+            if Proyecto.objects.filter(id_usuario=usuario_invitado).exists():
+                return Response({'success': False, 'message': 'Administrador no puede tener mas de un proyecto.'}, status=400)
     except Usuario.DoesNotExist:
         pass 
     invitacion_url=f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"

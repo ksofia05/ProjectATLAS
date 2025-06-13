@@ -7,41 +7,68 @@ import autoTable from "jspdf-autotable";
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
 import Switch from "../common/Switch";
+import { useAuth } from "../../hooks/useAuth";
 
-const colaboradoresInicial = [
-  {
-    nombre: "Karen Sofia",
-    apellido: "Lizcano Torres",
-    telefono: "305 364 3047",
-    rol: "Colaborador",
-    estado: "Activo",
-  },
-  {
-    nombre: "Dilan Francisco",
-    apellido: "Rojas Pinilla",
-    telefono: "311 804 3208",
-    rol: "Colaborador",
-    estado: "Inactivo",
-  },
-  {
-    nombre: "Daniel Orlando",
-    apellido: "Velasquez Ramirez",
-    telefono: "301 243 3967",
-    rol: "Colaborador",
-    estado: "Activo",
-  },
-  {
-    nombre: "Juan David",
-    apellido: "Garzon Sanchez",
-    telefono: "310 589 2939",
-    rol: "Colaborador",
-    estado: "Activo",
-  },
-];
+import axios from "axios";
+import { useEffect } from "react";
 
 export default function CollaboratorsTable() {
-  const [colaboradores, setColaboradores] = React.useState(colaboradoresInicial);
+  const { user } = useAuth();
+  const [colaboradores, setColaboradores] = React.useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  useEffect(() => {
+    const fetchProyectos = async () => {
+      console.log("Ejecutando fetchUserProjects");
+      console.log("user:", user);
+
+      const email = user?.email || user?.user_metadata?.email;
+      console.log("email:", email);
+
+      try {
+        // 1. Obtener el usuario por su correo
+        const usuarioResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+        );
+        const usuarioDb = usuarioResponse.data[0];
+        const usuarioId = usuarioDb.idusuario;
+
+        // 2. Obtener los proyectos del usuario
+        const proyectosResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+        );
+
+        const proyectos = proyectosResponse.data;
+
+        if (proyectos.length === 0) {
+          console.warn("No se encontraron proyectos para este usuario.");
+          setColaboradores([]);
+          return;
+        }
+
+        // Tomar el primer proyecto (puedes cambiar esta lógica si deseas seleccionar uno en particular)
+        const idProyecto = proyectos[0].id_proyecto;
+
+        // 3. Llamar al endpoint filtro_colaborador
+        const colaboradoresResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${idProyecto}`
+        );
+
+        const data = colaboradoresResponse.data;
+        console.log("Colaboradores del proyecto:", data.colaboradores);
+
+        setColaboradores(data.colaboradores);
+      } catch (error) {
+        console.error("Error al obtener colaboradores:", error);
+        setColaboradores([]);
+      }
+    };
+
+    if (user) {
+      fetchProyectos();
+    }
+  }, [user]);
 
   const opcionesEstado = [
     { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
@@ -69,12 +96,11 @@ export default function CollaboratorsTable() {
     const doc = new jsPDF();
     doc.text("Colaboradores", 14, 10);
     autoTable(doc, {
-      head: [["Nombre", "Apellido", "Telefono", "Rol", "Estado"]],
+      head: [["Nombre", "Apellido", "Correo", "Estado"]],
       body: data.map((c) => [
         c.nombre,
         c.apellido,
-        c.telefono,
-        c.rol,
+        c.correo,
         c.estado,
       ]),
       startY: 20,
@@ -82,23 +108,43 @@ export default function CollaboratorsTable() {
     doc.save("colaboradores.pdf");
   };
 
-  // Cambia el estado del colaborador (Activo/Inactivo)
-  const handleSwitch = (idx) => {
+  // Cambia el estado del colaborador (solo local)
+const handleSwitch = async (idx) => {
+  const colaborador = colaboradores[idx];
+  console.log("ID del colaborador:", colaborador.id);
+  const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
+
+  try {
+    // PATCH al backend
+    const response = await axios.patch(
+      `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
+      { estado: nuevoEstado }
+    );
+
+    console.log("Estado actualizado:", response.data);
+
+    // Actualiza en el estado local
     setColaboradores((prev) =>
       prev.map((c, i) =>
-        i === idx
-          ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
-          : c
+        i === idx ? { ...c, estado: nuevoEstado } : c
       )
     );
-  };
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    alert("Hubo un error al cambiar el estado del colaborador.");
+  }
+};
 
-  // El filtro cambia según el estado seleccionado (Eso lo revisa julian)
-  const colaboradoresVisibles = colaboradores.filter((c) =>
-    estadoSeleccionado === "todos"
-      ? true
-      : c.estado.toLowerCase() === estadoSeleccionado
-  );
+  // Filtrado por estado y búsqueda
+  const colaboradoresFiltrados = colaboradores
+    .filter((c) =>
+      estadoSeleccionado === "todos"
+        ? true
+        : c.estado?.toLowerCase() === estadoSeleccionado
+    )
+    .filter((c) =>
+      c.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
@@ -108,8 +154,8 @@ export default function CollaboratorsTable() {
             buttonLabel="Exportar"
             options={opcionesExportar}
             onSelect={(value) => {
-              if (value === "excel") exportToExcel(colaboradoresVisibles);
-              if (value === "pdf") exportToPDF(colaboradoresVisibles);
+              if (value === "excel") exportToExcel(colaboradoresFiltrados);
+              if (value === "pdf") exportToPDF(colaboradoresFiltrados);
             }}
             buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
             icon={<i className="bi bi-download mr-2"></i>}
@@ -122,6 +168,8 @@ export default function CollaboratorsTable() {
               name="search"
               placeholder="Buscar colaborador..."
               icon="bi-search"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
               inputClassName="bg-[#232336] text-gray-200 rounded-xl px-4 py-2 pl-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition w-64"
               containerClassName="mb-0"
             />
@@ -140,22 +188,20 @@ export default function CollaboratorsTable() {
             <tr className="border-b border-[#232336]">
               <th className="py-2 px-3 font-semibold text-center">Nombre</th>
               <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-              <th className="py-2 px-3 font-semibold text-center">Telefono</th>
-              <th className="py-2 px-3 font-semibold text-center">Rol</th>
+              <th className="py-2 px-3 font-semibold text-center">Correo</th>
               <th className="py-2 px-3 font-semibold text-center">Estado</th>
               <th className="py-2 px-3 text-center"></th>
             </tr>
           </thead>
           <tbody>
-            {colaboradoresVisibles.map((c, idx) => (
+            {colaboradoresFiltrados.map((c, idx) => (
               <tr
-                key={c.nombre + c.apellido}
+                key={c.nombre + c.apellido + c.correo}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
               >
                 <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
                 <td className="py-2 px-3 text-center">{c.apellido}</td>
-                <td className="py-2 px-3 text-center">{c.telefono}</td>
-                <td className="py-2 px-3 text-center">{c.rol}</td>
+                <td className="py-2 px-3 text-center">{c.correo}</td>
                 <td className="py-2 px-3 flex items-center gap-4 justify-center">
                   <span
                     className={
@@ -187,7 +233,7 @@ export default function CollaboratorsTable() {
           </select>
         </div>
         <div>
-          1 - {colaboradoresVisibles.length} de {colaboradores.length}
+          1 - {colaboradoresFiltrados.length} de {colaboradores.length}
         </div>
       </div>
     </div>

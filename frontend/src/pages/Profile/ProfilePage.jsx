@@ -8,6 +8,10 @@ import { useAuth } from "../../hooks/useAuth";
 import UpdateProfilePhotoModal from "../../components/layout/UpdateProfilePhotoModal";
 import { showErrorToast } from "../../components/common/popUp/Loading";
 import { client } from "../../supabase/client";
+import CancelProfileConfigModal from "./CancelProfileConfigModal";
+import { useNavigate } from "react-router-dom";
+
+
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -21,6 +25,9 @@ export default function ProfilePage() {
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPhotoModal, setShowPhotoModal] = React.useState(false);
+  const [showCancelModal, setShowCancelModal] = React.useState(false);
+  const navigate = useNavigate();
+  const [isSaved, setIsSaved] = React.useState(false);
   
   const handlePasswordUpdate = async (e) => {
   e.preventDefault(); 
@@ -35,6 +42,7 @@ export default function ProfilePage() {
     alert("Contraseña actualizada correctamente");
     setPassword("");
     setConfirmPassword("");
+    setIsSaved(true);
   }
   };
 
@@ -52,6 +60,14 @@ export default function ProfilePage() {
             <BackButton
               className="w-12 h-12 flex items-center justify-center bg-[#232336] hover:bg-[#2d2d44] text-white rounded-full shadow-lg transition-colors duration-200"
               iconClassName="text-2xl"
+              onClick={() => {
+                {/*Si hay algo escrito en los campos de contraseña y no se ha guardado, al intentar salir aparecerá el modal */}
+                if ((password !== "" || confirmPassword !== "") && !isSaved) {
+                  setShowCancelModal(true);
+                } else {
+                  navigate(-1);
+                }
+              }}
             />
             <h2 className="text-2xl font-bold text-white">Editar perfil</h2>
           </div>
@@ -114,6 +130,18 @@ export default function ProfilePage() {
           onClose={() => setShowPhotoModal(false)}
           onSave={() => setShowPhotoModal(false)}
            user={user}
+        />
+
+        
+      )}
+      {showCancelModal && (
+        <CancelProfileConfigModal
+          onClose={() => setShowCancelModal(false)}
+          onSave={() => {
+            setShowCancelModal(false);
+            navigate(-1);
+            
+          }}
         />
       )}
     </div>

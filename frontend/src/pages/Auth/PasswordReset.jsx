@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PasswordInput from "../../components/common/PasswordInput";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
 import PasswordValidator from "../../components/functionalities/passwordValidation";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
+import { client } from "../../supabase/client"; // ← IMPORTACIÓN FALTANTE
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -13,26 +14,102 @@ function useQuery() {
 
 const PasswordReset = () => {
   const { token } = useParams();
-  const query = useQuery();
-  const email = query.get("email");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState("");
   const [apiError, setApiError] = useState("");
+  const [isValidSession, setIsValidSession] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ← NUEVO ESTADO
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
   });
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
-  const navigate = useNavigate();
 
   const PasswordValid = PasswordValidator({ password: formData.newPassword, onlyReturnValid: true });
   const ConfirmValid = formData.confirmPassword === formData.newPassword;
+
+  useEffect(() => {
+    const verifySession = async () => {
+      try {
+        // DEBUGGING: Mostrar toda la URL actual
+        console.log('Current URL:', window.location.href);
+        console.log('Location hash:', location.hash);
+        console.log('Location search:', location.search);
+        
+        // Verificar si hay un token de reset en la URL (puede venir como hash fragment O como query params)
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const queryParams = new URLSearchParams(location.search);
+        
+        // Intentar obtener tokens del hash primero, luego de query params
+        let accessToken = hashParams.get('access_token') || queryParams.get('access_token');
+        let refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token');
+        let type = hashParams.get('type') || queryParams.get('type');
+        
+        console.log('Hash params:', { 
+          accessToken: accessToken ? 'present' : 'missing', 
+          refreshToken: refreshToken ? 'present' : 'missing', 
+          type 
+        });
+
+        if (type === 'recovery' && accessToken && refreshToken) {
+          console.log('Found recovery tokens, setting session...');
+          // Establecer la sesión con los tokens del reset
+          const { data, error } = await client.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (error) {
+            console.error('Error setting session:', error);
+            showErrorToast("Enlace de recuperación inválido o expirado");
+            navigate("/recuperar-contrasena");
+          } else {
+            console.log('Session set successfully:', data);
+            setIsValidSession(true);
+          }
+        } else {
+          console.log('No recovery tokens found, checking existing session...');
+          // Si no hay tokens de recovery, verificar si ya hay una sesión activa
+          const { data: { session }, error } = await client.auth.getSession();
+          
+          if (error) {
+            console.error('Error getting session:', error);
+            showErrorToast("Error al verificar la sesión");
+            navigate("/recuperar-contrasena");
+          } else if (!session) {
+            console.log('No active session found');
+            console.log('Available URL params:', {
+              hash: location.hash,
+              search: location.search,
+              pathname: location.pathname
+            });
+            showErrorToast("Enlace de recuperación inválido o expirado");
+            navigate("/recuperar-contrasena");
+          } else {
+            console.log('Active session found:', session);
+            setIsValidSession(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error in session verification:', error);
+        showErrorToast("Error al verificar el enlace de recuperación");
+        navigate("/recuperar-contrasena");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifySession();
+  }, [location, navigate]);
 
   const isButtonDisabled = () =>
     !formData.newPassword ||
     !formData.confirmPassword ||
     !PasswordValid ||
     !ConfirmValid ||
-    isSubmitDisabled;
+    isSubmitDisabled ||
+    !isValidSession;
 
   const handleNewPasswordChange = (e) => {
     const newPassword = e.target.value;
@@ -69,38 +146,62 @@ const PasswordReset = () => {
       setApiError("La contraseña no cumple con los requisitos");
       return;
     }
-    setIsSubmitDisabled(true);
 
+    setIsSubmitDisabled(true);
     const toastId = showLoadingToast("Cambiando contraseña...");
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/password-reset/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          new_password: formData.newPassword,
-          token: token,
-          email: email,
-        }),
+      const { data, error } = await client.auth.updateUser({
+        password: formData.newPassword
       });
-      const data = await response.json();
+
       toast.dismiss(toastId);
 
-      if (data.success) {
+      if (error) {
+        console.error('Error updating password:', error); // ← DEBUG
+        showErrorToast(error.message || "No se pudo cambiar la contraseña");
+        setApiError(error.message);
+      } else {
+        console.log('Password updated successfully:', data); // ← DEBUG
         showSuccessToast("Contraseña cambiada exitosamente");
+        // Cerrar sesión después de cambiar la contraseña
+        await client.auth.signOut();
         setTimeout(() => {
           navigate("/iniciar-sesion");
         }, 1800);
-      } else {
-        showErrorToast(data.message || "No se pudo cambiar la contraseña");
-        setApiError(data.message);
       }
     } catch (error) {
+      console.error('Error in password update:', error); // ← DEBUG
       toast.dismiss(toastId);
       showErrorToast("Error al restablecer la contraseña. Intenta nuevamente.");
       setApiError("Error al restablecer la contraseña. Intenta nuevamente.");
     }
     setIsSubmitDisabled(false);
   };
+
+  // Pantalla de carga mientras se verifica la sesión
+  if (isLoading) {
+    return (
+      <FormContainer>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Verificando enlace...</h1>
+          <p className="text-gray-400">Por favor espera mientras verificamos tu enlace de recuperación.</p>
+        </div>
+      </FormContainer>
+    );
+  }
+
+  // Si la sesión no es válida, no mostrar el formulario
+  if (!isValidSession) {
+    return (
+      <FormContainer>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Enlace inválido</h1>
+          <p className="text-gray-400">El enlace de recuperación ha expirado o no es válido.</p>
+        </div>
+      </FormContainer>
+    );
+  }
 
   return (
     <FormContainer>
