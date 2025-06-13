@@ -57,6 +57,28 @@ const publicUrl = publicUrlData.publicUrl;
     if (onSave) onSave(publicUrl);
     onClose();
   };
+  const [dragActive, setDragActive] = useState(false);
+
+const handleDragOver = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragActive(true);
+};
+
+const handleDragLeave = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragActive(false);
+};
+
+const handleDrop = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragActive(false);
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    await handleFileChange({ target: { files: e.dataTransfer.files } });
+  }
+};
 
   return (
     <FloatingModal onClose={onClose}>
@@ -71,7 +93,13 @@ const publicUrl = publicUrlData.publicUrl;
           </svg>
         </span>
         <p className="text-white mb-2">¡Sube una imagen nueva!</p>
-        <div className="border-2 border-dashed border-gray-500 rounded-lg w-full py-8 flex flex-col items-center mb-4">
+        
+       <div
+      className={`border-2 border-dashed rounded-lg w-full py-8 flex flex-col items-center mb-4 ${dragActive ? "border-purple-500 bg-purple-900/10" : "border-gray-500"}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
           <p className="text-gray-400">Arrastra archivos aquí</p>
           <span className="text-gray-400 text-2xl">O</span>
           <Button
