@@ -86,10 +86,6 @@ const fechProjectInfo = async () => {
                 Invitar
               </button>
             </form>
-            {mensaje && (
-              <p className='text-center font-bold mt-3 text-purple-400'>{mensaje}</p>
-            )}
-
             <h3 className='text-white font-semibold mb-2'>Miembros Actuales</h3>
             <hr  className='my-2 border-gray-700' />
             <div className='flex flex-col gap-3 max-h-48 overflow-y-auto'>
