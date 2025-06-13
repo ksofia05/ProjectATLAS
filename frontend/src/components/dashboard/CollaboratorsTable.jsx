@@ -10,64 +10,65 @@ import Switch from "../common/Switch";
 import { useAuth } from "../../hooks/useAuth";
 
 import axios from "axios";
-import {useEffect} from "react";
+import { useEffect } from "react";
 
 export default function CollaboratorsTable() {
   const { user } = useAuth();
   const [colaboradores, setColaboradores] = React.useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
+  const [searchTerm, setSearchTerm] = React.useState("");
 
-useEffect(() => {
-  const fetchProyectos = async () => {
-    console.log("Ejecutando fetchUserProjects");
-    console.log("user:", user);
+  useEffect(() => {
+    const fetchProyectos = async () => {
+      console.log("Ejecutando fetchUserProjects");
+      console.log("user:", user);
 
-    const email = user?.email || user?.user_metadata?.email;
-    console.log("email:", email);
+      const email = user?.email || user?.user_metadata?.email;
+      console.log("email:", email);
 
-    try {
-      // 1. Obtener el usuario por su correo
-      const usuarioResponse = await axios.get(
-        `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
-      );
-      const usuarioDb = usuarioResponse.data[0];
-      const usuarioId = usuarioDb.idusuario;
+      try {
+        // 1. Obtener el usuario por su correo
+        const usuarioResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+        );
+        const usuarioDb = usuarioResponse.data[0];
+        const usuarioId = usuarioDb.idusuario;
 
-      // 2. Obtener los proyectos del usuario
-      const proyectosResponse = await axios.get(
-        `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
-      );
+        // 2. Obtener los proyectos del usuario
+        const proyectosResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+        );
 
-      const proyectos = proyectosResponse.data;
+        const proyectos = proyectosResponse.data;
 
-      if (proyectos.length === 0) {
-        console.warn("No se encontraron proyectos para este usuario.");
+        if (proyectos.length === 0) {
+          console.warn("No se encontraron proyectos para este usuario.");
+          setColaboradores([]);
+          return;
+        }
+
+        // Tomar el primer proyecto (puedes cambiar esta lógica si deseas seleccionar uno en particular)
+        const idProyecto = proyectos[0].id_proyecto;
+
+        // 3. Llamar al endpoint filtro_colaborador
+        const colaboradoresResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${idProyecto}`
+        );
+
+        const data = colaboradoresResponse.data;
+        console.log("Colaboradores del proyecto:", data.colaboradores);
+
+        setColaboradores(data.colaboradores);
+      } catch (error) {
+        console.error("Error al obtener colaboradores:", error);
         setColaboradores([]);
-        return;
       }
+    };
 
-      // Tomar el primer proyecto (puedes cambiar esta lógica si deseas seleccionar uno en particular)
-      const idProyecto = proyectos[0].id_proyecto; // Asegúrate que este campo coincide con tu modelo
-
-      // 3. Llamar al endpoint filtro_colaborador
-      const colaboradoresResponse = await axios.get(
-        `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${idProyecto}`
-      );
-
-      const data = colaboradoresResponse.data;
-      console.log("Colaboradores del proyecto:", data.colaboradores);
-
-      setColaboradores(data.colaboradores);
-    } catch (error) {
-      console.error("Error al obtener colaboradores:", error);
-      setColaboradores([]);
+    if (user) {
+      fetchProyectos();
     }
-  };
-
-  if (user) {
-    fetchProyectos();
-  }
-}, [user]);
+  }, [user]);
 
   const opcionesEstado = [
     { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
@@ -118,12 +119,16 @@ useEffect(() => {
     );
   };
 
-  // Filtro por estado
-  const colaboradoresVisibles = colaboradores.filter((c) =>
-    estadoSeleccionado === "todos"
-      ? true
-      : c.estado?.toLowerCase() === estadoSeleccionado
-  );
+  // Filtrado por estado y búsqueda
+  const colaboradoresFiltrados = colaboradores
+    .filter((c) =>
+      estadoSeleccionado === "todos"
+        ? true
+        : c.estado?.toLowerCase() === estadoSeleccionado
+    )
+    .filter((c) =>
+      c.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
@@ -133,8 +138,8 @@ useEffect(() => {
             buttonLabel="Exportar"
             options={opcionesExportar}
             onSelect={(value) => {
-              if (value === "excel") exportToExcel(colaboradoresVisibles);
-              if (value === "pdf") exportToPDF(colaboradoresVisibles);
+              if (value === "excel") exportToExcel(colaboradoresFiltrados);
+              if (value === "pdf") exportToPDF(colaboradoresFiltrados);
             }}
             buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
             icon={<i className="bi bi-download mr-2"></i>}
@@ -147,6 +152,8 @@ useEffect(() => {
               name="search"
               placeholder="Buscar colaborador..."
               icon="bi-search"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
               inputClassName="bg-[#232336] text-gray-200 rounded-xl px-4 py-2 pl-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition w-64"
               containerClassName="mb-0"
             />
@@ -171,7 +178,7 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            {colaboradoresVisibles.map((c, idx) => (
+            {colaboradoresFiltrados.map((c, idx) => (
               <tr
                 key={c.nombre + c.apellido + c.correo}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
@@ -210,7 +217,7 @@ useEffect(() => {
           </select>
         </div>
         <div>
-          1 - {colaboradoresVisibles.length} de {colaboradores.length}
+          1 - {colaboradoresFiltrados.length} de {colaboradores.length}
         </div>
       </div>
     </div>
