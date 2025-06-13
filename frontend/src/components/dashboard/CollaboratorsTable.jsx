@@ -109,15 +109,31 @@ export default function CollaboratorsTable() {
   };
 
   // Cambia el estado del colaborador (solo local)
-  const handleSwitch = (idx) => {
+const handleSwitch = async (idx) => {
+  const colaborador = colaboradores[idx];
+  console.log("ID del colaborador:", colaborador.id);
+  const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
+
+  try {
+    // PATCH al backend
+    const response = await axios.patch(
+      `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
+      { estado: nuevoEstado }
+    );
+
+    console.log("Estado actualizado:", response.data);
+
+    // Actualiza en el estado local
     setColaboradores((prev) =>
       prev.map((c, i) =>
-        i === idx
-          ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
-          : c
+        i === idx ? { ...c, estado: nuevoEstado } : c
       )
     );
-  };
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    alert("Hubo un error al cambiar el estado del colaborador.");
+  }
+};
 
   // Filtrado por estado y búsqueda
   const colaboradoresFiltrados = colaboradores

@@ -5,6 +5,7 @@ import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
 import toast from 'react-hot-toast';
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
+import { client } from "../../supabase/client"; 
 
 const PasswordRecovery = () => {
   const [step, setStep] = useState(1);
@@ -16,22 +17,26 @@ const PasswordRecovery = () => {
     e.preventDefault();
     setMessage("");
     const toastId = showLoadingToast("Enviando enlace...");
+    
     try {
-      const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/recuperacionContrasena", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      // Intenta con diferentes configuraciones de redirectTo
+      const { data, error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
       });
-      const data = await response.json();
+
       toast.dismiss(toastId);
-      if (data.success) {
-        showSuccessToast("¡Enlace enviado!");
-        setStep(3);
+
+      if (error) {
+        console.error('Reset password error:', error);
+        showErrorToast(error.message || "No se pudo enviar el correo");
+        setMessage(error.message);
       } else {
-        showErrorToast(data.message || "No se pudo enviar el correo");
-        setMessage(data.message);
+        console.log('Reset password success:', data);
+        showSuccessToast("¡Enlace enviado! Revisa tu correo electrónico.");
+        setStep(3);
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast.dismiss(toastId);
       showErrorToast("Error al enviar solicitud. Intenta nuevamente.");
       setMessage("Error al enviar solicitud. Intenta nuevamente.");
@@ -58,10 +63,11 @@ const PasswordRecovery = () => {
               onChange={e => setEmail(e.target.value)}
               icon="bi-envelope-fill"
               containerClassName="mb-0"
+              required
             />
             {message && (
-            <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
-          )}
+              <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
+            )}
             <Button type="submit" className="w-full mt-4">Enviar enlace</Button>
           </form>
         </>
@@ -86,11 +92,12 @@ const PasswordRecovery = () => {
               onChange={e => setEmail(e.target.value)}
               icon="bi-envelope-fill"
               containerClassName="mb-0"
+              required
             />
             {message && (
-            <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
-          )}
-            <Button type="submit" className="w-full mt-4" >Enviar enlace</Button>
+              <p className="text-red-500 text-sm mt-1 mb-0">{message}</p>
+            )}
+            <Button type="submit" className="w-full mt-4">Reenviar enlace</Button>
           </form>
         </>
       )}
