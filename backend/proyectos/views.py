@@ -6,6 +6,7 @@ from .serializer import ProyectSerializer,ProyectoSerializer # Importa el serial
 from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
 from .models import Proyect,Proyecto, ColaboradorProyecto # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
 from tasks.models import Rol,Usuario
+from proyectos.models import ColaboradorProyecto
 from rest_framework.response import Response
 import jwt
 
@@ -98,7 +99,8 @@ def obtener_usuario_por_email_o_uuid(email=None, uuid=None):
     except Usuario.DoesNotExist:
         return None
     
-@api_view(['GET'])
+
+@api_view(['GET'])      
 def get_user_projects(request):
     email = request.query_params.get('correoelectronico')
     if not email:
@@ -179,3 +181,45 @@ def info_proyecto_colaboradores(request):
     except Exception as e:
         return Response({'error': str(e)},status=400)
 # Create your views here.
+
+
+
+@api_view(['GET'])
+def filtro_colaborador(request):
+    id_proyecto = request.query_params.get('id_proyecto')
+    if not id_proyecto:
+        return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
+    try:
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        colaboradores = ColaboradorProyecto.objects.filter(proyecto=proyecto)
+        colaboradores_data = []
+        
+        for colab in colaboradores:
+            usuario = colab.usuario
+            colaboradores_data.append({
+                "nombre": usuario.nombre,
+                "apellido": usuario.apellido,
+                "correo": usuario.correoelectronico,
+                "estado": usuario.estado,
+                "rol": "administrador" if usuario.rol_idrol and usuario.rol_idrol.idrol == 1 else "colaborador"
+            })
+        
+        # # Agregar al administrador si no está incluido
+        # if proyecto.id_usuario:
+        #     admin = proyecto.id_usuario
+        #     if not any(c['correo'] == admin.correoelectronico for c in colaboradores_data):
+        #         colaboradores_data.insert(0, {
+        #             "nombre": admin.nombre,
+        #             "apellido": admin.apellido,
+        #             "correo": admin.correoelectronico,  # <-- corriges 'correpo' a 'correo'
+        #             "estado": admin.estado,
+        #             "rol": "Administrador"
+        #         })
+
+        return Response({
+            "nombreproyecto": proyecto.nombreproyecto,
+            "colaboradores": colaboradores_data
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)

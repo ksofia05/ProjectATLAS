@@ -15,7 +15,7 @@ const EmailRecovery = () => {
           correo electrónico.
         </p>
         <Link
-          to="/password-reset"
+          to="/reset-password"
           className="bg-purple-600 text-white px-4 py-2 rounded-lg w-full text-center hover:bg-purple-700 block"
         >
           Restablecer contraseña
