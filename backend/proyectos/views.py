@@ -197,6 +197,7 @@ def filtro_colaborador(request):
         for colab in colaboradores:
             usuario = colab.usuario
             colaboradores_data.append({
+                "id": usuario.idusuario,
                 "nombre": usuario.nombre,
                 "apellido": usuario.apellido,
                 "correo": usuario.correoelectronico,
@@ -223,3 +224,22 @@ def filtro_colaborador(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+
+@api_view(['PATCH'])
+def actualizar_estado_usuario(request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(idusuario=id_usuario)
+            nuevo_estado = request.data.get('estado')
+
+            if nuevo_estado not in ["Activo", "Inactivo"]:
+                return Response({'error': 'Estado inválido'}, status=400)
+
+            usuario.estado = nuevo_estado
+            usuario.save()
+
+            return Response({'message': 'Estado actualizado correctamente', 'nuevo_estado': usuario.estado})
+        
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
