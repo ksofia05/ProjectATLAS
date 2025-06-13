@@ -4,7 +4,7 @@ from rest_framework import routers
 from tasks import views as task_views
 from proyectos import views as proyectos_views
 from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador
-from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects,filtro_colaborador
+from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects,filtro_colaborador,actualizar_estado_usuario
 
 #api versioning
 router = routers.DefaultRouter()
@@ -25,5 +25,6 @@ urlpatterns = [
     path('api/v1/save_proyect/', save_proyect,name='save_proyect'),
     path('api/v1/save_proyect/', get_user_projects,name='get_user_projects'),
     path('api/v1/invitacionColaborador/', invitacion_colaborador, name='invitacion_colborador'),
-    path('api/v1/filtro_colaborador/', filtro_colaborador, name='filtro_colaborador')
+    path('api/v1/filtro_colaborador/', filtro_colaborador, name='filtro_colaborador'),
+    path('api/v1/usuarios/<int:id_usuario>/estado/',actualizar_estado_usuario, name='actualizar_estado_usuario'),
 ]
