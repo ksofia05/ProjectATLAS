@@ -7,37 +7,67 @@ import autoTable from "jspdf-autotable";
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
 import Switch from "../common/Switch";
+import { useAuth } from "../../hooks/useAuth";
 
-const colaboradoresInicial = [
-  {
-    nombre: "Karen Sofia",
-    apellido: "Lizcano Torres",
-    correo: "karen.lizcano@example.com",
-    estado: "Activo",
-  },
-  {
-    nombre: "Dilan Francisco",
-    apellido: "Rojas Pinilla",
-    correo: "dilan.rojas@example.com",
-    estado: "Inactivo",
-  },
-  {
-    nombre: "Daniel Orlando",
-    apellido: "Velasquez Ramirez",
-    correo: "daniel.velasquez@example.com",
-    estado: "Activo",
-  },
-  {
-    nombre: "Juan David",
-    apellido: "Garzon Sanchez",
-    correo: "juan.garzon@example.com",
-    estado: "Activo",
-  },
-];
+import axios from "axios";
+import {useEffect} from "react";
 
 export default function CollaboratorsTable() {
-  const [colaboradores, setColaboradores] = React.useState(colaboradoresInicial);
+  const { user } = useAuth();
+  const [colaboradores, setColaboradores] = React.useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
+
+useEffect(() => {
+  const fetchProyectos = async () => {
+    console.log("Ejecutando fetchUserProjects");
+    console.log("user:", user);
+
+    const email = user?.email || user?.user_metadata?.email;
+    console.log("email:", email);
+
+    try {
+      // 1. Obtener el usuario por su correo
+      const usuarioResponse = await axios.get(
+        `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+      );
+      const usuarioDb = usuarioResponse.data[0];
+      const usuarioId = usuarioDb.idusuario;
+
+      // 2. Obtener los proyectos del usuario
+      const proyectosResponse = await axios.get(
+        `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+      );
+
+      const proyectos = proyectosResponse.data;
+
+      if (proyectos.length === 0) {
+        console.warn("No se encontraron proyectos para este usuario.");
+        setColaboradores([]);
+        return;
+      }
+
+      // Tomar el primer proyecto (puedes cambiar esta lógica si deseas seleccionar uno en particular)
+      const idProyecto = proyectos[0].id_proyecto; // Asegúrate que este campo coincide con tu modelo
+
+      // 3. Llamar al endpoint filtro_colaborador
+      const colaboradoresResponse = await axios.get(
+        `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${idProyecto}`
+      );
+
+      const data = colaboradoresResponse.data;
+      console.log("Colaboradores del proyecto:", data.colaboradores);
+
+      setColaboradores(data.colaboradores);
+    } catch (error) {
+      console.error("Error al obtener colaboradores:", error);
+      setColaboradores([]);
+    }
+  };
+
+  if (user) {
+    fetchProyectos();
+  }
+}, [user]);
 
   const opcionesEstado = [
     { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
@@ -65,12 +95,11 @@ export default function CollaboratorsTable() {
     const doc = new jsPDF();
     doc.text("Colaboradores", 14, 10);
     autoTable(doc, {
-      head: [["Nombre", "Apellido", "Telefono", "Rol", "Estado"]],
+      head: [["Nombre", "Apellido", "Correo", "Estado"]],
       body: data.map((c) => [
         c.nombre,
         c.apellido,
-        c.telefono,
-        c.rol,
+        c.correo,
         c.estado,
       ]),
       startY: 20,
@@ -78,7 +107,7 @@ export default function CollaboratorsTable() {
     doc.save("colaboradores.pdf");
   };
 
-  // Cambia el estado del colaborador (Activo/Inactivo)
+  // Cambia el estado del colaborador (solo local)
   const handleSwitch = (idx) => {
     setColaboradores((prev) =>
       prev.map((c, i) =>
@@ -89,11 +118,11 @@ export default function CollaboratorsTable() {
     );
   };
 
-  // El filtro cambia según el estado seleccionado (Eso lo revisa julian)
+  // Filtro por estado
   const colaboradoresVisibles = colaboradores.filter((c) =>
     estadoSeleccionado === "todos"
       ? true
-      : c.estado.toLowerCase() === estadoSeleccionado
+      : c.estado?.toLowerCase() === estadoSeleccionado
   );
 
   return (
@@ -144,7 +173,7 @@ export default function CollaboratorsTable() {
           <tbody>
             {colaboradoresVisibles.map((c, idx) => (
               <tr
-                key={c.nombre + c.apellido}
+                key={c.nombre + c.apellido + c.correo}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
               >
                 <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
