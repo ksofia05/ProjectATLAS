@@ -200,6 +200,19 @@ if (step === 2) {    const toastId = showLoadingToast("Registrando...");
       if (authData.session) {
         await client.auth.signOut();
       }
+      if (next && next.startsWith("/dashboard/")) {
+        const idProyecto = next.split("/dashboard/")[1];
+        try {
+          await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
+          });
+        } catch (err) {
+          showErrorToast("Error al asociar colaborador al proyecto.");
+        }
+      }
+
 
       // Siempre redirigir al login, independientemente del estado de la sesión
       showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");

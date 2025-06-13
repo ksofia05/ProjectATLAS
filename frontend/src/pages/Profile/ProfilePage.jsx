@@ -61,12 +61,13 @@ export default function ProfilePage() {
               className="w-12 h-12 flex items-center justify-center bg-[#232336] hover:bg-[#2d2d44] text-white rounded-full shadow-lg transition-colors duration-200"
               iconClassName="text-2xl"
               onClick={() => {
-                if (isSaved) {
-                  navigate(-1);
+                {/*Si hay algo escrito en los campos de contraseña y no se ha guardado, al intentar salir aparecerá el modal */}
+                if ((password !== "" || confirmPassword !== "") && !isSaved) {
+                  setShowCancelModal(true);
                 } else {
-                setShowCancelModal(true);
-              }
-            }}
+                  navigate(-1);
+                }
+              }}
             />
             <h2 className="text-2xl font-bold text-white">Editar perfil</h2>
           </div>
