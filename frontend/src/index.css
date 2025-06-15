@@ -7,3 +7,18 @@
   box-shadow: 0 0 0 0 rgba(0,0,0,0), 0 0 24px 4px rgba(167,139,250,0.13);
   transform: scale(1.0100);
 }
+
+/* Modo gei */
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    #ffe259 0%,
+    #ffa751 20%,
+    #43e97b 40%,
+    #38f9d7 60%,
+    #4f5bd5 80%,
+    #a166ff 100%
+  );
+  background-clip: text;
+  color: transparent;
+}

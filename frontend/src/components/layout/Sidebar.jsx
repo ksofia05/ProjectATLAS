@@ -18,7 +18,7 @@ const Sidebar = ({
         {showLogo && (
           <div className="flex items-center gap-3 mb-10">
             <img src={logo} alt="Logo ATLAS" className="w-12 h-12 object-contain" />
-            <span className="text-3xl font-extrabold tracking-wide bg-gradient-to-r from-yellow-400 via-orange-400 via-green-400 via-cyan-400 via-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">ATLAS</span>
+            <span className="text-3xl font-extrabold tracking-wide rainbow-text">ATLAS</span>
           </div>
         )}
 
@@ -30,13 +30,10 @@ const Sidebar = ({
           <nav>
             <ul className="flex flex-col gap-2">
               {menuItems.map((item) => {
-                // Determina si el ítem está activo
-                const isActive = item.to === "/dashboard"
-                  ? (
-                      location.pathname === "/dashboard" ||
-                      /^\/dashboard\/\d+$/.test(location.pathname)
-                    )
-                  : location.pathname.startsWith(item.to);
+                const isDashboard = item.label === "Dashboard";
+                const isActive = isDashboard
+                  ? location.pathname === item.to
+                  : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
 
                 return (
                   <li key={item.label}>
@@ -44,8 +41,8 @@ const Sidebar = ({
                       to={item.to}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
                         isActive
-                          ? "bg-[#232336] text-white"
-                          : "text-gray-300 hover:bg-[#232336] hover:text-purple-500"
+                          ? "bg-white/10 text-white"
+                          : "text-gray-300 hover:bg-white/5 hover:text-white"
                       }`}
                     >
                       {item.icon && <i className={item.icon + " text-xl"}></i>}
