@@ -39,7 +39,6 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
     
 
 
-
 @api_view(['POST'])
 def save_proyect(request):
     auth_header = request.headers.get('Authorization')
@@ -120,7 +119,7 @@ def get_user_projects(request):
                 'id': proyecto.id_proyecto,
                 'nombreproyecto': proyecto.nombreproyecto,
                 'fechacreacion': proyecto.fechacreacion,
-                # 'enlace': proyecto.enlace,
+                # o
             }
             for proyecto in proyectos
         ]

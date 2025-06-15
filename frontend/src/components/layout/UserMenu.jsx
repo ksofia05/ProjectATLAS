@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import ButtonGrey from "../common/ButtonGrey";
 import userAtlas from "../../assets/atlasUser.png"
 
-const UserMenu = ({ visible, onClose }) => {
+const UserMenu = ({ visible, onClose, fotoPerfil }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -40,9 +40,9 @@ const UserMenu = ({ visible, onClose }) => {
 >
   <div className="flex items-center gap-4 mb-4">
     <img
-      src={userAtlas}
+      src={fotoPerfil}
       alt="Usuario"
-      className="w-14 h-14 rounded-full object-cover"
+      className="w-11 h-11 rounded-full object-cover mb-2"
     />
     <div className="flex-1 min-w-0">
       <div className="text-lg font-semibold text-white leading-tight truncate">
