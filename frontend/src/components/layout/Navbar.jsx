@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
-import userAtlas from "../../assets/atlasUser.png"
+import userAtlas from "../../assets/atlasUser.png";
 
 const Navbar = ({
   showShareButton = false,
@@ -21,7 +21,6 @@ const Navbar = ({
   const params = useParams();
   const projectId = params.id;
 
-  // Define la función antes de usarla
   const getUserName = () => {
     if (!user) return "Loading...";
     const metadata = user.user_metadata;
@@ -31,7 +30,12 @@ const Navbar = ({
   const handleClose = () => setShowShareModal(false);
   const userName = getUserName();
 
-  // Cierra el menú de usuario al hacer clic fuera
+  // Obtener la foto de perfil del usuario (desde Supabase o default)
+  const fotoPerfil =
+    user?.user_metadata?.fotosPerfiles && user.user_metadata.fotosPerfiles.trim() !== ""
+      ? user.user_metadata.fotosPerfiles
+      : userAtlas;
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userRef.current && !userRef.current.contains(event.target)) {
@@ -94,9 +98,10 @@ const Navbar = ({
           onClick={() => setMenuOpen((open) => !open)}
         >
           <img
-            src={userAtlas}
+            src={fotoPerfil}
             alt="Usuario"
             className="w-11 h-11 rounded-full object-cover"
+            onError={e => { e.target.onerror = null; e.target.src = userAtlas; }}
           />
           <div className="text-right">
             <div className="text-base font-semibold text-white text-right">
@@ -104,7 +109,11 @@ const Navbar = ({
             </div>
           </div>
           {/* Menú desplegable */}
-          <UserMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
+          <UserMenu
+            visible={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            fotoPerfil={fotoPerfil} // <-- pasa la foto de perfil al menú
+          />
         </div>
 
         {/* Notificación */}
@@ -114,7 +123,6 @@ const Navbar = ({
         </div>
       </div>
     </nav>
-    
   );
 };
 

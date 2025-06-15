@@ -12,22 +12,23 @@ export default function SidebarProfile() {
   const apellidos = user?.user_metadata?.apellido || "";
   const correo = user?.email || user?.user_metadata?.email || "";
   const telefono = user?.user_metadata?.telefono || "";
-  const fotoPerfil =
-    user?.user_metadata?.fotoPerfil ||
-    {userAtlas};
+  const fotoPerfil = user?.user_metadata?.fotosPerfiles && user.user_metadata.fotosPerfiles.trim() !== ""
+    ? user.user_metadata.fotosPerfiles
+    : userAtlas;
 
   return (
-    <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
+      <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
       <div>
         {/* Logo y título */}
         <div className="flex flex-col items-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-8">Mi perfil</h2>
           <img
-            src={userAtlas}
+            src={fotoPerfil}
             alt="Perfil"
             className="w-32 h-32 rounded-full object-cover border-4 border-gray-700 mb-4 cursor-pointer"
             onClick={() => setShowPhotoModal(true)}
             title="Actualizar foto de perfil"
+            onError={e => { e.target.onerror = null; e.target.src = userAtlas; }}
           />
         </div>
         <hr className="border-gray-700 w-full mb-6" />
@@ -65,6 +66,7 @@ export default function SidebarProfile() {
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
           onSave={() => setShowPhotoModal(false)}
+           user={user}
         />
       )}
     </aside>
