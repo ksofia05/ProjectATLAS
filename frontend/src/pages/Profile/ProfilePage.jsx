@@ -77,46 +77,43 @@ export default function ProfilePage() {
               <div className="max-w-5xl w-full mx-auto mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
                 <form>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div>
-                      <label className="block text-gray-300 mb-2">Nombres:</label>
-                      <Input value={nombres} readOnly />
+                    {/* Columna izquierda */}
+                    <div className="flex flex-col gap-8">
+                      <div>
+                        <label className="block text-gray-300 mb-2">Nombres:</label>
+                        <Input value={nombres} readOnly />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-2">Apellidos:</label>
+                        <Input value={apellidos} readOnly />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-2">Correo Electrónico:</label>
+                        <Input value={correo} readOnly />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Apellidos:</label>
-                      <Input value={apellidos} readOnly />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Correo Electrónico:</label>
-                      <Input value={correo} readOnly />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Numero Telefónico:</label>
-                      <Input value={telefono} placeholder="Registra un número" readOnly />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Contraseña:</label>
-                      <PasswordInput
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        placeholder="********"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Confirmar Contraseña:</label>
-                      <PasswordInput
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        placeholder="********"
-                      />
-                    </div>
-                    <div></div>
-                    <div>
+                    {/* Columna derecha */}
+                    <div className="flex flex-col gap-8 h-full">
+                      <div>
+                        <label className="block text-gray-300 mb-2">Contraseña:</label>
+                        <PasswordInput
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          placeholder="********"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-2">Confirmar Contraseña:</label>
+                        <PasswordInput
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          placeholder="********"
+                        />
+                      </div>
                       <Button
-                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white"
+                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 via-purple-500 hover:to-purple-500 px-8 py-3 rounded-xl font-bold text-white h-[48px] md:mt-8"
                         onClick={handlePasswordUpdate}
-                      >
-                        Guardar Cambios
-                      </Button>
+                      >Guardar Cambios</Button>
                     </div>
                   </div>
                 </form>

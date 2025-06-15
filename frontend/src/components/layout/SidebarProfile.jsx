@@ -41,10 +41,6 @@ export default function SidebarProfile() {
             <span className="font-bold text-gray-300">Email:</span>{" "}
             {correo}
           </p>
-          <p>
-            <span className="font-bold text-gray-300">Teléfono:</span>{" "}
-            {telefono ? telefono : <span className="italic text-gray-400">No registrado</span>}
-          </p>
         </div>
       </div>
       {/* Footer igual al sidebar general */}
