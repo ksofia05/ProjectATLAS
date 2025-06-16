@@ -38,7 +38,7 @@ export default function SidebarProfile() {
             <span className="font-bold text-gray-300">Nombre:</span>{" "}
             {nombres} {apellidos}
           </p>
-          <p className="mb-2">
+          <p className="mb-2 break-all">
             <span className="font-bold text-gray-300">Email:</span>{" "}
             {correo}
           </p>
