@@ -88,13 +88,14 @@ const handleDrop = async (e) => {
       <hr className="border-t border-gray-700 mb-4" />
       <div className="flex flex-col items-center">
         <span className="text-[#7c2ae8] mb-2">
-          <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 17a4 4 0 100-8 4 4 0 000 8zm8-10h-3.17l-1.84-2.58A2 2 0 0012.89 3h-1.78a2 2 0 00-1.6.82L7.17 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"></path>
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-camera-fill" viewBox="0 0 16 16">
+            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+            <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0"/>
           </svg>
         </span>
         <p className="text-white mb-2">¡Sube una imagen nueva!</p>
         
-       <div
+      <div
       className={`border-2 border-dashed rounded-lg w-full py-8 flex flex-col items-center mb-4 ${dragActive ? "border-purple-500 bg-purple-900/10" : "border-gray-500"}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
