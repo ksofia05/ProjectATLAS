@@ -14,7 +14,7 @@ const FloatingModal = ({ children, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div
-        className={`border border-gray-700  relative bg-[#18162b] rounded-2xl shadow-2xl p-8 max-w-md w-full
+        className={`border border-gray-700  relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 max-w-md w-full
           ${isClosing ? "animate-floatModalOut" : "animate-floatModalIn"}`}
         style={{ minHeight: "220px" }}
       >
