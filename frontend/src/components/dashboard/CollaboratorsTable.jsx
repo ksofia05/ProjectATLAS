@@ -4,6 +4,7 @@ import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+import CustomScrollSelect from "../common/CustomScrollSelect";
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
 import Switch from "../common/Switch";
@@ -17,15 +18,11 @@ export default function CollaboratorsTable() {
   const [colaboradores, setColaboradores] = React.useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   useEffect(() => {
     const fetchProyectos = async () => {
-      console.log("Ejecutando fetchUserProjects");
-      console.log("user:", user);
-
       const email = user?.email || user?.user_metadata?.email;
-      console.log("email:", email);
-
       try {
         // 1. Obtener el usuario por su correo
         const usuarioResponse = await axios.get(
@@ -42,12 +39,11 @@ export default function CollaboratorsTable() {
         const proyectos = proyectosResponse.data;
 
         if (proyectos.length === 0) {
-          console.warn("No se encontraron proyectos para este usuario.");
           setColaboradores([]);
           return;
         }
 
-        // Tomar el primer proyecto (puedes cambiar esta lógica si deseas seleccionar uno en particular)
+        // Tomar el primer proyecto
         const idProyecto = proyectos[0].id_proyecto;
 
         // 3. Llamar al endpoint filtro_colaborador
@@ -56,11 +52,8 @@ export default function CollaboratorsTable() {
         );
 
         const data = colaboradoresResponse.data;
-        console.log("Colaboradores del proyecto:", data.colaboradores);
-
         setColaboradores(data.colaboradores);
       } catch (error) {
-        console.error("Error al obtener colaboradores:", error);
         setColaboradores([]);
       }
     };
@@ -109,31 +102,27 @@ export default function CollaboratorsTable() {
   };
 
   // Cambia el estado del colaborador (solo local)
-const handleSwitch = async (idx) => {
-  const colaborador = colaboradores[idx];
-  console.log("ID del colaborador:", colaborador.id);
-  const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
+  const handleSwitch = async (idx) => {
+    const colaborador = colaboradoresFiltrados[idx];
+    const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
-  try {
-    // PATCH al backend
-    const response = await axios.patch(
-      `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
-      { estado: nuevoEstado }
-    );
+    try {
+      // PATCH al backend
+      await axios.patch(
+        `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
+        { estado: nuevoEstado }
+      );
 
-    console.log("Estado actualizado:", response.data);
-
-    // Actualiza en el estado local
-    setColaboradores((prev) =>
-      prev.map((c, i) =>
-        i === idx ? { ...c, estado: nuevoEstado } : c
-      )
-    );
-  } catch (error) {
-    console.error("Error al actualizar estado:", error);
-    alert("Hubo un error al cambiar el estado del colaborador.");
-  }
-};
+      // Actualiza en el estado local
+      setColaboradores((prev) =>
+        prev.map((c, i) =>
+          c.id === colaborador.id ? { ...c, estado: nuevoEstado } : c
+        )
+      );
+    } catch (error) {
+      alert("Hubo un error al cambiar el estado del colaborador.");
+    }
+  };
 
   // Filtrado por estado y búsqueda
   const colaboradoresFiltrados = colaboradores
@@ -145,6 +134,11 @@ const handleSwitch = async (idx) => {
     .filter((c) =>
       c.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+  const colaboradoresMostrados = colaboradoresFiltrados.slice(0, rowsPerPage);
+
+  // Generar opciones del 1 al 50
+  const opcionesFilas = Array.from({ length: 50 }, (_, i) => i + 1);
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
@@ -194,7 +188,7 @@ const handleSwitch = async (idx) => {
             </tr>
           </thead>
           <tbody>
-            {colaboradoresFiltrados.map((c, idx) => (
+            {colaboradoresMostrados.map((c, idx) => (
               <tr
                 key={c.nombre + c.apellido + c.correo}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
@@ -224,16 +218,15 @@ const handleSwitch = async (idx) => {
         </table>
       </div>
       <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
-        <div>
-          Paginado{" "}
-          <select className="bg-[#232336] border border-[#232336] rounded px-2 py-1 text-gray-200 ml-1">
-            <option>10</option>
-            <option>25</option>
-            <option>50</option>
-          </select>
-        </div>
-        <div>
-          1 - {colaboradoresFiltrados.length} de {colaboradores.length}
+        <div className="flex items-center gap-2">
+          <span>
+            Visualizando: {colaboradoresMostrados.length} de {colaboradoresFiltrados.length} colaboradores
+          </span>
+          <CustomScrollSelect
+            value={rowsPerPage}
+            options={opcionesFilas}
+            onChange={setRowsPerPage}
+          />
         </div>
       </div>
     </div>

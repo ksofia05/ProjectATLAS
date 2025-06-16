@@ -65,53 +65,55 @@ const fechProjectInfo = async () => {
     <>
       {showModal && (
         <FloatingModal onClose={handleClose}>
-          <div className='flex-1 p-1'>
-            <h2 className='text-x1 font-bold mb-4 text-white'>Compartir Proyecto</h2>
-            <p className='text-gray-400 mb-8'>
-              Proyecto: <span className='font-semibold text-white'>{projectName || "[Nombre del proyecto]"}</span>
-            </p>
-            <form onSubmit={handleSubmit} className='flex gap-2 mb-4'>
-              <input 
-              type="email" 
-              className='flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400'
-              placeholder="Correo del colaborador"
-              value={email}
-              onChange={(e)=> setEmail(e.target.value)}
-              required
-              />
-              <button
-                type='submit'
-                className='bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition'
-              >
-                Invitar
-              </button>
-            </form>
-            <h3 className='text-white font-semibold mb-2'>Miembros Actuales</h3>
-            <hr  className='my-2 border-gray-700' />
-            <div className='flex flex-col gap-3 max-h-48 overflow-y-auto'>
-              {collaborators.length === 0 && (
-                <div className='text-gray-400 text-center'>Sin colaboradores aún</div>
-              )}
-              {collaborators.map((colab, idx)=>(
-                <div className='flex items-center gap-3' key={colab.correo || idx }>
-                  <div className='flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white'>
-                    {colab.nombre?.charAt(0)}{colab.apellido?.charAt(0)}
+          {({ handleClose }) => (
+            <div className='flex-1 p-1'>
+              <h2 className='text-x1 font-bold mb-4 text-white'>Compartir Proyecto</h2>
+              <p className='text-gray-400 mb-8'>
+                Proyecto: <span className='font-semibold text-white'>{projectName || "[Nombre del proyecto]"}</span>
+              </p>
+              <form onSubmit={handleSubmit} className='flex gap-2 mb-4'>
+                <input 
+                  type="email" 
+                  className='flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400'
+                  placeholder="Correo del colaborador"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <button
+                  type='submit'
+                  className='bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition'
+                >
+                  Invitar
+                </button>
+              </form>
+              <h3 className='text-white font-semibold mb-2'>Miembros Actuales</h3>
+              <hr  className='my-2 border-gray-700' />
+              <div className='flex flex-col gap-3 max-h-48 overflow-y-auto'>
+                {collaborators.length === 0 && (
+                  <div className='text-gray-400 text-center'>Sin colaboradores aún</div>
+                )}
+                {collaborators.map((colab, idx)=>(
+                  <div className='flex items-center gap-3' key={colab.correo || idx }>
+                    <div className='flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white'>
+                      {colab.nombre?.charAt(0)}{colab.apellido?.charAt(0)}
+                    </div>
+                    <div className='flex-1'>
+                      <div className='text-white font-medium leading-tight'>{colab.nombre} {colab.apellido}</div>
+                      <div className='text-gray-400 text-xs'>{colab.correo}</div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      colab.rol === "Administrador"
+                        ? "bg-gray-800 text-white"
+                        : "bg-gray-700 text-gray-200"
+                    }`}>
+                      {colab.rol}
+                    </span>
                   </div>
-                  <div className='flex-1'>
-                    <div className='text-white font-medium leading-tight'>{colab.nombre} {colab.apellido}</div>
-                    <div className='text-gray-400 text-xs'>{colab.correo}</div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    colab.rol === "Administrador"
-                      ? "bg-gray-800 text-white"
-                      : "bg-gray-700 text-gray-200"
-                  }`}>
-                    {colab.rol}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </FloatingModal>
       )}
     </>
