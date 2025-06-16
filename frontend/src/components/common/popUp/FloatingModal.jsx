@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const FloatingModal = ({ children, onClose }) => {
+const FloatingModal = ({ children, onClose, showClose = true }) => {
   const [isClosing, setIsClosing] = useState(false);
 
   const handleClose = () => {
@@ -18,7 +18,7 @@ const FloatingModal = ({ children, onClose }) => {
           ${isClosing ? "animate-floatModalOut" : "animate-floatModalIn"}`}
         style={{ minHeight: "220px" }}
       >
-        {onClose && (
+        {showClose && onClose && (
           <button
             onClick={handleClose}
             className="absolute top-3 right-3 text-purple-400 hover:text-purple-600 text-xl font-bold"
@@ -27,7 +27,7 @@ const FloatingModal = ({ children, onClose }) => {
             ✕
           </button>
         )}
-        {children}
+        {children({ handleClose })}
       </div>
       <style jsx="true">{`
         @keyframes floatModalIn {
