@@ -8,7 +8,7 @@ const FloatingModal = ({ children, onClose, showClose = true }) => {
     setTimeout(() => {
       if (onClose) onClose();
       setIsClosing(false);
-    }, 400); // Debe coincidir con la duración de la animación de salida
+    }, 400); 
   };
 
   return (
@@ -27,7 +27,7 @@ const FloatingModal = ({ children, onClose, showClose = true }) => {
             ✕
           </button>
         )}
-        {children({ handleClose })}
+        {typeof children === "function" ? children({ handleClose }) : children}
       </div>
       <style jsx="true">{`
         @keyframes floatModalIn {
