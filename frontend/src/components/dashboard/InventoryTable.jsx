@@ -6,8 +6,7 @@ import autoTable from "jspdf-autotable";
 
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
-import Button from "../common/Button";
-import ButtonGrey from "../common/ButtonGrey"; // Agrega esta importación
+import ButtonGrey from "../common/ButtonGrey"; 
 import RegisterClientDrawer from "./RegisterClientDrawer";
 
 // Datos estáticos de inventario
@@ -148,7 +147,7 @@ export default function InventoryTable() {
               icon="bi-search"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-4 py-2 pl-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition w-64"
+              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-9 h-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition"
               containerClassName="mb-0"
             />
           </div>
