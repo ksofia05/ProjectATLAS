@@ -25,7 +25,7 @@ const CLIENTES = [
   },
 ];
 
-// Función para obtener la fecha de hoy en formato YYYY-MM-DD
+// Funcion para conseguir la fecha de hoy
 function getToday() {
   const today = new Date();
   return today.toISOString().split("T")[0];
@@ -66,7 +66,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
       timeoutRef.current = setTimeout(() => setMounted(false), 300);
     }
     return () => clearTimeout(timeoutRef.current);
-    // eslint-disable-next-line
   }, [open]);
 
   // Filtra de los clientes según la búsqueda
@@ -84,7 +83,7 @@ export default function RegisterClientDrawer({ open, onClose }) {
     }
   }, [search]);
 
-    // Cierra el dropdown al hacer clic fuera
+    // Cierra el panel lateral al hacer clic fuera
   const handleSelectCliente = (cliente) => {
     setForm(f => ({
       ...f,
