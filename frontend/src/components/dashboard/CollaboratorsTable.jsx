@@ -163,7 +163,7 @@ export default function CollaboratorsTable() {
               icon="bi-search"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-9 h-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition"
+              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
               containerClassName="mb-0"
             />
           </div>

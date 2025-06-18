@@ -22,6 +22,7 @@ const Input = ({ label, type, name, value, onChange, errorMessage, icon, require
             onClick={onIconClick}
             tabIndex={-1}
             aria-label='Buscar'
+            style={{ paddingLeft: 4, paddingRight: 4 }} 
           >
             <i className={icon}></i>
           </button>
