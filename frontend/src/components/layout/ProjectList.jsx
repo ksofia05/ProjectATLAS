@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 
-const ProjectList = () => {
+const ProjectList = ({isColaborador =false}) => {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectError, setProjectError] = useState(null);
@@ -11,14 +11,12 @@ const ProjectList = () => {
 
   useEffect(() => {
     const fetchUserProjects = async () => {
-      if (authLoading) {
-        return;
-      }
+      if (authLoading) return;
       if (!isAuthenticated || !user) {
         setLoadingProjects(false);
         setProjects([]);
         setProjectError(null);
-        return;
+        return;        
       }
 
       setLoadingProjects(true);
@@ -27,18 +25,11 @@ const ProjectList = () => {
 
       try {
         const uuidSupabase = user.id;
-
         const response = await axios.get(
           `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}`
         );
-
         const projectsData = response.data;
-
-        if (projectsData && projectsData.length > 0) {
-          setProjects(projectsData);
-        } else {
-          setProjects([]);
-        }
+        setProjects(projectsData && projectsData.length > 0 ? projectsData : []);
       } catch (error) {
         console.error("Error al cargar proyectos del usuario:", error);
         setProjectError(error.message || "Error al cargar proyectos.");

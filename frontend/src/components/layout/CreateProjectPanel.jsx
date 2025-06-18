@@ -6,7 +6,7 @@ import axios from "axios";
 import Searchbar from "./Searchbar";
 import CardProjects from "../layout/cardProjects";
 
-const CreateProjectPanel = ({ onCreate }) => {
+const CreateProjectPanel = ({ disableCreate }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -116,12 +116,15 @@ const handleCreate = (nuevoProyecto) => {
       {/* Botón de nuevo proyecto */}
       <div className="flex mb-10">
         <button
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg text-xl transition"
-          onClick={() => setModalOpen(true)}
+          className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg text-xl transition
+            ${disableCreate ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => !disableCreate && setModalOpen(true)}
+          disabled={disableCreate}
         >
           <i className="bi bi-plus-circle text-2xl"></i>
           Nuevo Proyecto
         </button>
+        
       </div>
 
       {/* Renderizado condicional de proyectos */}
