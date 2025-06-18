@@ -137,6 +137,13 @@ def asociar_colaborador(request):
         return Response({'error':'Faltan datos'}, status=400)
     try:
         usuario = Usuario.objects.get(correoelectronico=email)
+        if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
+            return Response({'success': False, 'error':'un administrador no puede ser colaborador de otro proyecto'}, status=400)
+        if usuario.rol_idrol and usuario.rol_idrol.idrol == 2:
+            if ColaboradorProyecto.objects.filter(usuario=usuario).exists():
+                return Response({'success': False, 'error':'Este usuario ya es colaborador de otro proyecto'}, status=400)
+        if proyecto.id_usuario and proyecto.id_usuario != usuario:
+            return Response ({'success': False,'error':'Este proyecto ya tiene un administrador'}, status=400)
         rol_colaborador = Rol.objects.get(idrol=2)  
         if usuario.rol_idrol != rol_colaborador:
             usuario.rol_idrol = rol_colaborador
@@ -154,7 +161,7 @@ def info_proyecto_colaboradores(request):
         return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
     try:
         proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
-        colaboradores= ColaboradorProyecto.objects.filter(proyecto=proyecto)
+        colaboradores= ColaboradorProyecto.objects.filter(proyecto=proyecto, usuario__estado="Activo")
         colaboradores_data=[]
         for colab in colaboradores:
             usuario=colab.usuario
