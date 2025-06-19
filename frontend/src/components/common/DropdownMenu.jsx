@@ -33,29 +33,33 @@ const DropdownMenu = ({
         {buttonLabel}
         <i className={`bi bi-chevron-down ml-2 transition-transform ${open ? "rotate-180" : ""}`}></i>
       </ButtonGrey>
-      {open && (
-        <div
-          className={`absolute z-20 mt-2 min-w-[160px] bg-[#181825] border border-gray-700 rounded-xl shadow-lg py-2 ${menuClassName} ${align === "right" ? "right-0" : "left-0"}`}
-        >
-          {options.map((opt, idx) => (
-            <button
-              key={opt.value || idx}
-              className={`w-full text-left px-5 py-2 text-gray-200 hover:bg-[#232336] flex items-center gap-2 transition ${
-                opt.selected ? "font-bold text-purple-400" : ""
-              }`}
-              onClick={() => {
-                setOpen(false);
-                if (onSelect) onSelect(opt.value);
-              }}
-              type="button"
-            >
-              {opt.icon && <span>{opt.icon}</span>}
-              {opt.label}
-            </button>
-          ))}
-          {children}
-        </div>
-      )}
+      <div
+        className={`
+          absolute z-20 mt-2 min-w-[160px] bg-[#181825] border border-gray-700 rounded-xl shadow-lg py-2
+          ${menuClassName} ${align === "right" ? "right-0" : "left-0"}
+          transition-all duration-200 origin-top
+          ${open ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}
+        `}
+        style={{ willChange: "opacity, transform" }}
+      >
+        {options.map((opt, idx) => (
+          <button
+            key={opt.value || idx}
+            className={`w-full text-left px-5 py-2 text-gray-200 hover:bg-[#232336] flex items-center gap-2 transition ${
+              opt.selected ? "font-bold text-purple-400" : ""
+            }`}
+            onClick={() => {
+              setOpen(false);
+              if (onSelect) onSelect(opt.value);
+            }}
+            type="button"
+          >
+            {opt.icon && <span>{opt.icon}</span>}
+            {opt.label}
+          </button>
+        ))}
+        {children}
+      </div>
     </div>
   );
 };

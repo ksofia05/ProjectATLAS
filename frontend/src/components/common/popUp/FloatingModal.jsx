@@ -1,25 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const ANIMATION_DURATION = 300; // ms, igual que el panel lateral
+const ANIMATION_DURATION = 300;
 
 const FloatingModal = ({ children, onClose, showClose = true, open = true }) => {
   const [mounted, setMounted] = useState(false);
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(open);
   const timeoutRef = useRef();
+  const firstRender = useRef(true);
 
-  // Maneja el montaje y desmontaje con animación
   useEffect(() => {
     if (open) {
       setMounted(true);
-      timeoutRef.current = setTimeout(() => setShow(true), 10);
+      if (firstRender.current) {
+        setShow(true);
+        firstRender.current = false;
+      } else {
+        timeoutRef.current = setTimeout(() => setShow(true), 10);
+      }
     } else if (mounted) {
       setShow(false);
       timeoutRef.current = setTimeout(() => setMounted(false), ANIMATION_DURATION);
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [open]);
+  }, [open, mounted]);
 
-  // Cierra el modal con animación
   const handleClose = () => {
     setShow(false);
     setTimeout(() => {
@@ -31,7 +35,7 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
-      {/* Fondo con blur y transición progresiva */}
+      {/* Fondo con blur y transición poco a poco*/}
       <div
         className={`
           fixed inset-0 transition-all duration-300
@@ -49,8 +53,8 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
           fixed inset-0 flex items-center justify-center z-50
           transition-all duration-300
           ${show
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-8 pointer-events-none"}
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-95 translate-y-8 pointer-events-none"}
         `}
         style={{
           transitionProperty: "opacity, transform",
