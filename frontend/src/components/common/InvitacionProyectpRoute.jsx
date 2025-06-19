@@ -18,11 +18,11 @@ const InvitacionProyectoRoute = () => {
       );}
 
   if (isAuthenticated) {
-    return <Navigate to={`/dashboard/${id}`} replace />;
+    return <Navigate to={`/dashboard-create-project`} replace />;
   }
 
   // Si no está autenticado, mostrar NoTenerCuenta con el next
-  return <NoTenerCuenta next={`/dashboard/${id}`} />;
+  return <NoTenerCuenta next={`/dashboard-create-project`} />;
 };
 
 export default InvitacionProyectoRoute;

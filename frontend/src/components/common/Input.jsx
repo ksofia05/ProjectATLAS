@@ -12,16 +12,17 @@ const Input = ({ label, type, name, value, onChange, errorMessage, icon, require
           value={value}
           onChange={onChange}
           required={required}
-          className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errorMessage ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+          className={`px-4 py-3 bg-[#2A273A] text-white border ${errorMessage ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${inputClassName ? inputClassName : "w-full"}`}
           placeholder={placeholder}
         />
         {icon && (
           <button
             type="button"
-            className="absolute right-3 top-3 text-gray-400 text-lg bi bg-transparent border-none p-0 m-0 cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg bi bg-transparent border-none p-0 m-0 cursor-pointer"
             onClick={onIconClick}
             tabIndex={-1}
             aria-label='Buscar'
+            style={{ paddingLeft: 4, paddingRight: 4 }} 
           >
             <i className={icon}></i>
           </button>

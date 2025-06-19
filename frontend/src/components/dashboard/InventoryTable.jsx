@@ -6,7 +6,8 @@ import autoTable from "jspdf-autotable";
 
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
-import Button from "../common/Button";
+import ButtonGrey from "../common/ButtonGrey"; 
+import RegisterClientDrawer from "./RegisterClientDrawer";
 
 // Datos estáticos de inventario
 const INVENTARIO = [
@@ -48,9 +49,10 @@ const INVENTARIO = [
   },
 ];
 
-export default function InventoryTable() {
+export default function InventoryTable({ onEmojiClick }) {
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [showDrawer, setShowDrawer] = React.useState(false);
 
   const opcionesEstado = [
     { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
@@ -65,7 +67,6 @@ export default function InventoryTable() {
 
   // Exportar a Excel
   const exportToExcel = (data) => {
-    // Con esto se define las columnas que se van a exportar
     const ws = XLSX.utils.json_to_sheet(
       data.map((item) => ({
         Equipo: item.equipo,
@@ -120,10 +121,12 @@ export default function InventoryTable() {
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
         <div className="flex gap-3">
-            <Button
+          <ButtonGrey
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-fit"
-            onClick={() => alert("Despues se le pondran funcionalidades ;)")}
-          >+ Agregar nuevo equipo</Button>
+            onClick={() => setShowDrawer(true)}
+          >
+            + Agregar nuevo equipo
+          </ButtonGrey>
           <DropdownMenu
             buttonLabel="Exportar"
             options={opcionesExportar}
@@ -144,7 +147,7 @@ export default function InventoryTable() {
               icon="bi-search"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-4 py-2 pl-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition w-64"
+              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
               containerClassName="mb-0"
             />
           </div>
@@ -172,11 +175,16 @@ export default function InventoryTable() {
           </thead>
           <tbody>
             {inventarioFiltrado.map((item, idx) => (
-              <tr
-                key={item.serie + idx}
-                className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
-              >
-                <td className="py-2 px-3 text-center">{item.equipo}</td>
+              <tr key={item.serie + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
+                <td className="py-2 px-3 text-center">
+                  <span
+                    className="cursor-pointer text-2xl"
+                    title="Ver equipos del cliente"
+                    onClick={() => onEmojiClick(item)}
+                  >
+                    {item.equipo}
+                  </span>
+                </td>
                 <td className="py-2 px-3 text-center">{item.nombre}</td>
                 <td className="py-2 px-3 text-center">{item.apellido}</td>
                 <td className="py-2 px-3 text-center">{item.serie}</td>
@@ -195,8 +203,8 @@ export default function InventoryTable() {
                   <span
                     className={
                       item.estado === "Activo"
-                        ? "w-3 h-3 rounded-full bg-green-400 inline-block"
-                        : "w-3 h-3 rounded-full bg-red-400 inline-block"
+                        ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
+                        : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
                     }
                   ></span>
                 </td>
@@ -223,6 +231,7 @@ export default function InventoryTable() {
           1 - {inventarioFiltrado.length} de {INVENTARIO.length}
         </div>
       </div>
+      <RegisterClientDrawer open={showDrawer} onClose={() => setShowDrawer(false)} />
     </div>
   );
 }

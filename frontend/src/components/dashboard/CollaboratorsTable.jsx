@@ -101,13 +101,12 @@ export default function CollaboratorsTable() {
     doc.save("colaboradores.pdf");
   };
 
-  // Cambia el estado del colaborador (solo local)
   const handleSwitch = async (idx) => {
     const colaborador = colaboradoresFiltrados[idx];
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
     try {
-      // PATCH al backend
+      // Esto lo cambia anny jiji
       await axios.patch(
         `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
         { estado: nuevoEstado }
@@ -124,7 +123,7 @@ export default function CollaboratorsTable() {
     }
   };
 
-  // Filtrado por estado y búsqueda
+  // Aqui se fultra por el estado y la busqueda
   const colaboradoresFiltrados = colaboradores
     .filter((c) =>
       estadoSeleccionado === "todos"
@@ -164,7 +163,7 @@ export default function CollaboratorsTable() {
               icon="bi-search"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-4 py-2 pl-10 focus:outline-none border border-[#232336] focus:border-violet-400 transition w-64"
+              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
               containerClassName="mb-0"
             />
           </div>

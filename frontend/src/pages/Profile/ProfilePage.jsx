@@ -16,12 +16,12 @@ import { useNavigate } from "react-router-dom";
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
 
-  // Extrae los datos del usuario según cómo los guardes en Supabase/Auth
   const nombres = user?.user_metadata?.nombre || "";
   const apellidos = user?.user_metadata?.apellido || "";
   const correo = user?.email || user?.user_metadata?.email || "";
   const telefono = user?.user_metadata?.telefono || "";
-  // Contraseña: por seguridad, nunca la traes del backend, solo para edición
+
+
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPhotoModal, setShowPhotoModal] = React.useState(false);
