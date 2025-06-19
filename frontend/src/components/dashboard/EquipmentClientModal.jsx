@@ -4,6 +4,7 @@ import WideFloatingModal from "../common/popUp/WideFloatingModal";
 import Switch from "../common/Switch";
 import ImagenGenerica from "../../assets/pcDañada.jpg";
 import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
+import InputCalendario from "../common/InputCalendario";
 
 const EquipmentClientModal = ({ equipo, onClose }) => {
   const [fechaSalida, setFechaSalida] = useState("");
@@ -88,21 +89,11 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
                 readOnly
                 placeholder="Comentario de salida"
               />
-              <Input
+              <InputCalendario
                 label="Salida"
-                name="salida"
-                type="date"
                 value={fechaSalida}
                 onChange={(e) => setFechaSalida(e.target.value)}
-                icon="bi-calendar"
-                placeholder="Fecha de salida"
-                inputRef={salidaRef}
-                onIconClick={() =>
-                  salidaRef.current &&
-                  (salidaRef.current.showPicker
-                    ? salidaRef.current.showPicker()
-                    : salidaRef.current.focus())
-                }
+                ref={salidaRef}
               />
             </div>
             {/* Imagen a la derecha */}

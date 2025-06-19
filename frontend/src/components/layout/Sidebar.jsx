@@ -42,7 +42,7 @@ const Sidebar = ({
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
                         isActive
                           ? "bg-white/10 text-white"
-                          : "text-gray-300 hover:bg-white/5 hover:text-white"
+                          : "text-gray-300 hover:bg-white/5 hover:text-purple-600"
                       }`}
                     >
                       {item.icon && <i className={item.icon + " text-xl"}></i>}
