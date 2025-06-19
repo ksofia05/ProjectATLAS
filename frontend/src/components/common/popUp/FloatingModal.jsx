@@ -7,7 +7,7 @@ const FloatingModal = ({
   onClose,
   showClose = true,
   open = true,
-  className = "max-w-md", // <-- Valor por defecto
+  className = "max-w-md", // Valor por defecto
 }) => {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(open);
