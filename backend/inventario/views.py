@@ -27,5 +27,34 @@ class EquipoAgendamientoViewSet(viewsets.ModelViewSet):
     serializer_class = EquipoAgendamientoSerializer  # Especifica el serializador que se utilizará para convertir los datos a JSON y viceversa.
 
 
+@api_view(['GET'])
+def clientes_por_proyecto(request):
+    id_proyecto = request.GET.get('id_proyecto')
+
+    if not id_proyecto:
+        return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
+
+    try:
+        clientes = Cliente.objects.filter(proyecto=id_proyecto)
+        clientes_data = []
+
+        for cliente in clientes:
+            clientes_data.append({
+                "dni": cliente.dni,
+                "nombre": cliente.nombre,
+                "apellido": cliente.apellido,
+                "telefono": cliente.telefono,
+                "correo": cliente.correo,
+                "proyecto": cliente.proyecto_id,
+                "estado": "Activo",
+            })
+
+        return Response({"clientes": clientes_data})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+
 
 # Create your views here.

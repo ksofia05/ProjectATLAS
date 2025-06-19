@@ -37,7 +37,7 @@ export default function RegisterClientDrawer({ open, onClose }) {
     nombre: "",
     email: "",
     telefono: "",
-    entrada: getToday(), // por defecto tendra la fecha de hoy (anny me confundio :b)
+    entrada: getToday(), // por defecto tendra la fecha de hoy (anny me confundio :b) grosero le dije que eso se hacia en la bd de datos no en el front enojo, furia
     serie: "",
     comentario: "",
     imagen: null,
