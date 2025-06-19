@@ -1,5 +1,6 @@
 from django.db import models
 from tasks.models import Usuario
+from proyectos.models import Proyecto
 # Create your models here.
 
 class Agendamiento(models.Model):
@@ -18,9 +19,10 @@ class Cliente(models.Model):
     telefono = models.CharField(max_length=13)
     correo = models.CharField(max_length=45)
     dni = models.AutoField(primary_key=True)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, db_column='proyecto', null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'Cliente'
 
 

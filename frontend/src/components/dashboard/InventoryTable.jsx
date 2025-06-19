@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
@@ -6,75 +6,65 @@ import autoTable from "jspdf-autotable";
 
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
-import ButtonGrey from "../common/ButtonGrey"; 
+import ButtonGrey from "../common/ButtonGrey";
 import RegisterClientDrawer from "./RegisterClientDrawer";
-
-// Datos estáticos de inventario
-const INVENTARIO = [
-  {
-    equipo: "💻",
-    nombre: "Jose Jacobo",
-    apellido: "Rojas Aponte",
-    serie: "SN1234-5678-9101",
-    ingreso: "2025-01-21",
-    salida: "2025-01-23",
-    estado: "Activo",
-  },
-  {
-    equipo: "💻",
-    nombre: "Dilan Francisco",
-    apellido: "Rojas Pinilla",
-    serie: "CP-2024-ABCD-1234-EFGH",
-    ingreso: "2025-01-09",
-    salida: "2025-02-24",
-    estado: "Inactivo",
-  },
-  {
-    equipo: "💻",
-    nombre: "Daniel Orlando",
-    apellido: "Velasquez Ramirez",
-    serie: "TV2024-XYZ-0001",
-    ingreso: "2025-02-11",
-    salida: "2025-02-12",
-    estado: "Activo",
-  },
-  {
-    equipo: "💻",
-    nombre: "Juan David",
-    apellido: "Garzon Sanchez",
-    serie: "REF-2023-AB1C2",
-    ingreso: "2025-03-13",
-    salida: "2025-02-12",
-    estado: "Activo",
-  },
-];
+import { useAuth } from "../../hooks/useAuth";
+import axios from "axios";
 
 export default function InventoryTable({ onEmojiClick }) {
-  const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [showDrawer, setShowDrawer] = React.useState(false);
+  const { user } = useAuth();
+  const [equipos, setEquipos] = useState([]);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDrawer, setShowDrawer] = useState(false);
 
-  const opcionesEstado = [
-    { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
-    { label: "Activo", value: "Activo", selected: estadoSeleccionado === "Activo" },
-    { label: "Inactivo", value: "Inactivo", selected: estadoSeleccionado === "Inactivo" },
-  ];
+  useEffect(() => {
+    const fetchEquipos = async () => {
+      const email = user?.email || user?.user_metadata?.email;
 
-  const opcionesExportar = [
-    { label: "Excel", value: "excel" },
-    { label: "PDF", value: "pdf" },
-  ];
+      try {
+        const usuarioRes = await axios.get(
+          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+        );
+        const usuarioId = usuarioRes.data[0].idusuario;
 
-  // Exportar a Excel
+        const proyectosRes = await axios.get(
+          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+        );
+        const proyectos = proyectosRes.data;
+
+        if (proyectos.length === 0) {
+          setEquipos([]);
+          return;
+        }
+
+        const idProyecto = proyectos[0].id_proyecto;
+
+        const clientesRes = await axios.get(
+          `http://localhost:8000/tasks/api/v1/clientes_por_proyecto/?id_proyecto=${idProyecto}`
+        );
+
+        setEquipos(clientesRes.data.clientes);
+      } catch (error) {
+        console.error("Error al obtener los equipos:", error);
+        setEquipos([]);
+      }
+    };
+
+    if (user) {
+      fetchEquipos();
+    }
+  }, [user]);
+
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(
       data.map((item) => ({
-        Equipo: item.equipo,
+        Equipo: "💻",
         Nombre: item.nombre,
         Apellido: item.apellido,
-        "No. Serie": item.serie,
-        Ingreso: item.ingreso,
-        Salida: item.salida,
+        "No. Serie": item.serie || "N/A",
+        Ingreso: item.ingreso || "-",
+        Salida: item.salida || "-",
         Estado: item.estado,
       }))
     );
@@ -85,18 +75,17 @@ export default function InventoryTable({ onEmojiClick }) {
     saveAs(blob, "inventario.xlsx");
   };
 
-  // Exportar a PDF
   const exportToPDF = (data) => {
     const doc = new jsPDF();
     doc.text("Inventario", 14, 10);
     autoTable(doc, {
       head: [["Equipo", "Nombre", "Apellido", "No. Serie", "Ingreso", "Salida", "Estado"]],
       body: data.map((item) => [
-        item.equipo,
+        "💻",
         item.nombre,
         item.apellido,
-        item.serie,
-        item.ingreso,
+        item.serie || "N/A",
+        item.ingreso || "-",
         item.salida || "-",
         item.estado,
       ]),
@@ -105,14 +94,13 @@ export default function InventoryTable({ onEmojiClick }) {
     doc.save("inventario.pdf");
   };
 
-  // Filtrado por estado y búsqueda
-  const inventarioFiltrado = INVENTARIO.filter(
+  const equiposFiltrados = equipos.filter(
     (item) =>
       (estadoSeleccionado === "todos" || item.estado === estadoSeleccionado) &&
       (
         (item.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (item.apellido?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (item.cliente?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (item.correo?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (item.serie?.toLowerCase() || "").includes(searchTerm.toLowerCase())
       )
   );
@@ -129,36 +117,42 @@ export default function InventoryTable({ onEmojiClick }) {
           </ButtonGrey>
           <DropdownMenu
             buttonLabel="Exportar"
-            options={opcionesExportar}
+            options={[
+              { label: "Excel", value: "excel" },
+              { label: "PDF", value: "pdf" },
+            ]}
             onSelect={(value) => {
-              if (value === "excel") exportToExcel(inventarioFiltrado);
-              if (value === "pdf") exportToPDF(inventarioFiltrado);
+              if (value === "excel") exportToExcel(equiposFiltrados);
+              if (value === "pdf") exportToPDF(equiposFiltrados);
             }}
             buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
             icon={<i className="bi bi-download mr-2"></i>}
           />
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <div className="relative">
-            <Input
-              type="text"
-              name="search"
-              placeholder="Buscar equipo..."
-              icon="bi-search"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
-              containerClassName="mb-0"
-            />
-          </div>
+          <Input
+            type="text"
+            name="search"
+            placeholder="Buscar equipo o cliente..."
+            icon="bi-search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
+            containerClassName="mb-0"
+          />
           <DropdownMenu
             buttonLabel="Estado"
-            options={opcionesEstado}
+            options={[
+              { label: "Todos", value: "todos" },
+              { label: "Activo", value: "Activo" },
+              { label: "Inactivo", value: "Inactivo" },
+            ]}
             onSelect={setEstadoSeleccionado}
             buttonClassName="px-4 py-2 font-semibold hover:shadow shadow-[#8d49e7] text-base flex items-center gap-2"
           />
         </div>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-center">
           <thead>
@@ -174,38 +168,32 @@ export default function InventoryTable({ onEmojiClick }) {
             </tr>
           </thead>
           <tbody>
-            {inventarioFiltrado.map((item, idx) => (
-              <tr key={item.serie + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
+            {equiposFiltrados.map((item, idx) => (
+              <tr key={(item.serie || item.correo) + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
                 <td className="py-2 px-3 text-center">
                   <span
                     className="cursor-pointer text-2xl"
-                    title="Ver equipos del cliente"
-                    onClick={() => onEmojiClick(item)}
+                    title="Ver detalles del equipo"
+                    onClick={() => onEmojiClick?.(item)}
                   >
-                    {item.equipo}
+                    💻
                   </span>
                 </td>
                 <td className="py-2 px-3 text-center">{item.nombre}</td>
                 <td className="py-2 px-3 text-center">{item.apellido}</td>
-                <td className="py-2 px-3 text-center">{item.serie}</td>
-                <td className="py-2 px-3 text-center">{item.ingreso}</td>
+                <td className="py-2 px-3 text-center">{item.serie || "N/A"}</td>
+                <td className="py-2 px-3 text-center">{item.ingreso || "-"}</td>
                 <td className="py-2 px-3 text-center">{item.salida || "-"}</td>
                 <td className="py-2 px-3 flex items-center gap-2 justify-center">
                   <span
-                    className={
-                      item.estado === "Activo"
-                        ? "text-green-400 font-semibold"
-                        : "text-red-400 font-semibold"
-                    }
+                    className={item.estado === "Activo" ? "text-green-400 font-semibold" : "text-red-400 font-semibold"}
                   >
                     {item.estado}
                   </span>
                   <span
-                    className={
-                      item.estado === "Activo"
-                        ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
-                        : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
-                    }
+                    className={`w-3 h-3 rounded-full ${
+                      item.estado === "Activo" ? "bg-green-500" : "bg-red-500"
+                    } inline-block`}
                   ></span>
                 </td>
                 <td className="py-2 px-3 text-center">
@@ -218,6 +206,7 @@ export default function InventoryTable({ onEmojiClick }) {
           </tbody>
         </table>
       </div>
+
       <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
         <div>
           Paginado{" "}
@@ -228,9 +217,10 @@ export default function InventoryTable({ onEmojiClick }) {
           </select>
         </div>
         <div>
-          1 - {inventarioFiltrado.length} de {INVENTARIO.length}
+          1 - {equiposFiltrados.length} de {equipos.length}
         </div>
       </div>
+
       <RegisterClientDrawer open={showDrawer} onClose={() => setShowDrawer(false)} />
     </div>
   );
