@@ -49,7 +49,7 @@ const INVENTARIO = [
   },
 ];
 
-export default function InventoryTable() {
+export default function InventoryTable({ onEmojiClick }) {
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [showDrawer, setShowDrawer] = React.useState(false);
@@ -175,11 +175,16 @@ export default function InventoryTable() {
           </thead>
           <tbody>
             {inventarioFiltrado.map((item, idx) => (
-              <tr
-                key={item.serie + idx}
-                className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
-              >
-                <td className="py-2 px-3 text-center">{item.equipo}</td>
+              <tr key={item.serie + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
+                <td className="py-2 px-3 text-center">
+                  <span
+                    className="cursor-pointer text-2xl"
+                    title="Ver equipos del cliente"
+                    onClick={() => onEmojiClick(item)}
+                  >
+                    {item.equipo}
+                  </span>
+                </td>
                 <td className="py-2 px-3 text-center">{item.nombre}</td>
                 <td className="py-2 px-3 text-center">{item.apellido}</td>
                 <td className="py-2 px-3 text-center">{item.serie}</td>
@@ -198,8 +203,8 @@ export default function InventoryTable() {
                   <span
                     className={
                       item.estado === "Activo"
-                        ? "w-3 h-3 rounded-full bg-green-400 inline-block"
-                        : "w-3 h-3 rounded-full bg-red-400 inline-block"
+                        ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
+                        : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
                     }
                   ></span>
                 </td>

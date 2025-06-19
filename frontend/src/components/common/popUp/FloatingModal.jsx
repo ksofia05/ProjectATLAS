@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const FloatingModal = ({ children, onClose, showClose = true }) => {
+const FloatingModal = ({ children, onClose, showClose = true, className = "max-w-md" }) => {
   const [isClosing, setIsClosing] = useState(false);
 
   const handleClose = () => {
@@ -14,8 +14,8 @@ const FloatingModal = ({ children, onClose, showClose = true }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div
-        className={`border border-gray-700  relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 max-w-md w-full
-          ${isClosing ? "animate-floatModalOut" : "animate-floatModalIn"}`}
+        className={`border border-gray-700 relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 w-full
+          ${className} ${isClosing ? "animate-floatModalOut" : "animate-floatModalIn"}`}
         style={{ minHeight: "220px" }}
       >
         {showClose && onClose && (

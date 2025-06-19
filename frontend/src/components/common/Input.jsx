@@ -1,11 +1,12 @@
 import React from 'react';
 
-const Input = ({ label, type, name, value, onChange, errorMessage, icon, required, containerClassName, placeholder, onIconClick, inputClassName }) => {
+const Input = ({ label, type, name, value, onChange, errorMessage, icon, required, containerClassName, placeholder, onIconClick, inputClassName, inputRef }) => {
   return (
     <div className={containerClassName ? containerClassName : "mb-6"}>
       <label htmlFor={name} className="block text-gray-300 font-medium mb-2">{label}</label>
       <div className="relative">
         <input
+          ref={inputRef} 
           type={type}
           id={name}
           name={name}
