@@ -1,0 +1,337 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import FormContainer from '../../components/common/FormContainer';
+import Input from '../../components/common/Input';
+import PasswordInput from '../../components/common/PasswordInput';
+import Checkbox from '../../components/common/Checkbox';
+import Button from '../../components/common/Button';
+import PasswordValidator from '../../components/functionalities/passwordValidation';
+import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
+import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
+import toast from "react-hot-toast";
+import { client } from '../../supabase/client';
+import { useLocation } from 'react-router-dom';
+
+const Register = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    termsAccepted: false,
+  });
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next") || "/dashboard-create-project";
+
+
+  useRegisterFormPersistence(setFormData, setStep);
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+
+  const validateField = (name, value) => {
+    let error = "";
+    if (name === "firstName") {
+      if (!value) error = "El nombre es requerido";
+    }
+    if (name === "lastName") {
+      if (!value) error = "El apellido es requerido";
+    }
+    if (name === "email") {
+      const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+      if (!value) {
+        error = "El correo electrónico es requerido";
+      } else if (!emailRegex.test(value)) {
+        error = "Correo electrónico inválido";
+      }
+    }
+    return error;
+  };
+
+  const handleChange = ({ target: { name, value, type, checked } }) => {
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+    const error = validateField(name, type === "checkbox" ? checked : value);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error,
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  useEffect(() => {
+    const isFilled = formData.firstName && formData.lastName && formData.email;
+    const firstNameError = validateField("firstName", formData.firstName);
+    const lastNameError = validateField("lastName", formData.lastName);
+    const emailError = validateField("email", formData.email);
+    const hasLocalErrors = !!(firstNameError || lastNameError || emailError);
+    const hasBackendEmailError = !!errors.email;
+    setIsSubmitDisabled(!(isFilled && !hasLocalErrors && !hasBackendEmailError));
+  }, [formData.firstName, formData.lastName, formData.email, errors]);
+
+  const handleBack = () => setStep(1);
+
+  const handleNext = async () => {
+    const emailError = validateField("email", formData.email);
+    setErrors(prevErrors => ({ ...prevErrors, email: emailError }));
+
+    if (!emailError && formData.firstName && formData.lastName && formData.email) {
+      const toastId = showLoadingToast("Verificando...");
+      try {
+        const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ checkEmailOnly: true, email: formData.email }),
+        });
+        const data = await response.json();
+        toast.dismiss(toastId);
+
+        if (response.ok) {
+          setStep(2);
+        } else {
+          setErrors(prevErrors => ({ ...prevErrors, email: data.error || 'Este correo ya está registrado.' }));
+        }
+      } catch (error) {
+        toast.dismiss(toastId);
+        console.error("Error al verificar el correo:", error);
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.termsAccepted) {
+      showErrorToast('Debes aceptar los\ntérminos y condiciones.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      showErrorToast('Las contraseñas no coinciden.');
+      return;
+    }
+
+if (step === 2) {    const toastId = showLoadingToast("Registrando...");
+
+    try {
+      // registrar en Supabase Auth
+      const { data: authData, error: authError } = await client.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            nombre: formData.firstName,
+            apellido: formData.lastName
+          }
+        }
+      });
+
+      if (authError) {
+        toast.dismiss(toastId);
+        
+        // Manejo específico de errores
+        if (authError.message.includes('User already registered')) {
+          showErrorToast('Este correo ya está registrado.');
+          setStep(1);
+          setErrors(prev => ({ ...prev, email: 'Este correo ya está registrado.' }));
+        } else {
+          showErrorToast(authError.message || "Error al registrar.");
+        }
+        return;
+      }
+
+      // guardar en tabla Usuario
+      if (authData.user) {
+        const { data: userData, error: dbError } = await client
+          .from('Usuario')
+          .insert([
+            {
+              uuid_supabase: authData.user.id,
+              auth_user_id: authData.user.id, // UUID de Supabase Auth
+              nombre: formData.firstName,
+              apellido: formData.lastName,
+              correoElectronico: formData.email,
+              estado: 'Activo',
+              suscripcion: 'Gratuito',
+              terminoServicio: 'TRUE'
+            }
+          ])
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('Error al guardar en tabla Usuario:', dbError);
+          
+          toast.dismiss(toastId);
+          showErrorToast("Error al completar el registro en la base de datos.");
+          return;
+        }
+
+        console.log('Usuario guardado en BD:', userData);
+        
+        await client.auth.updateUser({
+          data: { 
+            usuario_db_id: userData.id // Guardar tu ID int para fácil acceso
+          }
+        });
+      }
+
+      toast.dismiss(toastId);
+
+      // Limpiar localStorage
+      localStorage.removeItem('registerFormData');
+      localStorage.removeItem('registerStep');
+
+      // Cerrar cualquier sesión que se haya creado automáticamente
+      if (authData.session) {
+        await client.auth.signOut();
+      }
+      if (next && next.startsWith("/dashboard/")) {
+        const idProyecto = next.split("/dashboard/")[1];
+        try {
+          await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
+          });
+        } catch (err) {
+          showErrorToast("Error al asociar colaborador al proyecto.");
+        }
+      }
+
+
+      // Siempre redirigir al login, independientemente del estado de la sesión
+      showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
+      navigate(`/iniciar-sesion?next=${encodeURIComponent(next)}`);
+
+    } catch (err) {
+      toast.dismiss(toastId);
+      showErrorToast("Error inesperado al registrar.");
+      console.error('Error en registro:', err);
+    }
+  };
+
+  
+  };
+
+  return (
+    <FormContainer>
+      {step === 1 ? (
+        <>
+          <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
+          <p className="text-gray-400 text-center mb-6">
+            ¿Ya estás registrado?{' '}
+            <Link to="/iniciar-sesion" className="text-purple-500 hover:underline">
+              Iniciar sesión
+            </Link>
+          </p>
+          <Input
+            label="Nombres"
+            type="text"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            errorMessage={errors.firstName}
+            icon={"bi-person-fill"}
+          />
+          <Input
+            label="Apellidos"
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            errorMessage={errors.lastName}
+            onChange={handleChange}
+            icon={"bi-person-fill"}
+          />
+          <Input
+            label="Correo"
+            type="email"
+            name="email"
+            value={formData.email}
+            errorMessage={errors.email}
+            onChange={handleChange}
+            icon={"bi-envelope-fill"}
+          />
+          <Button
+            onClick={handleNext}
+            disabled={isSubmitDisabled}
+            className={isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            Siguiente
+          </Button>
+        </>
+      ) : (
+        <>
+          <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
+          <p className="text-gray-400 text-center mb-6">¡Casi listo! Continúa con la creación de tu contraseña.</p>
+          <PasswordInput
+            label="Crear Contraseña"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <PasswordValidator password={formData.password} />
+          <PasswordInput
+            label="Confirmar Contraseña"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            errorMessage={
+              formData.confirmPassword && formData.confirmPassword !== formData.password
+                ? 'Las contraseñas no coinciden'
+                : ''
+            }
+          />
+          <Checkbox
+            label={
+              <>
+                Acepto los{' '}
+                <Link
+                  to="/terminos"
+                  state={{ from: "/registrarse" }}
+                  className="text-purple-500 hover:underline"
+                  onClick={() => saveRegisterFormToStorage(formData, step)}
+                >Términos de Servicio
+                </Link>{' '}
+                y{' '}
+                <Link
+                  to="/politica-de-privacidad"
+                  state={{ from: "/registrarse" }}
+                  className="text-purple-500 hover:underline"
+                  onClick={() => saveRegisterFormToStorage(formData, step)}
+                >Políticas de Privacidad
+                </Link>
+              </>
+            }
+            name="termsAccepted"
+            checked={formData.termsAccepted}
+            onChange={handleChange}
+          />
+          <div className="flex justify-between space-x-8">
+            <Button onClick={handleBack}>Atrás</Button>
+            <Button onClick={handleSubmit} type="submit">
+              Registrar
+            </Button>
+          </div>
+        </>
+      )}
+    </FormContainer>
+  );
+};
+
+export default Register;
