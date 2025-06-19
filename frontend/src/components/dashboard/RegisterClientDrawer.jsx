@@ -10,18 +10,21 @@ const CLIENTES = [
     nombre: "Jose Jacobo",
     email: "jose@email.com",
     telefono: "3001234567",
+    serie: "SN1234-5678-9101",
   },
   {
     identificacion: "1107977786",
     nombre: "Dilan Francisco",
     email: "dilan@email.com",
     telefono: "3009876543",
+    serie: "CP-2024-ABCD-1234-EFGH",
   },
   {
     identificacion: "1107979999",
     nombre: "Daniel Orlando",
     email: "daniel@email.com",
     telefono: "3012345678",
+    serie: "TV2024-XYZ-0001",
   },
 ];
 
@@ -43,16 +46,15 @@ export default function RegisterClientDrawer({ open, onClose }) {
     imagen: null,
   });
 
-  // Controla si el panel ya esta montado
+  // Controla si el panel ya esta montad
   const [mounted, setMounted] = useState(false);
-  // Controla la clase de animación
+
   const [showDrawer, setShowDrawer] = useState(false);
 
-  // Buscador de clientes
-  const [search, setSearch] = useState("");
-  const [filtered, setFiltered] = useState([]);
+  const [sugerencias, setSugerencias] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const searchInputRef = useRef();
+  const [ignoreNextFocus, setIgnoreNextFocus] = useState(false);
+  const inputIdRef = useRef();
 
   // Animación de entrada/salida
   const timeoutRef = useRef();
@@ -66,24 +68,33 @@ export default function RegisterClientDrawer({ open, onClose }) {
       timeoutRef.current = setTimeout(() => setMounted(false), 300);
     }
     return () => clearTimeout(timeoutRef.current);
-  }, [open]);
+  }, [open, mounted]);
 
-  // Filtra de los clientes según la búsqueda
+  // Filtra sugerencias según la identificación escrita
   useEffect(() => {
-    if (search.length > 0) {
-      setFiltered(
-        CLIENTES.filter(c =>
-          c.identificacion.includes(search)
-        )
+    if (form.identificacion.length > 0) {
+      const filtrados = CLIENTES.filter(c =>
+        c.identificacion.includes(form.identificacion)
       );
-      setShowDropdown(true);
+      setSugerencias(filtrados);
+      setShowDropdown(filtrados.length > 0);
     } else {
-      setFiltered([]);
+      setSugerencias([]);
       setShowDropdown(false);
     }
-  }, [search]);
+    // Si el usuario borra todo, limpia los campos
+    if (!CLIENTES.some(c => c.identificacion === form.identificacion)) {
+      setForm(f => ({
+        ...f,
+        nombre: "",
+        email: "",
+        telefono: "",
+        serie: "",
+      }));
+    }
+  }, [form.identificacion]);
 
-    // Cierra el panel lateral al hacer clic fuera
+  // Selecciona cliente de la lista y autocompleta todos los campos, incluido 'serie'
   const handleSelectCliente = (cliente) => {
     setForm(f => ({
       ...f,
@@ -91,9 +102,13 @@ export default function RegisterClientDrawer({ open, onClose }) {
       nombre: cliente.nombre,
       email: cliente.email,
       telefono: cliente.telefono,
+      serie: cliente.serie || "",
     }));
-    setSearch(cliente.identificacion);
     setShowDropdown(false);
+    setIgnoreNextFocus(true);
+    if (inputIdRef.current) {
+      inputIdRef.current.blur();
+    }
   };
 
   const handleChange = (e) => {
@@ -102,6 +117,14 @@ export default function RegisterClientDrawer({ open, onClose }) {
       ...prev,
       [name]: type === "file" ? files[0] : value,
     }));
+  };
+
+  const handleIdFocus = () => {
+    if (ignoreNextFocus) {
+      setIgnoreNextFocus(false); // Resetea el bloqueo
+      return;
+    }
+    if (sugerencias.length > 0) setShowDropdown(true);
   };
 
   const handleSubmit = (e) => {
@@ -127,7 +150,7 @@ export default function RegisterClientDrawer({ open, onClose }) {
         onClick={onClose}
         aria-label="Cerrar panel"
       />
-      {/* Panel flotante con sus efectos */}
+      {/* Efectos del panel */}
       <aside
         className={`
           fixed top-0 right-0 h-full w-full max-w-md bg-[#181825] shadow-2xl p-8 overflow-y-auto
@@ -144,42 +167,36 @@ export default function RegisterClientDrawer({ open, onClose }) {
           <h2 className="text-3xl font-bold text-white">Registro de cliente</h2>
           <button onClick={onClose} className="text-white text-2xl" tabIndex={0}>&times;</button>
         </div>
-        {/* Buscador de cliente */}
-        <div className="mb-4 relative">
-          <label className="text-white block mb-1 font-semibold">Buscar cliente por identificación</label>
-          <input
-            type="text"
-            ref={searchInputRef}
-            className="w-full rounded-lg p-2 bg-[#232336] text-white outline-none"
-            placeholder="Buscar por número de identificación"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onFocus={() => { if (filtered.length > 0) setShowDropdown(true); }}
-            autoComplete="off"
-          />
-          {/* Este es filtro de los resultados, y su autocompletado */}
-          {showDropdown && filtered.length > 0 && (
-            <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
-              {filtered.map(cliente => (
-                <li
-                  key={cliente.identificacion}
-                  className="p-2 hover:bg-[#181825] cursor-pointer text-white"
-                  onClick={() => handleSelectCliente(cliente)}
-                >
-                  {cliente.identificacion} - {cliente.nombre}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
         <form onSubmit={handleSubmit}>
-          <Input
-            label="N° de identificación"
-            name="identificacion"
-            value={form.identificacion}
-            onChange={handleChange}
-            placeholder="Buscar"
-          />
+          {/* Campo de identificación con autocompletado */}
+          <div className="mb-4 relative">
+            <label className="text-white block mb-1 font-semibold">N° de identificación</label>
+            <input
+              type="text"
+              ref={inputIdRef}
+              name="identificacion"
+              className="w-full rounded-lg p-2 bg-[#232336] text-white outline-none"
+              placeholder="Buscar o escribir número de identificación"
+              value={form.identificacion}
+              onChange={handleChange}
+              onFocus={handleIdFocus}
+              autoComplete="off"
+            />
+            {/* Este es el desplegable que se muestra al buscar */}
+            {showDropdown && (
+              <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
+                {sugerencias.map(cliente => (
+                  <li
+                    key={cliente.identificacion}
+                    className="p-2 hover:bg-[#181825] cursor-pointer text-white"
+                    onMouseDown={() => handleSelectCliente(cliente)}
+                  >
+                    {cliente.identificacion} - {cliente.nombre}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <Input
             label="Nombre de usuario"
             name="nombre"
@@ -247,7 +264,7 @@ export default function RegisterClientDrawer({ open, onClose }) {
             Registrar
           </Button>
         </form>
-       </aside>
+      </aside>
     </div>
   );
 }

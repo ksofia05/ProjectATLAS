@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 
 const ANIMATION_DURATION = 300;
 
-const FloatingModal = ({ children, onClose, showClose = true, open = true }) => {
+const WideFloatingModal = ({
+  children,
+  onClose,
+  showClose = true,
+  open = true,
+  className = "max-w-5xl" // Por defecto más ancho
+}) => {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(open);
   const timeoutRef = useRef();
@@ -61,7 +67,7 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
         }}
       >
         <div
-          className="border border-gray-700 relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 max-w-md w-full"
+          className={`border border-gray-700 relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 w-full ${className}`}
           style={{ minHeight: "220px" }}
         >
           {showClose && onClose && (
@@ -80,4 +86,4 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
   );
 };
 
-export default FloatingModal;
+export default WideFloatingModal;
