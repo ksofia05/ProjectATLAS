@@ -12,25 +12,23 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { login, isLoading, isAuthenticated } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
 
-  // Obtener la ruta de destino
+  // Obtener la ruta de destino y el id_proyecto de la URL
   const params = new URLSearchParams(location.search);
   const next = params.get("next") || "/dashboard-create-project";
+  const idProyecto = params.get("id_proyecto");
 
   useEffect(() => {
-    // Si ya está autenticado, redirigir
     if (isAuthenticated) {
       navigate(next);
       return;
     }
-    
-    // Reset form
     setFormData({
       email: "",
       password: "",
@@ -87,19 +85,17 @@ const Login = () => {
     if (!validateForm()) {
       return;
     }
-    
+
     const toastId = showLoadingToast("Ingresando...");
-    
+
     try {
       // Usar la función login del contexto
       const result = await login(formData.email, formData.password);
-      
+
       toast.dismiss(toastId);
-      
+
       if (!result.success) {
         let errorMessage = "Error al iniciar sesión";
-        
-        // Personalizar mensajes de error según el tipo
         if (result.error.message.includes("Invalid login credentials")) {
           errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
         } else if (result.error.message.includes("Email not confirmed")) {
@@ -107,7 +103,6 @@ const Login = () => {
         } else if (result.error.message.includes("Too many requests")) {
           errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
-        
         showErrorToast(errorMessage);
         setErrors((prev) => ({
           ...prev,
@@ -115,30 +110,28 @@ const Login = () => {
         }));
         return;
       }
-      
-      // Login exitoso
+
       setErrors({});
       showSuccessToast("¡Ingreso exitoso!");
-      
-      // Manejar asociación de colaborador si es necesario
-      if (next && next.startsWith("/dashboard/")) {
-        const idProyecto = next.split("/dashboard/")[1];
+
+      // Asociar colaborador si corresponde
+      if (idProyecto && formData.email) {
         try {
           await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idProyecto: idProyecto, email: formData.email })
+            body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
           });
+          // Puedes agregar un console.log aquí para depuración
         } catch (err) {
-          showErrorToast("Error al asociar colaborador al proyecto.");
+          // Puedes mostrar un toast de error si quieres
         }
       }
-      
-      // Navegar después del login exitoso
+
       setTimeout(() => {
         navigate(next);
       }, 1200);
-      
+
     } catch (error) {
       toast.dismiss(toastId);
       console.error("Error de login:", error);
@@ -159,7 +152,6 @@ const Login = () => {
     );
   };
 
-  // Si ya está autenticado, no mostrar el formulario
   if (isAuthenticated) {
     return null;
   }

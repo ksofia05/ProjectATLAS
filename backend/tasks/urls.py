@@ -5,7 +5,7 @@ from tasks import views as task_views
 from proyectos import views as proyectos_views
 from inventario import views as inventario_views
 from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador
-from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects, asociar_colaborador, info_proyecto_colaboradores,filtro_colaborador,actualizar_estado_usuario
+from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects, info_proyecto_colaboradores,filtro_colaborador,actualizar_estado_usuario, asociar_colaborador
 from inventario.views import clientes_por_proyecto
 #api versioning
 router = routers.DefaultRouter()
