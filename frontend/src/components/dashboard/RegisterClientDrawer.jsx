@@ -163,7 +163,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
           {
             dni: Number(form.identificacion),
             nombre: form.nombre,
-            apellido: form.apellido,
+            apellido: "", 
             correo: form.email,
             telefono: form.telefono,
             proyecto: idproyecto, // usa el prop correctamente
@@ -194,6 +194,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
         .insert([
           {
             numeroSerie: form.serie,
+             marca: "",
             // agrega más campos si tu modelo lo requiere
           },
         ])
@@ -233,14 +234,16 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
       ]);
 
     if (equipoAgendamientoError) throw equipoAgendamientoError;
-
-    showSuccessToast("Equipo registrado correctamente");
+        // Mostrar toast de éxito y cerrar el drawer
+    showSuccessToast("Registro realizado con éxito");
     onClose();
-    // Recarga la lista de clientes aquí si es necesario
 
-  } catch (err) {
+
+    
+
+  }  catch (err) {
+    console.error("Error al registrar cliente/equipo:", err); // <--- Agrega esta línea
     showErrorToast("Error al registrar cliente/equipo");
-    console.error(err);
   }
 };
 
