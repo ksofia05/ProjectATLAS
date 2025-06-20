@@ -132,7 +132,11 @@ const Login = () => {
         }
 
         setTimeout(() => {
-          navigate(next);
+          if (idProyecto) {
+            navigate(`/dashboard-create-project?id_proyecto=${idProyecto}`);
+          } else {
+            navigate(next);
+          }
         }, 1200);
       }
 

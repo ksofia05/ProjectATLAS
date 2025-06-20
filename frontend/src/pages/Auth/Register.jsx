@@ -198,8 +198,11 @@ const Register = () => {
         }
 
         // Redirige SIEMPRE al login, sin esperar nada más
+        let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
+        const idProyectoParam = new URLSearchParams(location.search).get("id_proyecto");
+        if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
         showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
-        navigate(`/iniciar-sesion?next=${encodeURIComponent(next)}`);
+        navigate(loginUrl);
 
       } catch (err) {
         toast.dismiss(toastId);
