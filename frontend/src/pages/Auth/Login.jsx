@@ -8,12 +8,9 @@ import { showLoadingToast, showSuccessToast, showErrorToast } from "../../compon
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
 
-
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, isLoading, isAuthenticated } = useAuth();
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,15 +23,17 @@ const Login = () => {
   const idProyecto = params.get("id_proyecto");
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(next);
-      return;
-    }
-    setFormData({
-      email: "",
-      password: "",
-    });
+    // Si ya está autenticado, redirige
+    const checkAuth = async () => {
+      const { data: { user } } = await client.auth.getUser();
+      if (user) {
+        navigate(next);
+      }
+    };
+    checkAuth();
+    setFormData({ email: "", password: "" });
     setErrors({});
+    // eslint-disable-next-line
   }, [location.pathname, navigate]);
 
   const validateField = (name, value) => {
@@ -90,14 +89,16 @@ const Login = () => {
     const toastId = showLoadingToast("Ingresando...");
 
     try {
-      // Usar la función login del contexto
-      const result = await login(formData.email, formData.password);
+      const { data, error } = await client.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
       toast.dismiss(toastId);
 
-      if (!result.success) {
+      if (error) {
         let errorMessage = "Error al iniciar sesión";
-        if (result.error.message.includes("Invalid login credentials")) {
+        if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
         } else if (error.message.includes("Email not confirmed")) {
           errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
@@ -112,26 +113,28 @@ const Login = () => {
         return;
       }
 
-      setErrors({});
-      showSuccessToast("¡Ingreso exitoso!");
+      if (data.user && data.session) {
+        localStorage.setItem('token', data.session.access_token);
+        setErrors({});
+        showSuccessToast("¡Ingreso exitoso!");
 
-      // Asociar colaborador si corresponde
-      if (idProyecto && formData.email) {
-        try {
-          await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
-          });
-          // Puedes agregar un console.log aquí para depuración
-        } catch (err) {
-          // Puedes mostrar un toast de error si quieres
+        // Solo asociar colaborador si viene por invitación (id_proyecto en la URL)
+        if (idProyecto && formData.email) {
+          try {
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
+            });
+          } catch (err) {
+            showErrorToast("Error al asociar colaborador al proyecto.");
+          }
         }
-      }
 
-      setTimeout(() => {
-        navigate(next);
-      }, 1200);
+        setTimeout(() => {
+          navigate(next);
+        }, 1200);
+      }
 
     } catch (error) {
       toast.dismiss(toastId);
@@ -151,10 +154,6 @@ const Login = () => {
       Object.values(errors).some((err) => err)
     );
   };
-
-  if (isAuthenticated) {
-    return null;
-  }
 
   return (
     <FormContainer>
