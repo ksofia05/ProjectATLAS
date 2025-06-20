@@ -4,21 +4,20 @@ import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
 import { useUserRole } from "../hooks/useUserRole";
+import useUserStore from "../stores/useUserStore";
 
 const DashboardCreateProject = () => {
-  const {userRole,isAdmin, isLoading, error} = useUserRole();
+  // const {userRole,isAdmin, isLoading, error} = useUserRole();
+
+  const user = useUserStore((state) => state.user)
 
   let projectsBlock = null;
 
-  if (isLoading) {
+if (!user) {
     projectsBlock = (
-      <div className="text-white p-4">Cargando proyectos...</div>
+      <div className="text-white p-4">Cargando usuario...</div>
     );
-  } else if (error) {
-    projectsBlock = (
-      <div className="text-red-500 p-4">Error al cargar el rol del usuario.</div>
-    );
-  } else if (isAdmin()) {
+  } else if (user.rol_idRol === 1) {
     projectsBlock = (
       <div className="mb-8">
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
@@ -30,14 +29,14 @@ const DashboardCreateProject = () => {
         </ul>
       </div>
     );
-  }else if (userRole === 2) {
+  } else if (user.rol_idRol === 2) {
     projectsBlock = (
       <div>
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
         <ProjectList isColaborador={true} />
       </div>
-    )
-  }else {
+    );
+  } else {
     projectsBlock = (
       <div>
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
@@ -47,7 +46,7 @@ const DashboardCreateProject = () => {
         </p>
       </div>
     );
-  } 
+  }
 
   return (
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
@@ -59,7 +58,7 @@ const DashboardCreateProject = () => {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <div className="flex-1">
-          <CreateProjectPanel disableCreate={userRole === 2} />
+          <CreateProjectPanel disableCreate={user?.rol_idRol === 2} />
         </div>
       </div>
     </div>

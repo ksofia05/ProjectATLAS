@@ -7,11 +7,54 @@ import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
 import InputCalendario from "../common/InputCalendario";
 
 const EquipmentClientModal = ({ equipo, onClose }) => {
+  // Detecta si la marca tiene un número entre paréntesis (ej: "Dell (2)")
+  const match = equipo.marca.match(/\((\d+)\)/);
+  const cantidadRegistros = match ? parseInt(match[1], 10) : 1;
+
+  // Estados para navegación y datos
+  const [registroActual, setRegistroActual] = useState(0);
   const [fechaSalida, setFechaSalida] = useState("");
   const salidaRef = useRef(null);
-  const [estadoEquipo, setEstadoEquipo] = useState(equipo.estado || "Activo");
+
+  // Estados individuales para cada registro
+  const [estadosEquipos, setEstadosEquipos] = useState(
+    Array.from({ length: cantidadRegistros }, () =>
+      equipo.estado === "Inactivo" ? "Inactivo" : "Activo"
+    )
+  );
+  const [bloquearSwitches, setBloquearSwitches] = useState(
+    Array.from({ length: cantidadRegistros }, () => equipo.estado === "Inactivo")
+  );
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [bloquearSwitch, setBloquearSwitch] = useState(equipo.estado === "Inactivo");
+
+
+  //Los datos pueden ser dinamicos y de la BD en el futuro
+  const [comentariosEntrada] = useState(
+    Array.from({ length: cantidadRegistros }, (_, idx) =>
+      equipo.comentarioEntrada
+        ? `${equipo.comentarioEntrada} (${idx + 1})`
+        : `Comentario entrada ${idx + 1}`
+    )
+  );
+
+  const [comentariosSalida] = useState(
+    Array.from({ length: cantidadRegistros }, (_, idx) =>
+      `Comentario salida ${idx + 1}`
+    )
+  );
+
+  // Solo este campo es editable
+  const [fechasSalida, setFechasSalida] = useState(
+    Array.from({ length: cantidadRegistros }, () => "")
+  );
+
+  // Genera los registros individuales
+  const registros = Array.from({ length: cantidadRegistros }, (_, idx) => ({
+    ...equipo,
+    marca: equipo.marca.replace(/\s*\(\d+\)/, ""), // Quita el número de la marca
+    registro: idx + 1,
+  }));
 
   function getToday() {
     const today = new Date();
@@ -20,15 +63,23 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
 
   // Maneja el cambio del switch
   const handleSwitchChange = () => {
-    if (estadoEquipo === "Activo" && !bloquearSwitch) {
+    if (estadosEquipos[registroActual] === "Activo") {
       setShowConfirmModal(true);
     }
   };
 
   // Confirmar inactivación
   const handleConfirmInactivar = () => {
-    setEstadoEquipo("Inactivo");
-    setBloquearSwitch(true);
+    setEstadosEquipos((prev) =>
+      prev.map((estado, idx) =>
+        idx === registroActual ? "Inactivo" : estado
+      )
+    );
+    setBloquearSwitches((prev) =>
+      prev.map((bloqueado, idx) =>
+        idx === registroActual ? true : bloqueado
+      )
+    );
     setShowConfirmModal(false);
   };
 
@@ -39,9 +90,7 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
 
   return (
     <>
-      <WideFloatingModal 
-      className="max-w-6xl"
-      onClose={onClose}>
+      <WideFloatingModal className="max-w-6xl" onClose={onClose}>
         <h1 className="text-2xl font-bold text-white mx-8 mt-2 mb-2">
           Equipos Registrados
         </h1>
@@ -52,14 +101,14 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
               <Input
                 label="Marca"
                 name="marca"
-                value={equipo.marca}
+                value={registros[registroActual].marca}
                 readOnly
                 placeholder="Marca del equipo"
               />
               <Input
                 label="Comentario Entrada"
                 name="comentarioEntrada"
-                value={equipo.comentarioEntrada || "No hay comentarios aún"}
+                value={comentariosEntrada[registroActual]}
                 readOnly
                 placeholder="Comentario de entrada"
               />
@@ -67,7 +116,7 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
                 label="Ingreso"
                 name="ingreso"
                 type="date"
-                value={equipo.ingreso || getToday()}
+                value={registros[registroActual].ingreso || getToday()}
                 readOnly
                 icon="bi-calendar"
                 placeholder="Fecha de ingreso"
@@ -78,21 +127,21 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
               <Input
                 label="No. Serie"
                 name="serie"
-                value={equipo.serie}
+                value={registros[registroActual].serie}
                 readOnly
                 placeholder="Número de serie"
               />
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
-                value={equipo.comentarioSalida || "No hay comentarios aún"}
+                value={comentariosSalida[registroActual]}
                 readOnly
                 placeholder="Comentario de salida"
               />
               <InputCalendario
                 label="Salida"
-                value={fechaSalida}
-                onChange={(e) => setFechaSalida(e.target.value)}
+                value={fechasSalida[registroActual]}
+                readOnly
                 ref={salidaRef}
               />
             </div>
@@ -105,22 +154,42 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
               />
             </div>
           </div>
+          {/* Navegación entre registros */}
+          <div className="flex justify-end items-center px-6 gap-4 mt-4">
+            <button
+              onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
+              disabled={registroActual === 0}
+              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
+              type="button"
+            >
+              &#8592;
+            </button>
+            <span className="text-white shadow-2xl">{registroActual + 1} / {cantidadRegistros}</span>
+            <button
+              onClick={() => setRegistroActual((prev) => Math.min(prev + 1, cantidadRegistros - 1))}
+              disabled={registroActual === cantidadRegistros - 1}
+              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
+              type="button"
+            >
+              &#8594;
+            </button>
+          </div>
           {/* Switch de estado debajo de los inputs */}
           <div className="flex items-center gap-4 mt-4">
+            <Switch
+              checked={estadosEquipos[registroActual] === "Activo"}
+              onChange={handleSwitchChange}
+              disabled={bloquearSwitches[registroActual]}
+            />
             <span
               className={
-                estadoEquipo === "Activo"
+                estadosEquipos[registroActual] === "Activo"
                   ? "text-green-400 font-semibold"
                   : "text-red-400 font-semibold"
               }
             >
-              {estadoEquipo}
+              {estadosEquipos[registroActual]}
             </span>
-            <Switch
-              checked={estadoEquipo === "Activo"}
-              onChange={handleSwitchChange}
-              disabled={bloquearSwitch}
-            />
           </div>
         </form>
       </WideFloatingModal>

@@ -7,7 +7,7 @@ export default function EquipmentsTable({ cliente }) {
   // Datos estáticos de equipos del cliente
   const equipos = [
     {
-      marca: "Dell",
+      marca: "Dell (2)",
       serie: "DL-2025-001",
       ingreso: "2025-01-21",
       salida: "2025-01-23",
