@@ -107,7 +107,7 @@ export default function InventoryTable({ onEmojiClick }) {
       (estadoSeleccionado === "todos" || item.estado === estadoSeleccionado) &&
       (
         (item.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (item.apellido?.toLowerCase() || "").includes(earchTerm.toLowerCase()) ||
+        (item.apellido?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (item.correo?.toLowerCase() || "").includes(searchTerm.toLowerCase())
       )
   );
