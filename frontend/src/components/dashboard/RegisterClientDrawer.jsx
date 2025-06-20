@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
+import UploadImageModal from "../layout/uploadImageModal";// Importa el modal reutilizable
 
 // Simulación de clientes registrados
 const CLIENTES = [
@@ -43,20 +44,16 @@ export default function RegisterClientDrawer({ open, onClose }) {
     entrada: getToday(),
     serie: "",
     comentario: "",
-    imagen: null,
+    imagen: null, // Aquí se guardará la URL pública de la imagen subida
   });
 
-  // Controla si el panel ya esta montad
   const [mounted, setMounted] = useState(false);
-
   const [showDrawer, setShowDrawer] = useState(false);
-
   const [sugerencias, setSugerencias] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [ignoreNextFocus, setIgnoreNextFocus] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false); // Controla el modal
   const inputIdRef = useRef();
-
-  // Animación de entrada/salida
   const timeoutRef = useRef();
 
   useEffect(() => {
@@ -70,7 +67,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
 
-  // Filtra sugerencias según la identificación escrita
   useEffect(() => {
     if (form.identificacion.length > 0) {
       const filtrados = CLIENTES.filter(c =>
@@ -82,7 +78,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
       setSugerencias([]);
       setShowDropdown(false);
     }
-    // Si el usuario borra todo, limpia los campos
     if (!CLIENTES.some(c => c.identificacion === form.identificacion)) {
       setForm(f => ({
         ...f,
@@ -94,7 +89,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
     }
   }, [form.identificacion]);
 
-  // Selecciona cliente de la lista y autocompleta todos los campos, incluido 'serie'
   const handleSelectCliente = (cliente) => {
     setForm(f => ({
       ...f,
@@ -112,19 +106,35 @@ export default function RegisterClientDrawer({ open, onClose }) {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "file" ? files[0] : value,
+      [name]: value,
     }));
   };
 
   const handleIdFocus = () => {
     if (ignoreNextFocus) {
-      setIgnoreNextFocus(false); // Resetea el bloqueo
+      setIgnoreNextFocus(false);
       return;
     }
     if (sugerencias.length > 0) setShowDropdown(true);
+  };
+
+  // Cuando se guarda la imagen desde el modal
+  const handleImageSave = (publicUrl) => {
+    setForm(prev => ({
+      ...prev,
+      imagen: publicUrl,
+    }));
+    setShowUploadModal(false);
+  };
+
+  const handleRemoveImage = () => {
+    setForm(prev => ({
+      ...prev,
+      imagen: null,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -182,7 +192,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
               onFocus={handleIdFocus}
               autoComplete="off"
             />
-            {/* Este es el desplegable que se muestra al buscar */}
             {showDropdown && (
               <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
                 {sugerencias.map(cliente => (
@@ -244,26 +253,45 @@ export default function RegisterClientDrawer({ open, onClose }) {
             />
           </div>
           <div className="mb-6">
-            <input
-              type="file"
-              name="imagen"
-              id="input-imagen"
-              className="hidden"
-              onChange={handleChange}
-            />
-            <label htmlFor="input-imagen">
-              <Button type="button" className="w-full bg-purple-700">
-                + Añade una imagen
-              </Button>
-            </label>
+            <Button
+              type="button"
+              className="w-full bg-purple-700"
+              onClick={() => setShowUploadModal(true)}
+            >
+              {form.imagen ? "Cambiar imagen" : "+ Añade una imagen"}
+            </Button>
             {form.imagen && (
-              <span className="text-white mt-2 block">{form.imagen.name}</span>
+              <div className="mt-2 flex flex-col items-center">
+                <img
+                  src={form.imagen}
+                  alt="Vista previa"
+                  className="w-32 h-32 object-cover rounded-lg border border-gray-500 mb-2"
+                />
+                <span className="text-white block text-sm mb-1">
+                  {form.imagen.split("/").pop()}
+                </span>
+                <Button
+                  type="button"
+                  className="bg-red-600 text-white px-3 py-1 rounded"
+                  onClick={handleRemoveImage}
+                >
+                  Quitar imagen
+                </Button>
+              </div>
             )}
           </div>
           <Button className="w-full bg-purple-600" type="submit">
             Registrar
           </Button>
         </form>
+        {showUploadModal && (
+          <UploadImageModal
+            onClose={() => setShowUploadModal(false)}
+            onSave={handleImageSave}
+            folder="computadores" // Aquí cambias el folder al bucket de computadores
+            title="Subir imagen del equipo"
+          />
+        )}
       </aside>
     </div>
   );
