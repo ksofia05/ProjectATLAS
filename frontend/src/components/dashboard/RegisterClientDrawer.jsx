@@ -41,7 +41,7 @@ export default function RegisterClientDrawer({ open, onClose }) {
     nombre: "",
     email: "",
     telefono: "",
-    entrada: getToday(),
+    entrada: getToday(), // por defecto tendra la fecha de hoy (anny me confundio :b) grosero le dije que eso se hacia en la bd de datos no en el front enojo, furia
     serie: "",
     comentario: "",
     imagen: null, // Aquí se guardará la URL pública de la imagen subida

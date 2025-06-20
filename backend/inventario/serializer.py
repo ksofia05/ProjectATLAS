@@ -9,7 +9,7 @@ class AgendamientoSerializer(serializers.ModelSerializer):
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cliente
-        fields = '__all__'  # O especifica los campos que quieres incluir
+        fields = '__all__' # O especifica los campos que quieres incluir
 
 class EquipoSerializer(serializers.ModelSerializer):
     class Meta:

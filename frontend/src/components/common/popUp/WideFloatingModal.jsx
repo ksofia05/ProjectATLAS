@@ -67,7 +67,7 @@ const WideFloatingModal = ({
         }}
       >
         <div
-          className={`border border-gray-700 relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 w-full ${className}`}
+          className={`border border-gray-700 relative bg-gradient-to-br from-[#181825] to-[#232335] rounded-2xl shadow-2xl p-8 w-full ${className}`}
           style={{ minHeight: "220px" }}
         >
           {showClose && onClose && (
