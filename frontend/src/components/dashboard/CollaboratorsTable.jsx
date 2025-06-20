@@ -137,7 +137,7 @@ export default function CollaboratorsTable() {
   const colaboradoresMostrados = colaboradoresFiltrados.slice(0, rowsPerPage);
 
   // Generar opciones del 1 al 50
-  const opcionesFilas = Array.from({ length: 50 }, (_, i) => i + 1);
+  const opcionesFilas = [10, 20, 30, 40, 50];
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">

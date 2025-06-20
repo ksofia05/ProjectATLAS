@@ -11,6 +11,9 @@ import RegisterClientDrawer from "./RegisterClientDrawer";
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 
+// Puedes reutilizar CustomScrollSelect si lo tienes, si no, usa un <select> simple
+import CustomScrollSelect from "../common/CustomScrollSelect";
+
 export default function InventoryTable({ onEmojiClick }) {
   const { user, isLoading } = useAuth();
   const [clientes, setClientes] = useState([]);
@@ -21,6 +24,10 @@ export default function InventoryTable({ onEmojiClick }) {
   // Estados para pasar a RegisterClientDrawer
   const [usuarioIdActual, setUsuarioIdActual] = useState(null);
   const [idProyecto, setIdProyecto] = useState(null);
+
+  // Paginado
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const opcionesFilas = [10, 20, 30, 40, 50];
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -121,6 +128,9 @@ export default function InventoryTable({ onEmojiClick }) {
       )
   );
 
+  // Paginado real
+  const clientesMostrados = clientesFiltrados.slice(0, rowsPerPage);
+
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
@@ -175,7 +185,7 @@ export default function InventoryTable({ onEmojiClick }) {
             </tr>
           </thead>
           <tbody>
-            {clientesFiltrados.map((item, idx) => (
+            {clientesMostrados.map((item, idx) => (
               <tr key={item.correo + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
                 <td className="py-2 px-3 text-center text-2xl cursor-pointer" onClick={() => onEmojiClick?.(item)}>💻</td>
                 <td className="py-2 px-3 text-center">{item.nombre}</td>
@@ -207,16 +217,15 @@ export default function InventoryTable({ onEmojiClick }) {
       </div>
 
       <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
-        <div>
-          Paginado{" "}
-          <select className="bg-[#232336] border border-[#232336] rounded px-2 py-1 text-gray-200 ml-1">
-            <option>10</option>
-            <option>25</option>
-            <option>50</option>
-          </select>
-        </div>
-        <div>
-          1 - {clientesFiltrados.length} de {clientes.length}
+        <div className="flex items-center gap-2">
+          <span>
+            Visualizando: {clientesMostrados.length} de {clientesFiltrados.length} clientes
+          </span>
+          <CustomScrollSelect
+            value={rowsPerPage}
+            options={opcionesFilas}
+            onChange={setRowsPerPage}
+          />
         </div>
       </div>
 

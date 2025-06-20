@@ -15,7 +15,6 @@ const PasswordRecovery = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
     const toastId = showLoadingToast("Verificando correo...");
 
     try {
@@ -30,7 +29,6 @@ const PasswordRecovery = () => {
       if (!response.ok || !data.exists) {
         toast.dismiss(toastId);
         showErrorToast("Correo no encontrado");
-        setMessage("Correo no encontrado");
         return;
       }
 

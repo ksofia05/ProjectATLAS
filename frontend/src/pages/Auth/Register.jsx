@@ -36,9 +36,13 @@ const Register = () => {
     let error = "";
     if (name === "firstName") {
       if (!value) error = "El nombre es requerido";
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(value))
+        error = "El nombre solo debe contener letras";
     }
     if (name === "lastName") {
       if (!value) error = "El apellido es requerido";
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(value))
+        error = "El apellido solo debe contener letras";
     }
     if (name === "email") {
       const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
