@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
-import UploadImageModal from "../layout/uploadImageModal";// Importa el modal reutilizable
-import { client as supabase } from "../../supabase/client"; // Asegúrate de importar tu cliente de supabase
+import UploadImageModal from "../layout/uploadImageModal";
+import { client as supabase } from "../../supabase/client";
 
 // Simulación de clientes registrados
 const CLIENTES = [
@@ -35,24 +35,28 @@ function getToday() {
   const today = new Date();
   return today.toISOString().split("T")[0];
 }
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function RegisterClientDrawer({ open, onClose, idproyecto, usuarioIdActual }) {
   const [form, setForm] = useState({
     identificacion: "",
     nombre: "",
     email: "",
     telefono: "",
-    entrada: getToday(), // por defecto tendra la fecha de hoy (anny me confundio :b) grosero le dije que eso se hacia en la bd de datos no en el front enojo, furia
+    entrada: getToday(),
     serie: "",
     comentario: "",
-    imagen: null, // Aquí se guardará la URL pública de la imagen subida
+    imagen: null,
   });
 
+  const [errors, setErrors] = useState({});
   const [mounted, setMounted] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [sugerencias, setSugerencias] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [ignoreNextFocus, setIgnoreNextFocus] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false); // Controla el modal
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const inputIdRef = useRef();
   const timeoutRef = useRef();
 
@@ -137,115 +141,139 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
     }));
   };
 
+  // Validación de campos
+  const validate = () => {
+    const newErrors = {};
+    if (!form.identificacion) {
+      newErrors.identificacion = "Campo obligatorio";
+    } else if (!/^\d+$/.test(form.identificacion)) {
+      newErrors.identificacion = "Solo números";
+    }
+    if (!form.nombre) newErrors.nombre = "Campo obligatorio";
+    if (!form.email) {
+      newErrors.email = "Campo obligatorio";
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = "Correo inválido";
+    }
+    if (!form.telefono) {
+      newErrors.telefono = "Campo obligatorio";
+    } else if (!/^\d+$/.test(form.telefono)) {
+      newErrors.telefono = "Solo números";
+    }
+    if (!form.entrada) newErrors.entrada = "Campo obligatorio";
+    if (!form.serie) newErrors.serie = "Campo obligatorio";
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!form.identificacion || !form.nombre || !form.email) {
-    showErrorToast("Completa los campos obligatorios");
-    return;
-  }
+    e.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
-  try {
-    // 1. Insertar cliente (si no existe)
-    let clienteData;
-    let clienteError;
-    const { data: existingCliente, error: searchError } = await supabase
-      .from("Cliente")
-      .select("*")
-      .eq("dni", form.identificacion)
-      .single();
-
-    if (existingCliente) {
-      clienteData = existingCliente;
-    } else {
-      const insertResult = await supabase
+    try {
+      // 1. Insertar cliente (si no existe)
+      let clienteData;
+      let clienteError;
+      const { data: existingCliente, error: searchError } = await supabase
         .from("Cliente")
-        .insert([
-          {
-            dni: Number(form.identificacion),
-            nombre: form.nombre,
-            apellido: "", 
-            correo: form.email,
-            telefono: form.telefono,
-            proyecto: idproyecto, // usa el prop correctamente
-          },
-        ])
-        .select()
+        .select("*")
+        .eq("dni", form.identificacion)
         .single();
-      clienteData = insertResult.data;
-      clienteError = insertResult.error;
-    }
 
-    if (clienteError) throw clienteError;
+      if (existingCliente) {
+        clienteData = existingCliente;
+      } else {
+        const insertResult = await supabase
+          .from("Cliente")
+          .insert([
+            {
+              dni: Number(form.identificacion),
+              nombre: form.nombre,
+              apellido: "",
+              correo: form.email,
+              telefono: form.telefono,
+              proyecto: Number(idproyecto),
+            },
+          ])
+          .select()
+          .single();
 
-    // 2. Insertar equipo (si no existe)
-    let equipoData;
-    let equipoError;
-    const { data: existingEquipo, error: equipoSearchError } = await supabase
-      .from("Equipo")
-      .select("*")
-      .eq("numeroSerie", form.serie)
-      .single();
+        clienteData = insertResult.data;
+        clienteError = insertResult.error;
+      }
 
-    if (existingEquipo) {
-      equipoData = existingEquipo;
-    } else {
-      const insertEquipo = await supabase
+      if (clienteError) throw clienteError;
+
+      // 2. Insertar equipo (si no existe)
+      let equipoData;
+      let equipoError;
+      const { data: existingEquipo, error: equipoSearchError } = await supabase
         .from("Equipo")
+        .select("*")
+        .eq("numeroSerie", form.serie)
+        .single();
+
+      if (existingEquipo) {
+        equipoData = existingEquipo;
+      } else {
+        const insertEquipo = await supabase
+          .from("Equipo")
+          .insert([
+            {
+              numeroSerie: form.serie,
+              marca: "",
+              // agrega más campos si tu modelo lo requiere
+            },
+          ])
+          .select()
+          .single();
+        equipoData = insertEquipo.data;
+        equipoError = insertEquipo.error;
+      }
+
+      if (equipoError) throw equipoError;
+
+      // 3. Insertar agendamiento
+      const { data: agendamientoData, error: agendamientoError } = await supabase
+        .from("Agendamiento")
         .insert([
           {
-            numeroSerie: form.serie,
-             marca: "",
-            // agrega más campos si tu modelo lo requiere
+            Cliente_dni: clienteData.dni,
+            Usuario_id: usuarioIdActual,
           },
         ])
         .select()
         .single();
-      equipoData = insertEquipo.data;
-      equipoError = insertEquipo.error;
+
+      if (agendamientoError) throw agendamientoError;
+
+      // 4. Insertar en EquipoAgendamiento
+      const { error: equipoAgendamientoError } = await supabase
+        .from("EquipoAgendamiento")
+        .insert([
+          {
+            fechaIngreso: form.entrada,
+            comentarioEntrada: form.comentario,
+            Estado: "Activo",
+            equipo_numeroSerie: equipoData.numeroSerie,
+            agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+          },
+        ]);
+
+      if (equipoAgendamientoError) throw equipoAgendamientoError;
+
+      showSuccessToast("Registro realizado con éxito");
+      onClose();
+    } catch (err) {
+      console.error("Error al registrar cliente/equipo:", err);
+      if (err && err.message) {
+        showErrorToast(err.message);
+      } else {
+        showErrorToast("Error al registrar cliente/equipo");
+      }
     }
-
-    if (equipoError) throw equipoError;
-
-    // 3. Insertar agendamiento
-    const { data: agendamientoData, error: agendamientoError } = await supabase
-      .from("Agendamiento")
-      .insert([
-        {
-          Cliente_dni: clienteData.dni,
-          Usuario_id: usuarioIdActual,
-        },
-      ])
-      .select()
-      .single();
-
-    if (agendamientoError) throw agendamientoError;
-
-    // 4. Insertar en EquipoAgendamiento
-    const { error: equipoAgendamientoError } = await supabase
-      .from("EquipoAgendamiento")
-      .insert([
-        {
-          fechaIngreso: form.entrada,
-          comentarioEntrada: form.comentario,
-          Estado: "Activo",
-          equipo_numeroSerie: equipoData.numeroSerie,
-          agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
-        },
-      ]);
-
-    if (equipoAgendamientoError) throw equipoAgendamientoError;
-        // Mostrar toast de éxito y cerrar el drawer
-    showSuccessToast("Registro realizado con éxito");
-    onClose();
-
-
-    
-
-  }  catch (err) {
-    console.error("Error al registrar cliente/equipo:", err); // <--- Agrega esta línea
-    showErrorToast("Error al registrar cliente/equipo");
-  }
-};
+  };
 
   if (!mounted) return null;
 
@@ -285,13 +313,16 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
               type="text"
               ref={inputIdRef}
               name="identificacion"
-              className="w-full rounded-lg p-2 bg-[#232336] text-white outline-none"
+              className={`w-full rounded-lg p-2 bg-[#232336] text-white outline-none border ${errors.identificacion ? "border-red-500" : "border-[#232336]"}`}
               placeholder="Buscar o escribir número de identificación"
               value={form.identificacion}
               onChange={handleChange}
               onFocus={handleIdFocus}
               autoComplete="off"
             />
+            {errors.identificacion && (
+              <span className="text-red-400 text-xs">{errors.identificacion}</span>
+            )}
             {showDropdown && (
               <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
                 {sugerencias.map(cliente => (
@@ -312,35 +343,55 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
             value={form.nombre}
             onChange={handleChange}
             placeholder="Nombre de identificación"
+            inputClassName={errors.nombre ? "border-red-500" : ""}
           />
+          {errors.nombre && (
+            <span className="text-red-400 text-xs">{errors.nombre}</span>
+          )}
           <Input
             label="Email"
             name="email"
             value={form.email}
             onChange={handleChange}
             placeholder="Correo Electrónico"
+            inputClassName={errors.email ? "border-red-500" : ""}
           />
+          {errors.email && (
+            <span className="text-red-400 text-xs">{errors.email}</span>
+          )}
           <Input
             label="Teléfono"
             name="telefono"
             value={form.telefono}
             onChange={handleChange}
             placeholder="Número de teléfono"
+            inputClassName={errors.telefono ? "border-red-500" : ""}
           />
+          {errors.telefono && (
+            <span className="text-red-400 text-xs">{errors.telefono}</span>
+          )}
           <Input
             label="Entrada"
             name="entrada"
             type="date"
             value={form.entrada}
             onChange={handleChange}
+            inputClassName={errors.entrada ? "border-red-500" : ""}
           />
+          {errors.entrada && (
+            <span className="text-red-400 text-xs">{errors.entrada}</span>
+          )}
           <Input
             label="No. de serie"
             name="serie"
             value={form.serie}
             onChange={handleChange}
             placeholder="Número de serie"
+            inputClassName={errors.serie ? "border-red-500" : ""}
           />
+          {errors.serie && (
+            <span className="text-red-400 text-xs">{errors.serie}</span>
+          )}
           <div className="mb-4">
             <label className="text-white block mb-1">Comentario:</label>
             <textarea
@@ -388,12 +439,10 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
           <UploadImageModal
             onClose={() => setShowUploadModal(false)}
             onSave={handleImageSave}
-            folder="computadores" // Aquí cambias el folder al bucket de computadores
+            folder="computadores"
             title="Subir imagen del equipo"
           />
-          
         )}
-        
       </aside>
     </div>
   );
