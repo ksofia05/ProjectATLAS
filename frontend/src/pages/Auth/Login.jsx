@@ -118,7 +118,6 @@ const Login = () => {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
 
-        // Solo asociar colaborador si viene por invitación (id_proyecto en la URL)
         if (idProyecto && formData.email) {
           try {
             await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
