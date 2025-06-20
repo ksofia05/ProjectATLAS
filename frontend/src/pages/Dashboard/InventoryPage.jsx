@@ -19,7 +19,7 @@ export default function InventoryPage() {
           <div className="flex justify-end ">
           <buttonBG
           
-            className="mt-6 px-4 py-2 bg-gray-700 rounded-xl text-white"
+            className="mt-6 px-4 py-2 w-30 bg-purple-800 rounded-xl shadow-2xl text-white text-center hover:bg-purple-900 hover:shadow-md hover:shadow-purple-600/50 transition-colors"
             onClick={() => setClienteSeleccionado(null)}
           >
             ←  Volver

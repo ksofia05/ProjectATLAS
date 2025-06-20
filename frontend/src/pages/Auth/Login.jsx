@@ -6,7 +6,8 @@ import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
+import { client } from '../../supabase/client';
+
 
 const Login = () => {
   const location = useLocation();
@@ -34,7 +35,7 @@ const Login = () => {
       password: "",
     });
     setErrors({});
-  }, [location.pathname, navigate, isAuthenticated, next]);
+  }, [location.pathname, navigate]);
 
   const validateField = (name, value) => {
     let error = "";
@@ -98,9 +99,9 @@ const Login = () => {
         let errorMessage = "Error al iniciar sesión";
         if (result.error.message.includes("Invalid login credentials")) {
           errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
-        } else if (result.error.message.includes("Email not confirmed")) {
+        } else if (error.message.includes("Email not confirmed")) {
           errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
-        } else if (result.error.message.includes("Too many requests")) {
+        } else if (error.message.includes("Too many requests")) {
           errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
         showErrorToast(errorMessage);
@@ -147,8 +148,7 @@ const Login = () => {
     return (
       !formData.email ||
       !formData.password ||
-      Object.values(errors).some((err) => err) ||
-      isLoading
+      Object.values(errors).some((err) => err)
     );
   };
 
@@ -169,7 +169,6 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.email}
           icon="bi-envelope-fill"
-          disabled={isLoading}
         />
         <PasswordInput
           label="Contraseña"
@@ -179,14 +178,13 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.password}
           icon="bi-eye-fill"
-          disabled={isLoading}
         />
         <Button
           type="submit"
           disabled={isButtonDisabled()}
           className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {isLoading ? "Ingresando..." : "Ingresar"}
+          Ingresar
         </Button>
       </form>
       <div className="text-center mt-6">
