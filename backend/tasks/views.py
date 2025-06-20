@@ -8,33 +8,28 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
-from rest_framework import viewsets # Importa el módulo viewsets de Django REST Framework, que permite crear vistas basadas en conjuntos de datos (viewsets).
-from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
-from .serializer import TaskSerializer,UsuarioSerializer, RolSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
-from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
-from tasks.models import Task,Usuario, Rol # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from .serializer import TaskSerializer, UsuarioSerializer, RolSerializer
+from rest_framework.response import Response
+from tasks.models import Task, Usuario, Rol
 from proyectos.models import Proyecto
 from rest_framework.authtoken.models import Token
 
-
-# Define un conjunto de vistas (viewset) para el modelo Task.
 class TaskView(viewsets.ModelViewSet):
-    serializer_class = TaskSerializer # Especifica el serializador que se usará para convertir los datos del modelo Task.
-    queryset = Task.objects.all() # Define el conjunto de datos (queryset) que se usará en este viewset, en este caso, todos los objetos del modelo Task.
+    serializer_class = TaskSerializer
+    queryset = Task.objects.all()
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
-
-    # Ahora existe la posibilidad de filtrar los usuarios por correo electrónico con el nuevo método get_queryset.
     def get_queryset(self):
         queryset = super().get_queryset()
         correo = self.request.query_params.get('correoelectronico')
         if correo:
             queryset = queryset.filter(correoelectronico=correo)
         return queryset
-    # Fin del método get_queryset
 
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
@@ -45,9 +40,6 @@ class RolViewSet(viewsets.ModelViewSet):
         if correo:
             queryset = queryset.filter(correoelectronico=correo)
             return queryset
-
-
-    
 
 @api_view(['POST'])
 def login_usuario(request):
@@ -62,10 +54,8 @@ def login_usuario(request):
             return Response({'token': usuario.token, 'usuario': serializer.data}, status=200)
         else:
             return Response({'error': 'correo o contraseña incorrecta'}, status=401)
-
     except Usuario.DoesNotExist:
         return Response({'error': 'correo o contraseña incorrecta'}, status=404)
-    
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -108,31 +98,26 @@ def registe_usuario(request):
                 return Response({'error': f'Error al crear usuario: {str(e)}'}, status=500)
     else:
         return Response({'error': 'Método no permitido'}, status=405)
-    
 
 @api_view(['POST'])
-def recuperacion_contra (request):
-    email=request.data.get('email')
-    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+",email):
-        return Response({'success':False,'message':'Debes ingresar un correo valido'})
+def recuperacion_contra(request):
+    email = request.data.get('email')
+    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return Response({'success': False, 'message': 'Debes ingresar un correo valido'})
     try:
-        usuario=Usuario.objects.get(correoelectronico=email)
+        usuario = Usuario.objects.get(correoelectronico=email)
     except Usuario.DoesNotExist:
-        return Response({'success':False,'message':'No existe una cuenta asociada a este correo'})
-    
-    token= str(uuid.uuid4())
-
-    request.session['reset_token']=token
-    request.session['reset_email']=email
-
-    reset_url=f"http://localhost:5173/password-reset/{token}?email={email}"
-    asunto='Recuperacion de contrasena'
-    html_content= render_to_string('autenticacion/email_recuperacion.html',{
-        'usuario':usuario,
-        'reset_url':reset_url,
+        return Response({'success': False, 'message': 'No existe una cuenta asociada a este correo'})
+    token = str(uuid.uuid4())
+    request.session['reset_token'] = token
+    request.session['reset_email'] = email
+    reset_url = f"http://localhost:5173/password-reset/{token}?email={email}"
+    asunto = 'Recuperacion de contrasena'
+    html_content = render_to_string('autenticacion/email_recuperacion.html', {
+        'usuario': usuario,
+        'reset_url': reset_url,
     })
-    mensaje=strip_tags(html_content)
-
+    mensaje = strip_tags(html_content)
     send_mail(
         asunto,
         mensaje,
@@ -141,7 +126,7 @@ def recuperacion_contra (request):
         html_message=html_content,
         fail_silently=False
     )
-    return Response({'success':True,'message': 'correo de recuperacion enviado correctamente.'})
+    return Response({'success': True, 'message': 'correo de recuperacion enviado correctamente.'})
 
 @api_view(['POST'])
 def password_reset(request, token=None):
@@ -158,35 +143,32 @@ def password_reset(request, token=None):
         return Response({'success': True, 'message': 'Contraseña restablecida correctamente.'})
     except Usuario.DoesNotExist:
         return Response({'success': False, 'message': 'Usuario no encontrado.'}, status=404)
-    
-@api_view(['POST'])
-def invitacion_colaborador (request):
-    
-    email=request.data.get('email')
-    nombre_invitador = request.data.get('nombre_invitador')
-    id_proyecto= request.data.get('id_proyecto')
 
-    
-    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+",email):
-        return Response({'success':False,'message':'Debes ingresar un correo valido'})
+@api_view(['POST'])
+def invitacion_colaborador(request):
+    email = request.data.get('email')
+    nombre_invitador = request.data.get('nombre_invitador')
+    id_proyecto = request.data.get('id_proyecto')
+
+    if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return Response({'success': False, 'message': 'Debes ingresar un correo valido'})
     if not nombre_invitador or not id_proyecto:
-        return Response({'success': False, 'messagge':'Faltan datos de invitador o proyecto'})
+        return Response({'success': False, 'messagge': 'Faltan datos de invitador o proyecto'})
     try:
         usuario_invitado = Usuario.objects.get(correoelectronico=email)
         if usuario_invitado.rol_idrol and int(usuario_invitado.rol_idrol.idrol) == 1:
             if Proyecto.objects.filter(id_usuario=usuario_invitado).exists():
                 return Response({'success': False, 'message': 'Administrador no puede tener mas de un proyecto.'}, status=400)
     except Usuario.DoesNotExist:
-        pass 
-    invitacion_url=f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
-    asunto='Invitacion a colaborar en un proyecto'
-    html_content= render_to_string('mensajeColabo.html',{
-        'email':email,
-        'nombre_invitador':nombre_invitador,
+        pass
+    invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+    asunto = 'Invitacion a colaborar en un proyecto'
+    html_content = render_to_string('mensajeColabo.html', {
+        'email': email,
+        'nombre_invitador': nombre_invitador,
         'invitacion_url': invitacion_url,
     })
-    mensaje=strip_tags(html_content)
-
+    mensaje = strip_tags(html_content)
     send_mail(
         asunto,
         mensaje,
@@ -195,4 +177,15 @@ def invitacion_colaborador (request):
         html_message=html_content,
         fail_silently=False
     )
-    return Response({'success':True,'message': 'correo de recuperacion enviado correctamente.'})
+    return Response({'success': True, 'message': 'correo de recuperacion enviado correctamente.'})
+
+
+@api_view(['POST'])
+def verificar_correo_existente(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Correo no proporcionado.'}, status=400)
+    if Usuario.objects.filter(correoelectronico=email).exists():
+        return Response({'exists': True}, status=200)
+    else:
+        return Response({'exists': False}, status=404)
