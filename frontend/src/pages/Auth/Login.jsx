@@ -7,6 +7,9 @@ import PasswordInput from "../../components/common/PasswordInput";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
+import useUserStore from "../../stores/useUserStore";
+import { login } from "../../services/authService"
+import { getUserProfile } from "../../services/userService";
 
 
 const Login = () => {
@@ -92,10 +95,7 @@ const Login = () => {
     const toastId = showLoadingToast("Ingresando...");
     
     try {
-      const { data, error } = await client.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      const { data, error } = await login( formData.email, formData.password);
       
       toast.dismiss(toastId);
       
@@ -123,8 +123,16 @@ const Login = () => {
         localStorage.setItem('token', data.session.access_token);
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
-        
-        if( next && next.startsWith("/dashboard/") ){
+
+        const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID
+        if (userProfile) {
+          useUserStore.getState().setUser({
+            ...userProfile,
+            auth_user_id: data.user.id,
+          });
+        }
+
+        if(next && next.startsWith("/dashboard/")){
           const idProyecto = next.split("/dashboard/")[1];
           try{
             await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/",{

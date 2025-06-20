@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
+import useUserStore from "../../stores/useUserStore";
 
 const ProjectList = ({isColaborador =false}) => {
+const user = useUserStore((state) => state.user);
+
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectError, setProjectError] = useState(null);
 
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-
   useEffect(() => {
     const fetchUserProjects = async () => {
-      if (authLoading) return;
-      if (!isAuthenticated || !user) {
+      if (!user) {
         setLoadingProjects(false);
         setProjects([]);
         setProjectError(null);
@@ -24,7 +24,7 @@ const ProjectList = ({isColaborador =false}) => {
       setProjects([]);
 
       try {
-        const uuidSupabase = user.id;
+        const uuidSupabase = user?.auth_user_id || user?.id;        
         const response = await axios.get(
           `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}`
         );
@@ -40,9 +40,9 @@ const ProjectList = ({isColaborador =false}) => {
     };
 
     fetchUserProjects();
-  }, [user, isAuthenticated, authLoading]);
+  }, [user]);
 
-  if (authLoading || loadingProjects) {
+  if (!user) {
     return (
       <ul className="text-sm text-gray-300 pl-2">
         <li>Cargando proyectos...</li>
@@ -58,7 +58,7 @@ const ProjectList = ({isColaborador =false}) => {
     );
   }
 
-  if (!isAuthenticated || projects.length === 0) {
+  if (projects.length === 0) {
     return (
       <ul className="text-sm text-gray-300 list-decimal list-inside pl-2">
         <li>Sin proyectos aún</li>
