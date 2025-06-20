@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
+import UploadImageModal from "../layout/uploadImageModal";
+import { client as supabase } from "../../supabase/client";
 
 // Simulación de clientes registrados
 const CLIENTES = [
@@ -34,29 +36,28 @@ function getToday() {
   return today.toISOString().split("T")[0];
 }
 
-export default function RegisterClientDrawer({ open, onClose }) {
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function RegisterClientDrawer({ open, onClose, idproyecto, usuarioIdActual }) {
   const [form, setForm] = useState({
     identificacion: "",
     nombre: "",
     email: "",
     telefono: "",
-    entrada: getToday(), // por defecto tendra la fecha de hoy (anny me confundio :b) grosero le dije que eso se hacia en la bd de datos no en el front enojo, furia
+    entrada: getToday(),
     serie: "",
     comentario: "",
     imagen: null,
   });
 
-  // Controla si el panel ya esta montad
+  const [errors, setErrors] = useState({});
   const [mounted, setMounted] = useState(false);
-
   const [showDrawer, setShowDrawer] = useState(false);
-
   const [sugerencias, setSugerencias] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [ignoreNextFocus, setIgnoreNextFocus] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const inputIdRef = useRef();
-
-  // Animación de entrada/salida
   const timeoutRef = useRef();
 
   useEffect(() => {
@@ -70,7 +71,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
 
-  // Filtra sugerencias según la identificación escrita
   useEffect(() => {
     if (form.identificacion.length > 0) {
       const filtrados = CLIENTES.filter(c =>
@@ -82,7 +82,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
       setSugerencias([]);
       setShowDropdown(false);
     }
-    // Si el usuario borra todo, limpia los campos
     if (!CLIENTES.some(c => c.identificacion === form.identificacion)) {
       setForm(f => ({
         ...f,
@@ -94,7 +93,6 @@ export default function RegisterClientDrawer({ open, onClose }) {
     }
   }, [form.identificacion]);
 
-  // Selecciona cliente de la lista y autocompleta todos los campos, incluido 'serie'
   const handleSelectCliente = (cliente) => {
     setForm(f => ({
       ...f,
@@ -112,29 +110,169 @@ export default function RegisterClientDrawer({ open, onClose }) {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "file" ? files[0] : value,
+      [name]: value,
     }));
   };
 
   const handleIdFocus = () => {
     if (ignoreNextFocus) {
-      setIgnoreNextFocus(false); // Resetea el bloqueo
+      setIgnoreNextFocus(false);
       return;
     }
     if (sugerencias.length > 0) setShowDropdown(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.identificacion || !form.nombre || !form.email) {
-      showErrorToast("Completa los campos obligatorios");
-      return;
+  // Cuando se guarda la imagen desde el modal
+  const handleImageSave = (publicUrl) => {
+    setForm(prev => ({
+      ...prev,
+      imagen: publicUrl,
+    }));
+    setShowUploadModal(false);
+  };
+
+  const handleRemoveImage = () => {
+    setForm(prev => ({
+      ...prev,
+      imagen: null,
+    }));
+  };
+
+  // Validación de campos
+  const validate = () => {
+    const newErrors = {};
+    if (!form.identificacion) {
+      newErrors.identificacion = "Campo obligatorio";
+    } else if (!/^\d+$/.test(form.identificacion)) {
+      newErrors.identificacion = "Solo números";
     }
-    showSuccessToast("Equipo registrado correctamente");
-    onClose();
+    if (!form.nombre) newErrors.nombre = "Campo obligatorio";
+    if (!form.email) {
+      newErrors.email = "Campo obligatorio";
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = "Correo inválido";
+    }
+    if (!form.telefono) {
+      newErrors.telefono = "Campo obligatorio";
+    } else if (!/^\d+$/.test(form.telefono)) {
+      newErrors.telefono = "Solo números";
+    }
+    if (!form.entrada) newErrors.entrada = "Campo obligatorio";
+    if (!form.serie) newErrors.serie = "Campo obligatorio";
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
+
+    try {
+      // 1. Insertar cliente (si no existe)
+      let clienteData;
+      let clienteError;
+      const { data: existingCliente, error: searchError } = await supabase
+        .from("Cliente")
+        .select("*")
+        .eq("dni", form.identificacion)
+        .single();
+
+      if (existingCliente) {
+        clienteData = existingCliente;
+      } else {
+        const insertResult = await supabase
+          .from("Cliente")
+          .insert([
+            {
+              dni: Number(form.identificacion),
+              nombre: form.nombre,
+              apellido: "",
+              correo: form.email,
+              telefono: form.telefono,
+              proyecto: Number(idproyecto),
+            },
+          ])
+          .select()
+          .single();
+
+        clienteData = insertResult.data;
+        clienteError = insertResult.error;
+      }
+
+      if (clienteError) throw clienteError;
+
+      // 2. Insertar equipo (si no existe)
+      let equipoData;
+      let equipoError;
+      const { data: existingEquipo, error: equipoSearchError } = await supabase
+        .from("Equipo")
+        .select("*")
+        .eq("numeroSerie", form.serie)
+        .single();
+
+      if (existingEquipo) {
+        equipoData = existingEquipo;
+      } else {
+        const insertEquipo = await supabase
+          .from("Equipo")
+          .insert([
+            {
+              numeroSerie: form.serie,
+              marca: "",
+              // agrega más campos si tu modelo lo requiere
+            },
+          ])
+          .select()
+          .single();
+        equipoData = insertEquipo.data;
+        equipoError = insertEquipo.error;
+      }
+
+      if (equipoError) throw equipoError;
+
+      // 3. Insertar agendamiento
+      const { data: agendamientoData, error: agendamientoError } = await supabase
+        .from("Agendamiento")
+        .insert([
+          {
+            Cliente_dni: clienteData.dni,
+            Usuario_id: usuarioIdActual,
+          },
+        ])
+        .select()
+        .single();
+
+      if (agendamientoError) throw agendamientoError;
+
+      // 4. Insertar en EquipoAgendamiento
+      const { error: equipoAgendamientoError } = await supabase
+        .from("EquipoAgendamiento")
+        .insert([
+          {
+            fechaIngreso: form.entrada,
+            comentarioEntrada: form.comentario,
+            Estado: "Activo",
+            equipo_numeroSerie: equipoData.numeroSerie,
+            agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+          },
+        ]);
+
+      if (equipoAgendamientoError) throw equipoAgendamientoError;
+
+      showSuccessToast("Registro realizado con éxito");
+      onClose();
+    } catch (err) {
+      console.error("Error al registrar cliente/equipo:", err);
+      if (err && err.message) {
+        showErrorToast(err.message);
+      } else {
+        showErrorToast("Error al registrar cliente/equipo");
+      }
+    }
   };
 
   if (!mounted) return null;
@@ -175,14 +313,16 @@ export default function RegisterClientDrawer({ open, onClose }) {
               type="text"
               ref={inputIdRef}
               name="identificacion"
-              className="w-full rounded-lg p-2 bg-[#232336] text-white outline-none"
+              className={`w-full rounded-lg p-2 bg-[#232336] text-white outline-none border ${errors.identificacion ? "border-red-500" : "border-[#232336]"}`}
               placeholder="Buscar o escribir número de identificación"
               value={form.identificacion}
               onChange={handleChange}
               onFocus={handleIdFocus}
               autoComplete="off"
             />
-            {/* Este es el desplegable que se muestra al buscar */}
+            {errors.identificacion && (
+              <span className="text-red-400 text-xs">{errors.identificacion}</span>
+            )}
             {showDropdown && (
               <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
                 {sugerencias.map(cliente => (
@@ -203,35 +343,55 @@ export default function RegisterClientDrawer({ open, onClose }) {
             value={form.nombre}
             onChange={handleChange}
             placeholder="Nombre de identificación"
+            inputClassName={errors.nombre ? "border-red-500" : ""}
           />
+          {errors.nombre && (
+            <span className="text-red-400 text-xs">{errors.nombre}</span>
+          )}
           <Input
             label="Email"
             name="email"
             value={form.email}
             onChange={handleChange}
             placeholder="Correo Electrónico"
+            inputClassName={errors.email ? "border-red-500" : ""}
           />
+          {errors.email && (
+            <span className="text-red-400 text-xs">{errors.email}</span>
+          )}
           <Input
             label="Teléfono"
             name="telefono"
             value={form.telefono}
             onChange={handleChange}
             placeholder="Número de teléfono"
+            inputClassName={errors.telefono ? "border-red-500" : ""}
           />
+          {errors.telefono && (
+            <span className="text-red-400 text-xs">{errors.telefono}</span>
+          )}
           <Input
             label="Entrada"
             name="entrada"
             type="date"
             value={form.entrada}
             onChange={handleChange}
+            inputClassName={errors.entrada ? "border-red-500" : ""}
           />
+          {errors.entrada && (
+            <span className="text-red-400 text-xs">{errors.entrada}</span>
+          )}
           <Input
             label="No. de serie"
             name="serie"
             value={form.serie}
             onChange={handleChange}
             placeholder="Número de serie"
+            inputClassName={errors.serie ? "border-red-500" : ""}
           />
+          {errors.serie && (
+            <span className="text-red-400 text-xs">{errors.serie}</span>
+          )}
           <div className="mb-4">
             <label className="text-white block mb-1">Comentario:</label>
             <textarea
@@ -244,26 +404,45 @@ export default function RegisterClientDrawer({ open, onClose }) {
             />
           </div>
           <div className="mb-6">
-            <input
-              type="file"
-              name="imagen"
-              id="input-imagen"
-              className="hidden"
-              onChange={handleChange}
-            />
-            <label htmlFor="input-imagen">
-              <Button type="button" className="w-full bg-purple-700">
-                + Añade una imagen
-              </Button>
-            </label>
+            <Button
+              type="button"
+              className="w-full bg-purple-700"
+              onClick={() => setShowUploadModal(true)}
+            >
+              {form.imagen ? "Cambiar imagen" : "+ Añade una imagen"}
+            </Button>
             {form.imagen && (
-              <span className="text-white mt-2 block">{form.imagen.name}</span>
+              <div className="mt-2 flex flex-col items-center">
+                <img
+                  src={form.imagen}
+                  alt="Vista previa"
+                  className="w-32 h-32 object-cover rounded-lg border border-gray-500 mb-2"
+                />
+                <span className="text-white block text-sm mb-1">
+                  {form.imagen.split("/").pop()}
+                </span>
+                <Button
+                  type="button"
+                  className="bg-red-600 text-white px-3 py-1 rounded"
+                  onClick={handleRemoveImage}
+                >
+                  Quitar imagen
+                </Button>
+              </div>
             )}
           </div>
           <Button className="w-full bg-purple-600" type="submit">
             Registrar
           </Button>
         </form>
+        {showUploadModal && (
+          <UploadImageModal
+            onClose={() => setShowUploadModal(false)}
+            onSave={handleImageSave}
+            folder="computadores"
+            title="Subir imagen del equipo"
+          />
+        )}
       </aside>
     </div>
   );

@@ -1,9 +1,18 @@
 import React, { useRef, useState } from "react";
 import FloatingModal from "../common/popUp/FloatingModal";
 import Button from "../common/Button";
-import { client as supabase } from "../../supabase/client"; // Ajusta la ruta si es necesario
+import { client as supabase } from "../../supabase/client";
+import ReactDOM from "react-dom";
 
-const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
+const UploadImageModal = ({
+  onClose,
+  onSave,
+  folder = "fotosPerfiles",
+  user = null,
+  title = "Subir imagen",
+  updateProfile = false,
+  initialFileName = null,
+}) => {
   const fileInputRef = useRef();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -13,7 +22,7 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
 
   const validateImage = (file) => {
     const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (!validTypes.includes(file.type)) {
       setErrorMsg("Archivo no compatible: usa JPEG, PNG o JPG (max 5MB)");
       return false;
@@ -64,15 +73,21 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
 
     const file = selectedImage;
     const fileExt = file.name.split('.').pop();
-    const filePath = `fotosPerfiles/perfil_${user.id}_${Date.now()}.${fileExt}`;
+    let fileName = initialFileName;
+    if (!fileName) {
+      fileName = user
+        ? `perfil_${user.id}_${Date.now()}.${fileExt}`
+        : `img_${Date.now()}.${fileExt}`;
+    }
+    const filePath = `${folder}/${fileName}`;
 
     // 1. Subir archivo al bucket usando filePath
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from("atlas")
       .upload(filePath, file, { upsert: true });
 
     if (error) {
-      alert("Error al subir la imagen: " + error.message);
+      setErrorMsg("Error al subir la imagen: " + error.message);
       setUploading(false);
       return;
     }
@@ -85,18 +100,19 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
 
     const publicUrl = publicUrlData.publicUrl;
 
-    // 3. Actualizar el perfil del usuario en Supabase Auth
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: { fotosPerfiles: publicUrl }
-    });
-
-    setUploading(false);
-
-    if (updateError) {
-      alert("Error al actualizar el perfil");
-      return;
+    // 3. Si es para perfil, actualizar el perfil del usuario en Supabase Auth
+    if (updateProfile && user) {
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { fotosPerfiles: publicUrl }
+      });
+      if (updateError) {
+        setErrorMsg("Error al actualizar el perfil");
+        setUploading(false);
+        return;
+      }
     }
 
+    setUploading(false);
     if (onSave) onSave(publicUrl);
     onClose();
   };
@@ -108,17 +124,18 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
     if (onClose) onClose();
   };
 
-  return (
+  return ReactDOM.createPortal (
+    
+    <div className="fixed inset-0 flex items-center justify-center z-[9999]">
     <FloatingModal onClose={onClose}>
       <h2 className="text-2xl font-bold text-white mb-2 text-center">
-        Actualizar foto de perfil
+        {title}
       </h2>
       <hr className="border-t border-gray-700 mb-4" />
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center ">
         <span className="text-[#7c2ae8] mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" className="bi bi-camera-fill" viewBox="0 0 16 16">
-            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-            <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-image-fill" viewBox="0 0 16 16">
+            <path d="M.002 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2zm1 9v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062zm5-6.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/>
           </svg>
         </span>
         <p className="text-white mb-2">¡Sube una imagen nueva!</p>
@@ -172,7 +189,11 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
         </div>
       </div>
     </FloatingModal>
+    </div>,
+    document.body
+    
+
   );
 };
 
-export default UpdateProfilePhotoModal;
+export default UploadImageModal;

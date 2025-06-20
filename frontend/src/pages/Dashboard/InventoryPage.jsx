@@ -1,7 +1,7 @@
 import React from "react";
 import InventoryTable from "../../components/dashboard/InventoryTable";
 import EquipmentsTable from "../../components/dashboard/EquipmentsTable";
-import ButtonBG from "../../components/common/ButtonBG";
+import buttonBG from "../../components/common/ButtonBG";
 
 export default function InventoryPage() {
   const [clienteSeleccionado, setClienteSeleccionado] = React.useState(null);
@@ -17,13 +17,13 @@ export default function InventoryPage() {
         <div>
           <EquipmentsTable cliente={clienteSeleccionado} />
           <div className="flex justify-end ">
-          <ButtonBG
+          <buttonBG
           
-            className="mt-6 px-4 py-2 w-30 bg-gray-800 rounded-xl shadow-2xl text-white text-center hover:bg-purple-600 hover:shadow-md hover:shadow-purple-500/50 transition-colors"
+            className="mt-6 px-4 py-2 w-30 bg-purple-800 rounded-xl shadow-2xl text-white text-center hover:bg-purple-900 hover:shadow-md hover:shadow-purple-600/50 transition-colors"
             onClick={() => setClienteSeleccionado(null)}
           >
             ←  Volver
-          </ButtonBG>
+          </buttonBG>
           </div>
         </div>
       ) : (
