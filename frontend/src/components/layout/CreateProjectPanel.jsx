@@ -48,17 +48,22 @@ useEffect(() => {
       }
 
       const usuarioId = usuarioDb.idusuario;
-
-      // 2. Obtener los proyectos del usuario por su ID
-      console.log("Consultando proyectos para usuarioId:", usuarioId);
-      const proyectosResponse = await axios.get(
-        `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
-      );
-      console.log("proyectosResponse.data:", proyectosResponse.data);
-
-      // Actualizar el estado con los proyectos obtenidos
-      setProjects(proyectosResponse.data);
-      console.log("Proyectos recibidos:", proyectosResponse.data);
+      if (usuarioDb.rol_idrol === 1) {
+        console.log("Consultando proyectos para usuarioId:", usuarioId);
+        const proyectosResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+        );
+        console.log("proyectosResponse.data:", proyectosResponse.data);
+        setProjects(proyectosResponse.data);
+        console.log("Proyectos recibidos:", proyectosResponse.data);
+      } else if (usuarioDb.rol_idrol === 2) {
+        const usuarioId= usuarioDb.idusuario;
+        const colaboradorResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
+        );
+        setProjects(colaboradorResponse.data.proyectos || []);
+        console.log("Proyecto colaborador recibidos:", colaboradorResponse.data.proyectos);
+      }
     } catch (error) {
       console.error("Error al obtener proyectos:", error);
       setProjects([]);
@@ -81,8 +86,10 @@ const handleCreate = (nuevoProyecto) => {
   };
 
   //  La busqueda del proyecto se realiza por medio de su nombre
-  const filteredProjects = projects.filter(project =>
-    project.nombreproyecto.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProjects = projects.filter(
+    project =>
+      project.nombreproyecto &&
+      project.nombreproyecto.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {

@@ -5,16 +5,26 @@ const NoTenerCuenta = ({ next: nextProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lee el parámetro 'next' de la URL o usa el prop
+  // Usa el prop 'next' si existe, si no, toma el de la URL
   const params = new URLSearchParams(location.search);
   const next = nextProp || params.get("next") || "/dashboard";
+  // Intenta obtener id_proyecto de next (si viene como query param) o de la URL
+  let id_proyecto = params.get("id_proyecto");
+  if (!id_proyecto && next.includes("id_proyecto=")) {
+    const nextParams = new URLSearchParams(next.split("?")[1]);
+    id_proyecto = nextParams.get("id_proyecto");
+  }
 
   const handleLogin = () => {
-    navigate(`/iniciar-sesion?next=${encodeURIComponent(next)}`);
+    let url = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
+    if (id_proyecto) url += `&id_proyecto=${id_proyecto}`;
+    navigate(url);
   };
 
   const handleRegister = () => {
-    navigate(`/registrarse?next=${encodeURIComponent(next)}`);
+    let url = `/registrarse?next=${encodeURIComponent(next)}`;
+    if (id_proyecto) url += `&id_proyecto=${id_proyecto}`;
+    navigate(url);
   };
 
   return (

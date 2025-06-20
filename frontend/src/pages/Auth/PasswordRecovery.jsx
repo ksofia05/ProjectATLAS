@@ -16,27 +16,39 @@ const PasswordRecovery = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    const toastId = showLoadingToast("Enviando enlace...");
-    
+    const toastId = showLoadingToast("Verificando correo...");
+
     try {
-      // Intenta con diferentes configuraciones de redirectTo
-      const { data, error } = await client.auth.resetPasswordForEmail(email, {
+      // Aqui estamos verificando si el correo esta en la bd
+      const response = await fetch("http://localhost:8000/tasks/api/v1/verificar-correo/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.exists) {
+        toast.dismiss(toastId);
+        showErrorToast("Correo no encontrado");
+        setMessage("Correo no encontrado");
+        return;
+      }
+
+      // 2. Si existe, procede con Supabase
+      const { data: supaData, error } = await client.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password',
       });
 
       toast.dismiss(toastId);
 
       if (error) {
-        console.error('Reset password error:', error);
         showErrorToast(error.message || "No se pudo enviar el correo");
         setMessage(error.message);
       } else {
-        console.log('Reset password success:', data);
         showSuccessToast("¡Enlace enviado! Revisa tu correo electrónico.");
         setStep(3);
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
       toast.dismiss(toastId);
       showErrorToast("Error al enviar solicitud. Intenta nuevamente.");
       setMessage("Error al enviar solicitud. Intenta nuevamente.");
