@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import FormContainer from '../../components/common/FormContainer';
 import Input from '../../components/common/Input';
 import PasswordInput from '../../components/common/PasswordInput';
@@ -10,7 +10,6 @@ import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hoo
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
-import { useLocation } from 'react-router-dom';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -27,7 +26,6 @@ const Register = () => {
 
   const params = new URLSearchParams(location.search);
   const next = params.get("next") || "/dashboard-create-project";
-
 
   useRegisterFormPersistence(setFormData, setStep);
 
@@ -63,16 +61,6 @@ const Register = () => {
       ...prevErrors,
       [name]: error,
     }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   useEffect(() => {
@@ -125,107 +113,103 @@ const Register = () => {
       return;
     }
 
-if (step === 2) {    const toastId = showLoadingToast("Registrando...");
+    if (step === 2) {
+      const toastId = showLoadingToast("Registrando...");
 
-    try {
-      // registrar en Supabase Auth
-      const { data: authData, error: authError } = await client.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            nombre: formData.firstName,
-            apellido: formData.lastName
-          }
-        }
-      });
-
-      if (authError) {
-        toast.dismiss(toastId);
-        
-        // Manejo específico de errores
-        if (authError.message.includes('User already registered')) {
-          showErrorToast('Este correo ya está registrado.');
-          setStep(1);
-          setErrors(prev => ({ ...prev, email: 'Este correo ya está registrado.' }));
-        } else {
-          showErrorToast(authError.message || "Error al registrar.");
-        }
-        return;
-      }
-
-      // guardar en tabla Usuario
-      if (authData.user) {
-        const { data: userData, error: dbError } = await client
-          .from('Usuario')
-          .insert([
-            {
-              uuid_supabase: authData.user.id,
-              auth_user_id: authData.user.id, // UUID de Supabase Auth
+      try {
+        // registrar en Supabase Auth
+        const { data: authData, error: authError } = await client.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
               nombre: formData.firstName,
-              apellido: formData.lastName,
-              correoElectronico: formData.email,
-              estado: 'Activo',
-              suscripcion: 'Gratuito',
-              terminoServicio: 'TRUE'
+              apellido: formData.lastName
             }
-          ])
-          .select()
-          .single();
+          }
+        });
 
-        if (dbError) {
-          console.error('Error al guardar en tabla Usuario:', dbError);
-          
+        if (authError) {
           toast.dismiss(toastId);
-          showErrorToast("Error al completar el registro en la base de datos.");
+          if (authError.message.includes('User already registered')) {
+            showErrorToast('Este correo ya está registrado.');
+            setStep(1);
+            setErrors(prev => ({ ...prev, email: 'Este correo ya está registrado.' }));
+          } else {
+            showErrorToast(authError.message || "Error al registrar.");
+          }
           return;
         }
 
-        console.log('Usuario guardado en BD:', userData);
-        
-        await client.auth.updateUser({
-          data: { 
-            usuario_db_id: userData.id // Guardar tu ID int para fácil acceso
+        // guardar en tabla Usuario
+        if (authData.user) {
+          const { data: userData, error: dbError } = await client
+            .from('Usuario')
+            .insert([
+              {
+                uuid_supabase: authData.user.id,
+                auth_user_id: authData.user.id,
+                nombre: formData.firstName,
+                apellido: formData.lastName,
+                correoElectronico: formData.email,
+                estado: 'Activo',
+                suscripcion: 'Gratuito',
+                terminoServicio: 'TRUE'
+              }
+            ])
+            .select()
+            .single();
+
+          if (dbError) {
+            console.error('Error al guardar en tabla Usuario:', dbError);
+            toast.dismiss(toastId);
+            showErrorToast("Error al completar el registro en la base de datos.");
+            return;
           }
-        });
-      }
 
-      toast.dismiss(toastId);
-
-      // Limpiar localStorage
-      localStorage.removeItem('registerFormData');
-      localStorage.removeItem('registerStep');
-
-      // Cerrar cualquier sesión que se haya creado automáticamente
-      if (authData.session) {
-        await client.auth.signOut();
-      }
-      if (next && next.startsWith("/dashboard/")) {
-        const idProyecto = next.split("/dashboard/")[1];
-        try {
-          await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
+          await client.auth.updateUser({
+            data: { usuario_db_id: userData.id }
           });
-        } catch (err) {
-          showErrorToast("Error al asociar colaborador al proyecto.");
         }
+
+        toast.dismiss(toastId);
+
+        // Limpiar localStorage
+        localStorage.removeItem('registerFormData');
+        localStorage.removeItem('registerStep');
+
+        // Cerrar cualquier sesión que se haya creado automáticamente (no esperes)
+        if (authData.session) {
+          client.auth.signOut(); // No uses await aquí
+        }
+
+        // Asociar colaborador si corresponde
+        if (next && next.startsWith("/dashboard/")) {
+          const idProyecto = next.split("/dashboard/")[1];
+          try {
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
+            });
+          } catch (err) {
+            showErrorToast("Error al asociar colaborador al proyecto.");
+          }
+        }
+
+        // Redirige SIEMPRE al login, sin esperar nada más
+        let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
+        const idProyectoParam = new URLSearchParams(location.search).get("id_proyecto");
+        if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
+        showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
+        navigate(loginUrl);
+
+      } catch (err) {
+        toast.dismiss(toastId);
+        showErrorToast("Error inesperado al registrar.");
+        console.error('Error en registro:', err);
       }
-
-
-      // Siempre redirigir al login, independientemente del estado de la sesión
-      showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
-      navigate(`/iniciar-sesion?next=${encodeURIComponent(next)}`);
-
-    } catch (err) {
-      toast.dismiss(toastId);
-      showErrorToast("Error inesperado al registrar.");
-      console.error('Error en registro:', err);
     }
-  };
-
-  
   };
 
   return (
