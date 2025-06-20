@@ -5,13 +5,16 @@ import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 import Searchbar from "./Searchbar";
 import CardProjects from "../layout/cardProjects";
+import useUserStore from "../../stores/useUserStore";
 
 const CreateProjectPanel = ({ disableCreate }) => {
+  const user = useUserStore((state) => state.user)
+
   const [modalOpen, setModalOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const { user, isAuthenticated, isLoading } = useAuth();
+  // const { user, isAuthenticated, isLoading } = useAuth();
 
 useEffect(() => {
   const fetchUserProjects = async () => {
@@ -19,7 +22,7 @@ useEffect(() => {
     console.log("user:", user);
 
     // Obtener el correo electrónico del usuario
-    const email = user?.email || user?.user_metadata?.email;
+    const email = user?.correoElectronico || user?.user_metadata?.correoElectronico
     console.log("email:", email);
 
     try {
@@ -81,8 +84,7 @@ const handleCreate = (nuevoProyecto) => {
 };
 
   const getUserDisplayName = () => {
-    if (!user) return "Usuario";
-    return user.user_metadata?.nombre || user.email || "Usuario";
+    return user?.nombre || user.email || "Usuario";
   };
 
   //  La busqueda del proyecto se realiza por medio de su nombre
@@ -92,13 +94,13 @@ const handleCreate = (nuevoProyecto) => {
       project.nombreproyecto.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        {/* ...loading UI... */}
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center min-h-[80vh]">
+  //       {/* ...loading UI... */}
+  //     </div>
+  //   );
+  // }
 
  return (
   <div className="flex flex-col items-center justify-center min-h-[80vh] py-10 px-4">
