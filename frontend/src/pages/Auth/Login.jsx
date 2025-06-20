@@ -6,37 +6,38 @@ import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
+import { client } from '../../supabase/client';
+
 
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, isLoading, isAuthenticated } = useAuth();
-  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
 
-  // Obtener la ruta de destino
-  const params = new URLSearchParams(location.search);
-  const next = params.get("next") || "/dashboard-create-project";
-
   useEffect(() => {
-    // Si ya está autenticado, redirigir
-    if (isAuthenticated) {
-      navigate(next);
-      return;
-    }
+    // Verificar si el usuario ya está autenticado
+    const checkAuth = async () => {
+      const { data: { user } } = await client.auth.getUser();
+      if (user) {
+        navigate("/dashboard-create-project");
+      }
+    };
     
-    // Reset form
+    checkAuth();
+    
     setFormData({
       email: "",
       password: "",
     });
     setErrors({});
-  }, [location.pathname, navigate, isAuthenticated, next]);
+  }, [location.pathname, navigate]);
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next") || "/dashboard-create-project";
 
   const validateField = (name, value) => {
     let error = "";
@@ -91,20 +92,22 @@ const Login = () => {
     const toastId = showLoadingToast("Ingresando...");
     
     try {
-      // Usar la función login del contexto
-      const result = await login(formData.email, formData.password);
+      const { data, error } = await client.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
       
       toast.dismiss(toastId);
       
-      if (!result.success) {
+      if (error) {
         let errorMessage = "Error al iniciar sesión";
         
         // Personalizar mensajes de error según el tipo
-        if (result.error.message.includes("Invalid login credentials")) {
+        if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
-        } else if (result.error.message.includes("Email not confirmed")) {
+        } else if (error.message.includes("Email not confirmed")) {
           errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
-        } else if (result.error.message.includes("Too many requests")) {
+        } else if (error.message.includes("Too many requests")) {
           errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
         
@@ -116,28 +119,29 @@ const Login = () => {
         return;
       }
       
-      // Login exitoso
-      setErrors({});
-      showSuccessToast("¡Ingreso exitoso!");
-      
-      // Manejar asociación de colaborador si es necesario
-      if (next && next.startsWith("/dashboard/")) {
-        const idProyecto = next.split("/dashboard/")[1];
-        try {
-          await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ idProyecto: idProyecto, email: formData.email })
-          });
-        } catch (err) {
-          showErrorToast("Error al asociar colaborador al proyecto.");
-        }
+      if (data.user && data.session) {
+        localStorage.setItem('token', data.session.access_token);
+        setErrors({});
+        showSuccessToast("¡Ingreso exitoso!");
+        
+        if( next && next.startsWith("/dashboard/") ){
+          const idProyecto = next.split("/dashboard/")[1];
+          try{
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/",{
+              method: "POST",
+              headers:{"Content-Type": "application/json"},
+              body: JSON.stringify({ idProyecto: idProyecto, email:formData.email})
+            });
+          } catch(err){
+            showErrorToast("Error al asociar colaborador al proyecto.");
+          }
+        } 
+        
+        // Esperar un momento para que se complete la autenticación
+        setTimeout(() => {
+          navigate(next);
+        }, 1200);
       }
-      
-      // Navegar después del login exitoso
-      setTimeout(() => {
-        navigate(next);
-      }, 1200);
       
     } catch (error) {
       toast.dismiss(toastId);
@@ -154,15 +158,9 @@ const Login = () => {
     return (
       !formData.email ||
       !formData.password ||
-      Object.values(errors).some((err) => err) ||
-      isLoading
+      Object.values(errors).some((err) => err)
     );
   };
-
-  // Si ya está autenticado, no mostrar el formulario
-  if (isAuthenticated) {
-    return null;
-  }
 
   return (
     <FormContainer>
@@ -177,7 +175,6 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.email}
           icon="bi-envelope-fill"
-          disabled={isLoading}
         />
         <PasswordInput
           label="Contraseña"
@@ -187,14 +184,13 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.password}
           icon="bi-eye-fill"
-          disabled={isLoading}
         />
         <Button
           type="submit"
           disabled={isButtonDisabled()}
           className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {isLoading ? "Ingresando..." : "Ingresar"}
+          Ingresar
         </Button>
       </form>
       <div className="text-center mt-6">
