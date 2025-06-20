@@ -4,8 +4,8 @@ from rest_framework import routers
 from tasks import views as task_views
 from proyectos import views as proyectos_views
 from inventario import views as inventario_views
-from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador
-from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects, asociar_colaborador, info_proyecto_colaboradores,filtro_colaborador,actualizar_estado_usuario
+from tasks.views import login_usuario,registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador, verificar_correo_existente
+from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects, info_proyecto_colaboradores,filtro_colaborador,actualizar_estado_usuario, asociar_colaborador, proyectos_colaboradores
 from inventario.views import clientes_por_proyecto
 #api versioning
 router = routers.DefaultRouter()
@@ -35,4 +35,7 @@ urlpatterns = [
     path('api/v1/info_proyecto_colaboradores/', info_proyecto_colaboradores, name='info_proyecto_colaboradores'),
     path('api/v1/usuarios/<int:id_usuario>/estado/',actualizar_estado_usuario, name='actualizar_estado_usuario'),
     path('api/v1/clientes_por_proyecto/', clientes_por_proyecto),
+    path('api/v1/proyectos_colaboradores/', proyectos_colaboradores, name='proyectos_colaboradores'),
+    path('api/v1/verificar-correo/', verificar_correo_existente, name='verificar_correo_existente'),
+    
 ]

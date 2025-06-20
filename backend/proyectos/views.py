@@ -38,6 +38,8 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
         return Proyecto.objects.none()
     
 
+    
+
 
 @api_view(['POST'])
 def save_proyect(request):
@@ -131,29 +133,33 @@ def get_user_projects(request):
 
 @api_view(['POST'])
 def asociar_colaborador(request):
-    email=request.data.get('email')
-    id_proyecto=request.data.get('id_proyecto')
+    email = request.data.get('email')
+    id_proyecto = request.data.get('id_proyecto')
     if not email or not id_proyecto:
-        return Response({'error':'Faltan datos'}, status=400)
+        print("Faltan datos")
+        return Response({'error': 'Faltan datos'}, status=400)
     try:
         usuario = Usuario.objects.get(correoelectronico=email)
-        if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
-            return Response({'success': False, 'error':'un administrador no puede ser colaborador de otro proyecto'}, status=400)
-        if usuario.rol_idrol and usuario.rol_idrol.idrol == 2:
-            if ColaboradorProyecto.objects.filter(usuario=usuario).exists():
-                return Response({'success': False, 'error':'Este usuario ya es colaborador de otro proyecto'}, status=400)
-        if proyecto.id_usuario and proyecto.id_usuario != usuario:
-            return Response ({'success': False,'error':'Este proyecto ya tiene un administrador'}, status=400)
-        rol_colaborador = Rol.objects.get(idrol=2)  
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        rol_admin = Rol.objects.get(idrol=1)
+        rol_colaborador = Rol.objects.get(idrol=2)
+        if usuario.rol_idrol == rol_admin:
+            return Response({'error': 'Un administrador no puede asociarse como colaborador.'}, status=400)
+        if ColaboradorProyecto.objects.filter(usuario=usuario).exists():
+            return Response({'error': 'Un colaborador no puede estar en más de un proyecto.'}, status=400)
         if usuario.rol_idrol != rol_colaborador:
             usuario.rol_idrol = rol_colaborador
             usuario.save()
-        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+
         ColaboradorProyecto.objects.get_or_create(usuario=usuario, proyecto=proyecto)
-        return Response({'success':True})
+        return Response({'success': True})
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    except Proyecto.DoesNotExist:
+        return Response({'error': 'Proyecto no encontrado'}, status=404)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)
-
+    
 @api_view(['GET'])
 def info_proyecto_colaboradores(request):
     id_proyecto = request.query_params.get('id_proyecto')
@@ -249,3 +255,19 @@ def actualizar_estado_usuario(request, id_usuario):
             return Response({'error': 'Usuario no encontrado'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+        
+@api_view(['GET'])
+def proyectos_colaboradores(request):
+    id_usuario = request.query_params.get('id_usuario')
+    if not id_usuario:
+        return Response({'error': 'ID de usuario no proporcionado'}, status=400)
+    try:
+        usuario = Usuario.objects.get(idusuario=id_usuario)
+        colaboraciones = ColaboradorProyecto.objects.filter(usuario=usuario)
+        proyectos = [c.proyecto for c in colaboraciones]
+        serializer = ProyectoSerializer(proyectos, many=True)
+        return Response({'proyectos': serializer.data}, status=200)
+    except Usuario.DoesNotExist:
+        return Response({'proyectos': []}, status=200)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

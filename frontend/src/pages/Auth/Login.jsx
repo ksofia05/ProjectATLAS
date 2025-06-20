@@ -11,7 +11,6 @@ import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService"
 import { getUserProfile } from "../../services/userService";
 
-
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,26 +20,24 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
 
+  // Obtener la ruta de destino y el id_proyecto de la URL
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next") || "/dashboard-create-project";
+  const idProyecto = params.get("id_proyecto");
+
   useEffect(() => {
-    // Verificar si el usuario ya está autenticado
+    // Si ya está autenticado, redirige
     const checkAuth = async () => {
       const { data: { user } } = await client.auth.getUser();
       if (user) {
-        navigate("/dashboard-create-project");
+        navigate(next);
       }
     };
-    
     checkAuth();
-    
-    setFormData({
-      email: "",
-      password: "",
-    });
+    setFormData({ email: "", password: "" });
     setErrors({});
+    // eslint-disable-next-line
   }, [location.pathname, navigate]);
-
-  const params = new URLSearchParams(location.search);
-  const next = params.get("next") || "/dashboard-create-project";
 
   const validateField = (name, value) => {
     let error = "";
@@ -91,18 +88,15 @@ const Login = () => {
     if (!validateForm()) {
       return;
     }
-    
+
     const toastId = showLoadingToast("Ingresando...");
-    
+
     try {
       const { data, error } = await login( formData.email, formData.password);
-      
       toast.dismiss(toastId);
-      
+
       if (error) {
         let errorMessage = "Error al iniciar sesión";
-        
-        // Personalizar mensajes de error según el tipo
         if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
         } else if (error.message.includes("Email not confirmed")) {
@@ -110,7 +104,6 @@ const Login = () => {
         } else if (error.message.includes("Too many requests")) {
           errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
-        
         showErrorToast(errorMessage);
         setErrors((prev) => ({
           ...prev,
@@ -118,11 +111,12 @@ const Login = () => {
         }));
         return;
       }
-      
+
       if (data.user && data.session) {
         localStorage.setItem('token', data.session.access_token);
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
+
 
         const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID
         if (userProfile) {
@@ -132,25 +126,27 @@ const Login = () => {
           });
         }
 
-        if(next && next.startsWith("/dashboard/")){
-          const idProyecto = next.split("/dashboard/")[1];
-          try{
-            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/",{
+        if (idProyecto && formData.email) {
+          try {
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
               method: "POST",
-              headers:{"Content-Type": "application/json"},
-              body: JSON.stringify({ idProyecto: idProyecto, email:formData.email})
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
             });
-          } catch(err){
+          } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
-        } 
-        
-        // Esperar un momento para que se complete la autenticación
+        }
+
         setTimeout(() => {
-          navigate(next);
+          if (idProyecto) {
+            navigate(`/dashboard-create-project?id_proyecto=${idProyecto}`);
+          } else {
+            navigate(next);
+          }
         }, 1200);
       }
-      
+
     } catch (error) {
       toast.dismiss(toastId);
       console.error("Error de login:", error);
