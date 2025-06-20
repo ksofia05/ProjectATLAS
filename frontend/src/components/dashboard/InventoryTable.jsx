@@ -12,14 +12,18 @@ import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 
 export default function InventoryTable({ onEmojiClick }) {
-  const { user, isLoading } = useAuth(); // <-- isLoading debe venir de tu contexto
+  const { user, isLoading } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
 
+  // Estados para pasar a RegisterClientDrawer
+  const [usuarioIdActual, setUsuarioIdActual] = useState(null);
+  const [idProyecto, setIdProyecto] = useState(null);
+
   useEffect(() => {
-    if (isLoading || !user) return; // <-- SOLO carga si el usuario está listo
+    if (isLoading || !user) return;
 
     const fetchClientes = async () => {
       const email = user?.email || user?.user_metadata?.email;
@@ -28,6 +32,7 @@ export default function InventoryTable({ onEmojiClick }) {
           `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
         const usuarioId = usuarioRes.data[0].idusuario;
+        setUsuarioIdActual(usuarioId);
 
         const proyectosRes = await axios.get(
           `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
@@ -36,10 +41,12 @@ export default function InventoryTable({ onEmojiClick }) {
 
         if (proyectos.length === 0) {
           setClientes([]);
+          setIdProyecto(null);
           return;
         }
 
         const idProyecto = proyectos[0].id_proyecto;
+        setIdProyecto(idProyecto);
 
         const clientesRes = await axios.get(
           `http://localhost:8000/tasks/api/v1/clientes_por_proyecto/?id_proyecto=${idProyecto}`
@@ -49,6 +56,8 @@ export default function InventoryTable({ onEmojiClick }) {
       } catch (error) {
         console.error("Error al obtener los clientes:", error);
         setClientes([]);
+        setIdProyecto(null);
+        setUsuarioIdActual(null);
       }
     };
 
@@ -117,11 +126,11 @@ export default function InventoryTable({ onEmojiClick }) {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
         <div className="flex gap-3">
           <ButtonGrey
-  className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-fit"
-  onClick={() => setShowDrawer(true)}
->
-  + Agregar nuevo equipo
-</ButtonGrey>
+            className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-fit"
+            onClick={() => setShowDrawer(true)}
+          >
+            + Agregar nuevo equipo
+          </ButtonGrey>
           <DropdownMenu
             buttonLabel="Exportar"
             options={opcionesExportar}
@@ -211,7 +220,12 @@ export default function InventoryTable({ onEmojiClick }) {
         </div>
       </div>
 
-      <RegisterClientDrawer open={showDrawer} onClose={() => setShowDrawer(false)} />
+      <RegisterClientDrawer
+        open={showDrawer}
+        onClose={() => setShowDrawer(false)}
+        idproyecto={idProyecto}
+        usuarioIdActual={usuarioIdActual}
+      />
     </div>
   );
 }
