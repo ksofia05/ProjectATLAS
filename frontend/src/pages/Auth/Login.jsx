@@ -7,6 +7,9 @@ import PasswordInput from "../../components/common/PasswordInput";
 import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
 import { client } from '../../supabase/client';
+import useUserStore from "../../stores/useUserStore";
+import { login } from "../../services/authService"
+import { getUserProfile } from "../../services/userService";
 
 const Login = () => {
   const location = useLocation();
@@ -89,11 +92,7 @@ const Login = () => {
     const toastId = showLoadingToast("Ingresando...");
 
     try {
-      const { data, error } = await client.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
+      const { data, error } = await login( formData.email, formData.password);
       toast.dismiss(toastId);
 
       if (error) {
@@ -117,6 +116,15 @@ const Login = () => {
         localStorage.setItem('token', data.session.access_token);
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
+
+
+        const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID
+        if (userProfile) {
+          useUserStore.getState().setUser({
+            ...userProfile,
+            auth_user_id: data.user.id,
+          });
+        }
 
         if (idProyecto && formData.email) {
           try {
