@@ -143,16 +143,10 @@ def asociar_colaborador(request):
         proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
         rol_admin = Rol.objects.get(idrol=1)
         rol_colaborador = Rol.objects.get(idrol=2)
-
-        # 1. Si el usuario es administrador, no puede ser colaborador
         if usuario.rol_idrol == rol_admin:
             return Response({'error': 'Un administrador no puede asociarse como colaborador.'}, status=400)
-
-        # 2. Si el usuario ya es colaborador en otro proyecto, no puede asociarse a más de uno
         if ColaboradorProyecto.objects.filter(usuario=usuario).exists():
             return Response({'error': 'Un colaborador no puede estar en más de un proyecto.'}, status=400)
-
-        # Asignar rol de colaborador si aún no lo tiene
         if usuario.rol_idrol != rol_colaborador:
             usuario.rol_idrol = rol_colaborador
             usuario.save()
