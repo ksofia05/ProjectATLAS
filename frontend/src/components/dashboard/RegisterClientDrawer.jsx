@@ -3,6 +3,7 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
 import UploadImageModal from "../layout/uploadImageModal";// Importa el modal reutilizable
+import { client as supabase } from "../../supabase/client"; // Asegúrate de importar tu cliente de supabase
 
 // Simulación de clientes registrados
 const CLIENTES = [
@@ -34,8 +35,7 @@ function getToday() {
   const today = new Date();
   return today.toISOString().split("T")[0];
 }
-
-export default function RegisterClientDrawer({ open, onClose }) {
+export default function RegisterClientDrawer({ open, onClose, idproyecto, usuarioIdActual }) {
   const [form, setForm] = useState({
     identificacion: "",
     nombre: "",
@@ -137,15 +137,112 @@ export default function RegisterClientDrawer({ open, onClose }) {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.identificacion || !form.nombre || !form.email) {
-      showErrorToast("Completa los campos obligatorios");
-      return;
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!form.identificacion || !form.nombre || !form.email) {
+    showErrorToast("Completa los campos obligatorios");
+    return;
+  }
+
+  try {
+    // 1. Insertar cliente (si no existe)
+    let clienteData;
+    let clienteError;
+    const { data: existingCliente, error: searchError } = await supabase
+      .from("Cliente")
+      .select("*")
+      .eq("dni", form.identificacion)
+      .single();
+
+    if (existingCliente) {
+      clienteData = existingCliente;
+    } else {
+      const insertResult = await supabase
+        .from("Cliente")
+        .insert([
+          {
+            dni: Number(form.identificacion),
+            nombre: form.nombre,
+            apellido: form.apellido,
+            correo: form.email,
+            telefono: form.telefono,
+            proyecto: idproyecto, // usa el prop correctamente
+          },
+        ])
+        .select()
+        .single();
+      clienteData = insertResult.data;
+      clienteError = insertResult.error;
     }
+
+    if (clienteError) throw clienteError;
+
+    // 2. Insertar equipo (si no existe)
+    let equipoData;
+    let equipoError;
+    const { data: existingEquipo, error: equipoSearchError } = await supabase
+      .from("Equipo")
+      .select("*")
+      .eq("numeroSerie", form.serie)
+      .single();
+
+    if (existingEquipo) {
+      equipoData = existingEquipo;
+    } else {
+      const insertEquipo = await supabase
+        .from("Equipo")
+        .insert([
+          {
+            numeroSerie: form.serie,
+            // agrega más campos si tu modelo lo requiere
+          },
+        ])
+        .select()
+        .single();
+      equipoData = insertEquipo.data;
+      equipoError = insertEquipo.error;
+    }
+
+    if (equipoError) throw equipoError;
+
+    // 3. Insertar agendamiento
+    const { data: agendamientoData, error: agendamientoError } = await supabase
+      .from("Agendamiento")
+      .insert([
+        {
+          Cliente_dni: clienteData.dni,
+          Usuario_id: usuarioIdActual,
+        },
+      ])
+      .select()
+      .single();
+
+    if (agendamientoError) throw agendamientoError;
+
+    // 4. Insertar en EquipoAgendamiento
+    const { error: equipoAgendamientoError } = await supabase
+      .from("EquipoAgendamiento")
+      .insert([
+        {
+          fechaIngreso: form.entrada,
+          comentarioEntrada: form.comentario,
+          Estado: "Activo",
+          equipo_numeroSerie: equipoData.numeroSerie,
+          agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+        },
+      ]);
+
+    if (equipoAgendamientoError) throw equipoAgendamientoError;
+
     showSuccessToast("Equipo registrado correctamente");
     onClose();
-  };
+    // Recarga la lista de clientes aquí si es necesario
+
+  } catch (err) {
+    showErrorToast("Error al registrar cliente/equipo");
+    console.error(err);
+  }
+};
 
   if (!mounted) return null;
 
@@ -291,7 +388,9 @@ export default function RegisterClientDrawer({ open, onClose }) {
             folder="computadores" // Aquí cambias el folder al bucket de computadores
             title="Subir imagen del equipo"
           />
+          
         )}
+        
       </aside>
     </div>
   );
