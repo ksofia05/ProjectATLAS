@@ -25,7 +25,7 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 import DashboardCreateProject from "./pages/DashboardCreateProject";
 import Error404 from "./pages/error404";
 import { Toaster } from 'react-hot-toast';
-import NoTenerCuenta from "./components/common/notenercuenta";
+import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 
 const App = () => {
