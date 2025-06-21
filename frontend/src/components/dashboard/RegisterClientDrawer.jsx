@@ -5,31 +5,6 @@ import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
 import UploadImageModal from "../layout/uploadImageModal";
 import { client as supabase } from "../../supabase/client";
 
-// Simulación de clientes registrados
-const CLIENTES = [
-  {
-    identificacion: "1107976737",
-    nombre: "Jose Jacobo",
-    email: "jose@email.com",
-    telefono: "3001234567",
-    serie: "SN1234-5678-9101",
-  },
-  {
-    identificacion: "1107977786",
-    nombre: "Dilan Francisco",
-    email: "dilan@email.com",
-    telefono: "3009876543",
-    serie: "CP-2024-ABCD-1234-EFGH",
-  },
-  {
-    identificacion: "1107979999",
-    nombre: "Daniel Orlando",
-    email: "daniel@email.com",
-    telefono: "3012345678",
-    serie: "TV2024-XYZ-0001",
-  },
-];
-
 // Funcion para conseguir la fecha de hoy
 function getToday() {
   const today = new Date();
@@ -38,10 +13,14 @@ function getToday() {
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+
+
+
 export default function RegisterClientDrawer({ open, onClose, idproyecto, usuarioIdActual }) {
   const [form, setForm] = useState({
     identificacion: "",
     nombre: "",
+    apellido: "",
     email: "",
     telefono: "",
     entrada: getToday(),
@@ -50,12 +29,122 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
     imagen: null,
   });
 
+
+
+  // Estado para manejar los resultados de búsqueda y sugerencias
+const [searchResults, setSearchResults] = useState([]);
+const [showSuggestions, setShowSuggestions] = useState(false);
+const [loadingSearch, setLoadingSearch] = useState(false);
+
+useEffect(() => {
+  setErrors(validate(form));
+}, []);
+
+// Funcion para buscar los clientes por coincidencia mientras se escribe el ID
+const handleIdInputChange = async (e) => {
+  const { value } = e.target;
+  handleChange(e);
+
+  if (!value || !/^\d+$/.test(value)) {
+    setSearchResults([]);
+    setShowSuggestions(false);
+    return;
+  }
+
+  setLoadingSearch(true);
+
+  const min = Number(value);
+  const max = Number(value + "9".repeat(10 - value.length));
+
+  const { data, error } = await supabase
+    .from("Cliente")
+    .select("*")
+    .gte("dni", min)
+    .lte("dni", max)
+    .limit(20);
+
+  setLoadingSearch(false);
+
+  if (error) {
+    setSearchResults([]);
+    setShowSuggestions(false);
+    return;
+  }
+
+  // Solo necesito que se muestren los que empiezan con ESOS NUMEROS
+  const filtered = (data || []).filter(cliente =>
+    String(cliente.dni).startsWith(value)
+  );
+
+  if (filtered.length > 0) {
+    setSearchResults(filtered.slice(0, 5)); // Por ahora solo se mostraran 5 resultados como maximo
+    setShowSuggestions(true);
+  } else {
+    setSearchResults([]);
+    setShowSuggestions(false);
+  }
+};
+
+const [loadingSerie, setLoadingSerie] = useState(false);  //Estado para mostrar una carga al buscar la serie
+
+// Con esto se autocompleta el formulario al hacer clic en una opcion o resultado posible
+const handleSuggestionClick = async (cliente) => {
+  setForm((prev) => ({
+    ...prev,
+    identificacion: cliente.dni,
+    nombre: cliente.nombre || "",
+    apellido: cliente.apellido || "",
+    email: cliente.correo || "",
+    telefono: cliente.telefono || "",
+    serie: "",
+  }));
+  setShowSuggestions(false);
+
+  setLoadingSerie(true);
+
+  // 1. Buscar el último agendamiento del cliente
+  const { data: agendamientos, error: agendamientoError } = await supabase
+    .from("Agendamiento")
+    .select("idAgendamiento")
+    .eq("Cliente_dni", cliente.dni)
+    .order("idAgendamiento", { ascending: false })
+    .limit(1);
+
+  if (agendamientoError || !agendamientos || agendamientos.length === 0) {
+    setLoadingSerie(false);
+    return;
+  }
+
+  const agendamientoId = agendamientos[0].idAgendamiento;
+
+  // 2. Buscar el EquipoAgendamiento relacionado
+  const { data: equipoAg, error: equipoAgError } = await supabase
+    .from("EquipoAgendamiento")
+    .select("equipo_numeroSerie")
+    .eq("agendamiento_idAgendamiento", agendamientoId)
+    .order("agendamiento_equipo", { ascending: false })
+    .limit(1);
+
+  setLoadingSerie(false);
+
+  if (equipoAgError || !equipoAg || equipoAg.length === 0) return;
+
+  const numeroSerie = equipoAg[0].equipo_numeroSerie;
+
+  // 3. Autocompletar el campo serie
+  setForm((prev) => ({
+    ...prev,
+    serie: numeroSerie || "",
+  }));
+};
+
+  
+  const [isSubmitting, setIsSubmitting] = useState(false); //Estado para saber si se esta enviando el formulario
+
+
   const [errors, setErrors] = useState({});
   const [mounted, setMounted] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
-  const [sugerencias, setSugerencias] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [ignoreNextFocus, setIgnoreNextFocus] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const inputIdRef = useRef();
   const timeoutRef = useRef();
@@ -71,97 +160,60 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
 
-  useEffect(() => {
-    if (form.identificacion.length > 0) {
-      const filtrados = CLIENTES.filter(c =>
-        c.identificacion.includes(form.identificacion)
-      );
-      setSugerencias(filtrados);
-      setShowDropdown(filtrados.length > 0);
-    } else {
-      setSugerencias([]);
-      setShowDropdown(false);
-    }
-    if (!CLIENTES.some(c => c.identificacion === form.identificacion)) {
-      setForm(f => ({
-        ...f,
-        nombre: "",
-        email: "",
-        telefono: "",
-        serie: "",
-      }));
-    }
-  }, [form.identificacion]);
-
-  const handleSelectCliente = (cliente) => {
-    setForm(f => ({
-      ...f,
-      identificacion: cliente.identificacion,
-      nombre: cliente.nombre,
-      email: cliente.email,
-      telefono: cliente.telefono,
-      serie: cliente.serie || "",
-    }));
-    setShowDropdown(false);
-    setIgnoreNextFocus(true);
-    if (inputIdRef.current) {
-      inputIdRef.current.blur();
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleIdFocus = () => {
-    if (ignoreNextFocus) {
-      setIgnoreNextFocus(false);
-      return;
-    }
-    if (sugerencias.length > 0) setShowDropdown(true);
-  };
+    setErrors((prevErrors) => {
+      const newForm = { ...form, [name]: value };
+      return validate(newForm);
+    });
+    };
 
   // Cuando se guarda la imagen desde el modal
   const handleImageSave = (publicUrl) => {
-    setForm(prev => ({
-      ...prev,
-      imagen: publicUrl,
-    }));
+    setForm(prev => {
+      const newForm = { ...prev, imagen: publicUrl };
+      setErrors(validate(newForm));
+      return newForm;
+    });
     setShowUploadModal(false);
   };
 
   const handleRemoveImage = () => {
-    setForm(prev => ({
-      ...prev,
-      imagen: null,
-    }));
+    setForm(prev => {
+      const newForm = { ...prev, imagen: null };
+      setErrors(validate(newForm));
+      return newForm;
+    });
   };
 
   // Validación de campos
-  const validate = () => {
+  const validate = (customForm = form) => {
     const newErrors = {};
-    if (!form.identificacion) {
+    if (!customForm.identificacion) {
       newErrors.identificacion = "Campo obligatorio";
-    } else if (!/^\d+$/.test(form.identificacion)) {
+    } else if (!/^\d+$/.test(customForm.identificacion)) {
       newErrors.identificacion = "Solo números";
     }
-    if (!form.nombre) newErrors.nombre = "Campo obligatorio";
-    if (!form.email) {
+    if (!customForm.nombre) newErrors.nombre = "Campo obligatorio";
+    if (!customForm.apellido) newErrors.apellido = "Campo obligatorio";
+    if (!customForm.email) {
       newErrors.email = "Campo obligatorio";
-    } else if (!emailRegex.test(form.email)) {
+    } else if (!emailRegex.test(customForm.email)) {
       newErrors.email = "Correo inválido";
     }
-    if (!form.telefono) {
+    if (!customForm.telefono) {
       newErrors.telefono = "Campo obligatorio";
-    } else if (!/^\d+$/.test(form.telefono)) {
+    } else if (!/^\d+$/.test(customForm.telefono)) {
       newErrors.telefono = "Solo números";
     }
-    if (!form.entrada) newErrors.entrada = "Campo obligatorio";
-    if (!form.serie) newErrors.serie = "Campo obligatorio";
+    if (!customForm.entrada) newErrors.entrada = "Campo obligatorio";
+    if (!customForm.serie) newErrors.serie = "Campo obligatorio";
+    if (!customForm.comentario) newErrors.comentario = "Campo obligatorio";
+    if (!customForm.imagen) newErrors.imagen = "Debes adjuntar una imagen";
     return newErrors;
   };
 
@@ -171,6 +223,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
+    setIsSubmitting(true);
     try {
       // 1. Insertar cliente (si no existe)
       let clienteData;
@@ -190,7 +243,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
             {
               dni: Number(form.identificacion),
               nombre: form.nombre,
-              apellido: "",
+              apellido: form.apellido,
               correo: form.email,
               telefono: form.telefono,
               proyecto: Number(idproyecto),
@@ -223,7 +276,6 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
             {
               numeroSerie: form.serie,
               marca: "",
-              // agrega más campos si tu modelo lo requiere
             },
           ])
           .select()
@@ -248,7 +300,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
 
       if (agendamientoError) throw agendamientoError;
 
-      // 4. Insertar en EquipoAgendamiento
+      // 4. Insertar en EquipoAgendaminto
       const { error: equipoAgendamientoError } = await supabase
         .from("EquipoAgendamiento")
         .insert([
@@ -263,7 +315,7 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
 
       if (equipoAgendamientoError) throw equipoAgendamientoError;
 
-      showSuccessToast("Registro realizado con éxito");
+      showSuccessToast("Cliente registrado");
       onClose();
     } catch (err) {
       console.error("Error al registrar cliente/equipo:", err);
@@ -272,6 +324,8 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
       } else {
         showErrorToast("Error al registrar cliente/equipo");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -306,47 +360,66 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
           <button onClick={onClose} className="text-white text-2xl" tabIndex={0}>&times;</button>
         </div>
         <form onSubmit={handleSubmit}>
-          {/* Campo de identificación con autocompletado */}
-          <div className="mb-4 relative">
-            <label className="text-white block mb-1 font-semibold">N° de identificación</label>
-            <input
-              type="text"
-              ref={inputIdRef}
+          {/* Campo de identificación */}
+          <div className="relative">
+            <Input
+              label="N° de identificación"
               name="identificacion"
-              className={`w-full rounded-lg p-2 bg-[#232336] text-white outline-none border ${errors.identificacion ? "border-red-500" : "border-[#232336]"}`}
-              placeholder="Buscar o escribir número de identificación"
               value={form.identificacion}
-              onChange={handleChange}
-              onFocus={handleIdFocus}
+              onChange={handleIdInputChange}
+              placeholder="Buscar o escribir número de identificación"
+              inputClassName={errors.identificacion ? "border-red-500" : ""}
               autoComplete="off"
+              onFocus={() => {
+                if (searchResults.length > 0) setShowSuggestions(true);
+              }}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             />
-            {errors.identificacion && (
-              <span className="text-red-400 text-xs">{errors.identificacion}</span>
-            )}
-            {showDropdown && (
-              <ul className="absolute left-0 right-0 bg-[#232336] border border-[#232336] rounded-lg mt-1 z-10 max-h-40 overflow-y-auto">
-                {sugerencias.map(cliente => (
-                  <li
-                    key={cliente.identificacion}
-                    className="p-2 hover:bg-[#181825] cursor-pointer text-white"
-                    onMouseDown={() => handleSelectCliente(cliente)}
-                  >
-                    {cliente.identificacion} - {cliente.nombre}
-                  </li>
-                ))}
-              </ul>
+            {/* Sugerencias */}
+            {showSuggestions && (
+              <div className="absolute z-20 left-0 right-0 bg-[#232336] border border-[#7c2ae8] rounded-b-xl mt-1 max-h-48 overflow-y-auto shadow-lg">
+                {loadingSearch ? (
+                  <div className="px-4 py-2 text-gray-400">Buscando...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((cliente) => (
+                    <div
+                      key={cliente.dni}
+                      className="px-4 py-2 hover:bg-[#2d2d44] cursor-pointer text-white"
+                      onMouseDown={() => handleSuggestionClick(cliente)}
+                    >
+                      {cliente.dni} - {cliente.nombre} {cliente.apellido}
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-gray-400">Sin resultados</div>
+                )}
+              </div>
             )}
           </div>
+          {errors.identificacion && (
+            <span className="text-red-400 text-xs">{errors.identificacion}</span>
+          )}
           <Input
-            label="Nombre de usuario"
+            label="Nombre"
             name="nombre"
             value={form.nombre}
             onChange={handleChange}
-            placeholder="Nombre de identificación"
+            placeholder="Nombre del cliente"
             inputClassName={errors.nombre ? "border-red-500" : ""}
           />
           {errors.nombre && (
             <span className="text-red-400 text-xs">{errors.nombre}</span>
+          )}
+          <Input
+            label="Apellido"
+            name="apellido"
+            value={form.apellido}
+            onChange={handleChange}
+            placeholder="Apellido del cliente"
+            inputClassName={errors.apellido ? "border-red-500" : ""}
+          />
+          {errors.apellido && (
+            <span className="text-red-400 text-xs">{errors.apellido}</span>
           )}
           <Input
             label="Email"
@@ -384,10 +457,11 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
           <Input
             label="No. de serie"
             name="serie"
-            value={form.serie}
+            value={loadingSerie ? "Cargando..." : form.serie}
             onChange={handleChange}
             placeholder="Número de serie"
             inputClassName={errors.serie ? "border-red-500" : ""}
+            disabled={loadingSerie}
           />
           {errors.serie && (
             <span className="text-red-400 text-xs">{errors.serie}</span>
@@ -402,6 +476,9 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
               rows={3}
               placeholder="Añade una descripción"
             />
+            {errors.comentario && (
+              <span className="text-red-400 text-xs">{errors.comentario}</span>
+            )}
           </div>
           <div className="mb-6">
             <Button
@@ -431,8 +508,18 @@ export default function RegisterClientDrawer({ open, onClose, idproyecto, usuari
               </div>
             )}
           </div>
-          <Button className="w-full bg-purple-600" type="submit">
-            Registrar
+          <Button
+            className={`w-full bg-purple-600 ${isSubmitting || Object.keys(errors).length > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+            type="submit"
+            disabled={isSubmitting || Object.keys(errors).length > 0}
+            onClick={e => {
+              if (isSubmitting || Object.keys(errors).length > 0) {
+                e.preventDefault();
+                showErrorToast("Campos incompletos");
+              }
+            }}
+          >
+            {isSubmitting ? "Registrando..." : "Registrar"}
           </Button>
         </form>
         {showUploadModal && (
