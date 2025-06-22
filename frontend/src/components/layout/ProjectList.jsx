@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "../../hooks/useAuth";
 import useUserStore from "../../stores/useUserStore";
+import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
+import { showLoadingToast } from "../common/popUp/Loading";
 
-const ProjectList = ({isColaborador =false}) => {
-const user = useUserStore((state) => state.user);
+const ProjectList = ({ isColaborador = false }) => {
+  const user = useUserStore((state) => state.user);
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -16,7 +17,7 @@ const user = useUserStore((state) => state.user);
         setLoadingProjects(false);
         setProjects([]);
         setProjectError(null);
-        return;        
+        return;
       }
 
       setLoadingProjects(true);
@@ -24,7 +25,7 @@ const user = useUserStore((state) => state.user);
       setProjects([]);
 
       try {
-        const uuidSupabase = user?.auth_user_id || user?.id;        
+        const uuidSupabase = user?.auth_user_id || user?.id;
         const response = await axios.get(
           `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}`
         );
@@ -68,15 +69,25 @@ const user = useUserStore((state) => state.user);
     );
   }
 
+  
+  const handleProjectClick = async (project) => {
+    const toastId = showLoadingToast("Verificando acceso...");
+    try {
+      await openDashboardIfActive(project.id_proyecto, user, toastId); // <-- PASA EL toastId AQUÍ
+    } finally {
+      toast.dismiss(toastId);
+    }
+  };
+
   return (
     <ul className="text-sm text-gray-300 pl-2">
       {projects.map((project) => (
         <li key={project.id_proyecto}>
           <div>
             <a
-              onClick={() =>
-                window.open(`/dashboard/${project.id_proyecto}`, "_blank")
-              }
+              onClick={async () => {
+                await handleProjectClick(project);
+              }}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#7c2ae8] underline cursor-pointer"

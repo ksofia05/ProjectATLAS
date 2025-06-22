@@ -20,7 +20,7 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
 
-  // Obtener la ruta de destino y el id_proyecto de la URL
+  // Aqui se obtiene el parámetro "next" de la URL
   const params = new URLSearchParams(location.search);
   const next = params.get("next") || "/dashboard-create-project";
   const idProyecto = params.get("id_proyecto");
@@ -36,7 +36,6 @@ const Login = () => {
     checkAuth();
     setFormData({ email: "", password: "" });
     setErrors({});
-    // eslint-disable-next-line
   }, [location.pathname, navigate]);
 
   const validateField = (name, value) => {
@@ -92,7 +91,7 @@ const Login = () => {
     const toastId = showLoadingToast("Ingresando...");
 
     try {
-      const { data, error } = await login( formData.email, formData.password);
+      const { data, error } = await login(formData.email, formData.password);
       toast.dismiss(toastId);
 
       if (error) {
@@ -117,13 +116,19 @@ const Login = () => {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
 
+        // 1. Obtener el perfil del usuario de la tabla Usuario (donde está idUsuario)
+        const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID de Supabase
+        console.log("PERFIL DEL BACKEND:", userProfile);
 
-        const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID
+        // 2. Guardar el perfil completo en el context que hizo karen
         if (userProfile) {
           useUserStore.getState().setUser({
             ...userProfile,
+            rol_idRol: userProfile.rol_idRol ?? userProfile.rol_idrol ?? userProfile.rol, // Normaliza el nombre del campo
             auth_user_id: data.user.id,
+            email: data.user.email,
           });
+          console.log("USER GUARDADO EN STORE:", useUserStore.getState().user);
         }
 
         if (idProyecto && formData.email) {
