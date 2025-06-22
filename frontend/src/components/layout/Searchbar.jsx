@@ -1,5 +1,8 @@
 import React from 'react';
 import Input from '../common/Input';
+import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
+import useUserStore from "../../stores/useUserStore";
+import { showLoadingToast } from "../common/popUp/Loading";
 
 const Searchbar = ({
   placeholder = "Buscar...",
@@ -7,8 +10,19 @@ const Searchbar = ({
   setSearchTerm,
   filteredProjects = [],
 }) => {
+  const user = useUserStore((state) => state.user);
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleProjectClick = async (project) => {
+    const toastId = showLoadingToast("Verificando acceso...");
+    try {
+      await openDashboardIfActive(project.id_proyecto, user, toastId); 
+    } finally {
+      toast.dismiss(toastId);
+    }
   };
 
   return (
@@ -33,7 +47,7 @@ const Searchbar = ({
             <div
               key={project.id_proyecto}
               className="px-4 py-2 hover:bg-[#2d2d44] cursor-pointer text-white"
-              onClick={() => window.open(`/dashboard/${project.id_proyecto}`, '_blank')}
+              onClick={() => handleProjectClick(project)}
             >
               {project.nombreproyecto}
             </div>

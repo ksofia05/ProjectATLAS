@@ -1,19 +1,17 @@
 import re
 import uuid
-from rest_framework import viewsets # Importa el módulo viewsets de Django REST Framework, que permite crear vistas basadas en conjuntos de datos (viewsets).
-from rest_framework.decorators import api_view # Importa el decorador api_view para definir vistas basadas en funciones.
-from .serializer import ProyectSerializer,ProyectoSerializer # Importa el serializador que define cómo se transforman los datos del modelo Task a JSON y viceversa.
-from rest_framework.response import Response # Importa la clase Response para devolver respuestas HTTP.
-from .models import Proyect,Proyecto, ColaboradorProyecto # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
-from tasks.models import Rol,Usuario
-from proyectos.models import ColaboradorProyecto
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from .serializer import ProyectSerializer, ProyectoSerializer
 from rest_framework.response import Response
+from .models import Proyect, Proyecto, ColaboradorProyecto
+from tasks.models import Rol, Usuario
+from proyectos.models import ColaboradorProyecto
 import jwt
 
-# Define un conjunto de vistas (viewset) para el modelo Task.
 class ProyectView(viewsets.ModelViewSet):
-    serializer_class = ProyectSerializer # Especifica el serializador que se usará para convertir los datos del modelo Task.
-    queryset = Proyect.objects.all() # Define el conjunto de datos (queryset) que se usará en este viewset, en este caso, todos los objetos del modelo Task.
+    serializer_class = ProyectSerializer
+    queryset = Proyect.objects.all()
 
 class ProyectoViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
@@ -25,21 +23,17 @@ class ProyectoViewSet(viewsets.ModelViewSet):
         if user_id:
             queryset = queryset.filter(id_usuario=user_id)
         return queryset
-    
+
 class ProyectoUUIDViewSet(viewsets.ModelViewSet):
     queryset = Proyecto.objects.all()
     serializer_class = ProyectoSerializer
     def get_queryset(self):
         uuid_supabase = self.request.query_params.get('uuid_supabase')
         if uuid_supabase:
-            usuario=Usuario.objects.get(uuid_supabase=uuid_supabase)
+            usuario = Usuario.objects.get(uuid_supabase=uuid_supabase)
             if usuario.rol_idrol and usuario.rol_idrol.idrol == 1:
                 return Proyecto.objects.filter(id_usuario=usuario)
         return Proyecto.objects.none()
-    
-
-    
-
 
 @api_view(['POST'])
 def save_proyect(request):
@@ -53,25 +47,19 @@ def save_proyect(request):
             user_uuid = decoded.get('sub') or decoded.get('user_id') or decoded.get('id')
             if not user_uuid:
                 return Response({'error': 'Token sin id'}, status=401)
-            
-            # Usar la función auxiliar para obtener el usuario
             usuario = obtener_usuario_por_email_o_uuid(uuid=user_uuid)
             if not usuario:
                 return Response({'error': 'Usuario no encontrado'}, status=401)
-            
             print(f"Usuario autenticado: {usuario}")
             if Proyecto.objects.filter(id_usuario=usuario).exists():
                 print("ya tiene un proyecto asociado")
                 return Response({'mensaje': 'ya tiene un proyecto asociado a su cuenta'}, status=400)
-
-            # Crear proyecto
             if not usuario.rol_idrol:
                 rol = Rol.objects.get(idrol=1)
                 usuario.rol_idrol = rol
                 usuario.save()
             else:
                 rol = usuario.rol_idrol
-
             proyecto = Proyecto.objects.create(
                 nombreproyecto=request.data.get('nombreproyecto'),
                 id_usuario=usuario
@@ -88,7 +76,7 @@ def save_proyect(request):
             return Response({'error': 'Token inválido'}, status=401)
     else:
         return Response({'error': 'Token no enviado'}, status=401)
-    
+
 def obtener_usuario_por_email_o_uuid(email=None, uuid=None):
     try:
         if email:
@@ -99,29 +87,22 @@ def obtener_usuario_por_email_o_uuid(email=None, uuid=None):
             return None
     except Usuario.DoesNotExist:
         return None
-    
 
 @api_view(['GET'])      
 def get_user_projects(request):
     email = request.query_params.get('correoelectronico')
     if not email:
         return Response({'error': 'Correo electrónico no proporcionado'}, status=400)
-
     try:
-        # Usar la función auxiliar para obtener el usuario
         usuario = obtener_usuario_por_email_o_uuid(email=email)
         if not usuario:
             return Response({'error': 'Usuario no encontrado'}, status=404)
-
         proyectos = Proyecto.objects.filter(id_usuario=usuario)
-
-        # Serializar los proyectos
         proyectos_serializados = [
             {
                 'id': proyecto.id_proyecto,
                 'nombreproyecto': proyecto.nombreproyecto,
                 'fechacreacion': proyecto.fechacreacion,
-                # o
             }
             for proyecto in proyectos
         ]
@@ -129,7 +110,6 @@ def get_user_projects(request):
     except Exception as e:
         print(e)
         return Response({'error': 'Error al obtener proyectos'}, status=500)
-    
 
 @api_view(['POST'])
 def asociar_colaborador(request):
@@ -150,7 +130,6 @@ def asociar_colaborador(request):
         if usuario.rol_idrol != rol_colaborador:
             usuario.rol_idrol = rol_colaborador
             usuario.save()
-
         ColaboradorProyecto.objects.get_or_create(usuario=usuario, proyecto=proyecto)
         return Response({'success': True})
     except Usuario.DoesNotExist:
@@ -159,7 +138,7 @@ def asociar_colaborador(request):
         return Response({'error': 'Proyecto no encontrado'}, status=404)
     except Exception as e:
         return Response({'success': False, 'error': str(e)}, status=500)
-    
+
 @api_view(['GET'])
 def info_proyecto_colaboradores(request):
     id_proyecto = request.query_params.get('id_proyecto')
@@ -167,20 +146,20 @@ def info_proyecto_colaboradores(request):
         return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
     try:
         proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
-        colaboradores= ColaboradorProyecto.objects.filter(proyecto=proyecto, usuario__estado="Activo")
-        colaboradores_data=[]
+        colaboradores = ColaboradorProyecto.objects.filter(proyecto=proyecto, usuario__estado="Activo")
+        colaboradores_data = []
         for colab in colaboradores:
-            usuario=colab.usuario
+            usuario = colab.usuario
             colaboradores_data.append({
-                "nombre":usuario.nombre,
+                "nombre": usuario.nombre,
                 "apellido": usuario.apellido,
                 "correo": usuario.correoelectronico,
                 "rol": "administrador" if usuario.rol_idrol and usuario.rol_idrol.idrol == 1 else "colaborador"
             })
             if proyecto.id_usuario:
                 admin = proyecto.id_usuario
-                if not any(c['correo']==admin.correoelectronico for c in colaboradores_data):
-                    colaboradores_data.insert(0,{
+                if not any(c['correo'] == admin.correoelectronico for c in colaboradores_data):
+                    colaboradores_data.insert(0, {
                         "nombre": admin.nombre,
                         "apellido": admin.apellido,
                         "correo": admin.correoelectronico,
@@ -191,10 +170,7 @@ def info_proyecto_colaboradores(request):
             "colaboradores": colaboradores_data
         })
     except Exception as e:
-        return Response({'error': str(e)},status=400)
-# Create your views here.
-
-
+        return Response({'error': str(e)}, status=400)
 
 @api_view(['GET'])
 def filtro_colaborador(request):
@@ -205,7 +181,6 @@ def filtro_colaborador(request):
         proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
         colaboradores = ColaboradorProyecto.objects.filter(proyecto=proyecto)
         colaboradores_data = []
-        
         for colab in colaboradores:
             usuario = colab.usuario
             colaboradores_data.append({
@@ -216,46 +191,28 @@ def filtro_colaborador(request):
                 "estado": usuario.estado,
                 "rol": "administrador" if usuario.rol_idrol and usuario.rol_idrol.idrol == 1 else "colaborador"
             })
-        
-        # # Agregar al administrador si no está incluido
-        # if proyecto.id_usuario:
-        #     admin = proyecto.id_usuario
-        #     if not any(c['correo'] == admin.correoelectronico for c in colaboradores_data):
-        #         colaboradores_data.insert(0, {
-        #             "nombre": admin.nombre,
-        #             "apellido": admin.apellido,
-        #             "correo": admin.correoelectronico,  # <-- corriges 'correpo' a 'correo'
-        #             "estado": admin.estado,
-        #             "rol": "Administrador"
-        #         })
-
         return Response({
             "nombreproyecto": proyecto.nombreproyecto,
             "colaboradores": colaboradores_data
         })
-
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
 @api_view(['PATCH'])
 def actualizar_estado_usuario(request, id_usuario):
-        try:
-            usuario = Usuario.objects.get(idusuario=id_usuario)
-            nuevo_estado = request.data.get('estado')
+    try:
+        usuario = Usuario.objects.get(idusuario=id_usuario)
+        nuevo_estado = request.data.get('estado')
+        if nuevo_estado not in ["Activo", "Inactivo"]:
+            return Response({'error': 'Estado inválido'}, status=400)
+        usuario.estado = nuevo_estado
+        usuario.save()
+        return Response({'message': 'Estado actualizado correctamente', 'nuevo_estado': usuario.estado})
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
 
-            if nuevo_estado not in ["Activo", "Inactivo"]:
-                return Response({'error': 'Estado inválido'}, status=400)
-
-            usuario.estado = nuevo_estado
-            usuario.save()
-
-            return Response({'message': 'Estado actualizado correctamente', 'nuevo_estado': usuario.estado})
-        
-        except Usuario.DoesNotExist:
-            return Response({'error': 'Usuario no encontrado'}, status=404)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
-        
 @api_view(['GET'])
 def proyectos_colaboradores(request):
     id_usuario = request.query_params.get('id_usuario')
@@ -269,5 +226,34 @@ def proyectos_colaboradores(request):
         return Response({'proyectos': serializer.data}, status=200)
     except Usuario.DoesNotExist:
         return Response({'proyectos': []}, status=200)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    
+
+
+# Este es un endpoint que verifica el estado de un colaborador antes de permitirle acceder a un proyecto.
+
+@api_view(['GET'])
+def estado_colaborador_proyecto(request):
+    id_usuario = request.query_params.get('id_usuario')
+    id_proyecto = request.query_params.get('id_proyecto')
+    if not id_usuario or not id_proyecto:
+        return Response({'error': 'Faltan datos'}, status=400)
+    try:
+        usuario = Usuario.objects.get(idusuario=id_usuario)
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        
+        if proyecto.id_usuario and proyecto.id_usuario.idusuario == usuario.idusuario:
+            return Response({'estado': usuario.estado})
+        # Verificar si el usuario es colaborador del proyecto
+        colaboracion = ColaboradorProyecto.objects.filter(usuario=usuario, proyecto=proyecto).first()
+        if colaboracion:
+            return Response({'estado': usuario.estado})
+        # Si no es colaborador ni administrador, retornar inactivo
+        return Response({'estado': 'Inactivo'})
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    except Proyecto.DoesNotExist:
+        return Response({'error': 'Proyecto no encontrado'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)

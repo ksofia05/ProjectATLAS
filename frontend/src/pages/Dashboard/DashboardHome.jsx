@@ -2,11 +2,11 @@ import React from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { Outlet, useParams } from "react-router-dom";
-// import { useAuth } from "../../hooks/useAuth";
 import useUserStore from "../../stores/useUserStore";
 
 const DashboardLayout = () => {
   const user = useUserStore((state) => state.user)
+  console.log("USER EN DASHBOARD:", user); 
 
   const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "";
   const { id } = useParams(); 
@@ -23,10 +23,11 @@ const DashboardLayout = () => {
   };
 
   const getMenuItems = () => {
-    if (user.rol_idRol === 2) {
+    const rol = user.rol_idRol ?? user.rol_idrol;
+    if (rol === 2) {
       return baseMenuItems;
     }
-    if (user.rol_idRol === 1) {
+    if (rol === 1) {
       return [
         ...baseMenuItems.slice(0, 2),
         adminOnlyItem,
