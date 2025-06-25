@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { showErrorToast, showLoadingToast } from '../common/popUp/Loading';
+import { showErrorToast, showLoadingToast, showSuccessToast } from '../common/popUp/Loading';
 import toast from 'react-hot-toast';
 import FloatingModal from '../common/popUp/FloatingModal';
 
@@ -9,9 +9,10 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [showModal, setShowModal] = useState(open);
   const [projectName, setProjectName]=useState('');
   const [collaborators, setCollaborators]=useState([]);
+  const [isSending, setIsSending] = useState(false);
 
-const fechProjectInfo = async () => {
-  if (!projectId) return;
+  const fechProjectInfo = async () => {
+    if (!projectId) return;
     try{
       const res = await fetch(`http://localhost:8000/tasks/api/v1/info_proyecto_colaboradores/?id_proyecto=${projectId}`);
       const data = await res.json();
@@ -20,12 +21,13 @@ const fechProjectInfo = async () => {
     } catch{
       setProjectName("");
       setCollaborators([]);
-      }
-    };
-    useEffect(()=> {
-      setShowModal(open);
-      if (open) fechProjectInfo();
-    },[open, projectId]);
+    }
+  };
+
+  useEffect(()=> {
+    setShowModal(open);
+    if (open) fechProjectInfo();
+  },[open, projectId]);
 
   const handleClose = () => {
     setShowModal(false)
@@ -37,6 +39,7 @@ const fechProjectInfo = async () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje("");
+    setIsSending(true); //Para evitar que se dupliquen peticiones xd
     const toastId = showLoadingToast("Enviando enlace...");
     try {
       const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/invitacionColaborador/", {
@@ -48,6 +51,7 @@ const fechProjectInfo = async () => {
       toast.dismiss(toastId);
       if (data.success) {
         setMensaje("¡Enlace enviado!");
+        showSuccessToast("¡Enlace enviado!");
         setEmail('');
         fechProjectInfo();
       } else {
@@ -59,6 +63,7 @@ const fechProjectInfo = async () => {
       showErrorToast("Error al enviar solicitud. Intenta nuevamente.");
       setMensaje("Error al enviar solicitud. Intenta nuevamente.");
     }
+    setIsSending(false); // Desbloquea el botón despues de enviarse el correo
   };
 
   return (
@@ -79,12 +84,16 @@ const fechProjectInfo = async () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isSending}
                 />
                 <button
                   type='submit'
-                  className='bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition'
+                  className={`bg-purple-600 text-white px-4 py-2 rounded transition ${
+                    isSending ? "opacity-50 cursor-not-allowed" : "hover:bg-purple-700"
+                  }`}
+                  disabled={isSending}
                 >
-                  Invitar
+                  {isSending ? "Enviando..." : "Invitar"}
                 </button>
               </form>
               <h3 className='text-white font-semibold mb-2'>Miembros Actuales</h3>
@@ -119,5 +128,4 @@ const fechProjectInfo = async () => {
     </>
   )
 }
-
-export default SendColaboration
+export default SendColaboration;
