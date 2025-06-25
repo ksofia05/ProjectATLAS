@@ -6,7 +6,8 @@ import Searchbar from "./Searchbar";
 import CardProjects from "../layout/cardProjects";
 import useUserStore from "../../stores/useUserStore";
 import { showLoadingToast } from "../common/popUp/Loading";
-import { openDashboardIfActive } from "../../utils/openDashboardIfActive"; // Ajusta la ruta si es necesario
+import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
+import Loader from "../common/Loader";
 
 const CreateProjectPanel = ({ disableCreate }) => {
   const user = useUserStore((state) => state.user);
@@ -93,11 +94,15 @@ const CreateProjectPanel = ({ disableCreate }) => {
       project.nombreproyecto.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Maneja el clic en un proyecto
+  
   const handleProjectClick = async (project) => {
+    if (user?.rol_idrol === 1 || user?.rol_idRol === 1) { //La validacion solo se le aplica a los colaboradores
+      window.open(`/dashboard/${project.id_proyecto}`, "_blank");
+      return;
+    }
     const toastId = showLoadingToast("Verificando acceso...");
     try {
-      await openDashboardIfActive(project.id_proyecto, user, toastId); // <-- PASA EL toastId AQUÍ
+      await openDashboardIfActive(project.id_proyecto, user, toastId);
     } finally {
       toast.dismiss(toastId);
     }
@@ -136,44 +141,39 @@ const CreateProjectPanel = ({ disableCreate }) => {
           </button>
         </div>
 
-        {/* Este es */}
-        {!loadingProjects ? (
-          projects.length === 0 ? (
-            <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-              <img
-                src={construccionImg}
-                alt="Sin proyectos"
-                className="w-32 mb-6"
-              />
-              <h3 className="text-2xl font-bold text-white mb-2 text-center">
-                Sin proyectos creados
-              </h3>
-              <p className="text-gray-300 text-center text-lg">
-                Crea tu primer proyecto para comenzar a colaborar con tu equipo.
-              </p>
-            </div>
-          ) : filteredProjects.length > 0 ? (
-            <CardProjects
-              projects={filteredProjects}
-              projectStates={projectStates}
-              isColaborador={user?.rol_idrol === 2}
-              onProjectClick={handleProjectClick}
+        {/* Listado de proyectos o loader de carga */}
+        {loadingProjects ? (
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+            <Loader text="Cargando tus proyectos..." />
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+            <img
+              src={construccionImg}
+              alt="Sin proyectos"
+              className="w-32 mb-6"
             />
-          ) : (
-            <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-              <h3 className="text-2xl font-bold text-white mb-2 text-center">
-                No se encontraron proyectos
-              </h3>
-              <p className="text-gray-300 text-center text-lg">
-                Prueba con otro nombre o revisa tu búsqueda.
-              </p>
-            </div>
-          )
+            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+              Sin proyectos creados
+            </h3>
+            <p className="text-gray-300 text-center text-lg">
+              Crea tu primer proyecto para comenzar a colaborar con tu equipo.
+            </p>
+          </div>
+        ) : filteredProjects.length > 0 ? (
+          <CardProjects
+            projects={filteredProjects}
+            projectStates={projectStates}
+            isColaborador={user?.rol_idrol === 2}
+            onProjectClick={handleProjectClick}
+          />
         ) : (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
+            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+              No se encontraron proyectos
+            </h3>
             <p className="text-gray-300 text-center text-lg">
-              Cargando tus proyectos...
+              Prueba con otro nombre o revisa tu búsqueda.
             </p>
           </div>
         )}

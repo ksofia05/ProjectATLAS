@@ -10,9 +10,8 @@ import ButtonGrey from "../common/ButtonGrey";
 import RegisterClientDrawer from "./RegisterClientDrawer";
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
-
-// Puedes reutilizar CustomScrollSelect si lo tienes, si no, usa un <select> simple
 import CustomScrollSelect from "../common/CustomScrollSelect";
+import Loader from "../common/Loader"; 
 
 export default function InventoryTable({ onEmojiClick }) {
   const { user, isLoading } = useAuth();
@@ -21,9 +20,11 @@ export default function InventoryTable({ onEmojiClick }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
 
-  // Estados para pasar a RegisterClientDrawer
   const [usuarioIdActual, setUsuarioIdActual] = useState(null);
   const [idProyecto, setIdProyecto] = useState(null);
+
+  // Loader
+  const [loading, setLoading] = useState(true);
 
   // Paginado
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -33,6 +34,7 @@ export default function InventoryTable({ onEmojiClick }) {
     if (isLoading || !user) return;
 
     const fetchClientes = async () => {
+      setLoading(true);
       const email = user?.email || user?.user_metadata?.email;
       try {
         const usuarioRes = await axios.get(
@@ -49,6 +51,7 @@ export default function InventoryTable({ onEmojiClick }) {
         if (proyectos.length === 0) {
           setClientes([]);
           setIdProyecto(null);
+          setLoading(false);
           return;
         }
 
@@ -65,6 +68,8 @@ export default function InventoryTable({ onEmojiClick }) {
         setClientes([]);
         setIdProyecto(null);
         setUsuarioIdActual(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -82,6 +87,7 @@ export default function InventoryTable({ onEmojiClick }) {
     { label: "PDF", value: "pdf" },
   ];
 
+  //Exportador de Excel
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(
       data.map((item) => ({
@@ -100,6 +106,7 @@ export default function InventoryTable({ onEmojiClick }) {
     saveAs(blob, "clientes.xlsx");
   };
 
+  //Exportador de PDF
   const exportToPDF = (data) => {
     const doc = new jsPDF();
     doc.text("Clientes", 14, 10);
@@ -173,47 +180,53 @@ export default function InventoryTable({ onEmojiClick }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-center">
-          <thead>
-            <tr className="border-b border-[#232336]">
-              <th className="py-2 px-3 font-semibold text-center">Equipo</th>
-              <th className="py-2 px-3 font-semibold text-center">Nombre</th>
-              <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-              <th className="py-2 px-3 font-semibold text-center">Correo</th>
-              <th className="py-2 px-3 font-semibold text-center">Teléfono</th>
-              <th className="py-2 px-3 font-semibold text-center">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clientesMostrados.map((item, idx) => (
-              <tr key={item.correo + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
-                <td className="py-2 px-3 text-center text-2xl cursor-pointer" onClick={() => onEmojiClick?.(item)}>💻</td>
-                <td className="py-2 px-3 text-center">{item.nombre}</td>
-                <td className="py-2 px-3 text-center">{item.apellido}</td>
-                <td className="py-2 px-3 text-center">{item.correo}</td>
-                <td className="py-2 px-3 text-center">{item.telefono}</td>
-                <td className="py-2 px-3 flex items-center gap-2 justify-center">
-                  <span
-                    className={
-                      item.estado === "Activo"
-                        ? "text-green-400 font-semibold"
-                        : "text-red-400 font-semibold"
-                    }
-                  >
-                    {item.estado}
-                  </span>
-                  <span
-                    className={
-                      item.estado === "Activo"
-                        ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
-                        : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
-                    }
-                  ></span>
-                </td>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader text="Cargando clientes..." />
+          </div>
+        ) : (
+          <table className="w-full text-center">
+            <thead>
+              <tr className="border-b border-[#232336]">
+                <th className="py-2 px-3 font-semibold text-center">Equipo</th>
+                <th className="py-2 px-3 font-semibold text-center">Nombre</th>
+                <th className="py-2 px-3 font-semibold text-center">Apellido</th>
+                <th className="py-2 px-3 font-semibold text-center">Correo</th>
+                <th className="py-2 px-3 font-semibold text-center">Teléfono</th>
+                <th className="py-2 px-3 font-semibold text-center">Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {clientesMostrados.map((item, idx) => (
+                <tr key={item.correo + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
+                  <td className="py-2 px-3 text-center text-2xl cursor-pointer" onClick={() => onEmojiClick?.(item)}>💻</td>
+                  <td className="py-2 px-3 text-center">{item.nombre}</td>
+                  <td className="py-2 px-3 text-center">{item.apellido}</td>
+                  <td className="py-2 px-3 text-center">{item.correo}</td>
+                  <td className="py-2 px-3 text-center">{item.telefono}</td>
+                  <td className="py-2 px-3 flex items-center gap-2 justify-center">
+                    <span
+                      className={
+                        item.estado === "Activo"
+                          ? "text-green-400 font-semibold"
+                          : "text-red-400 font-semibold"
+                      }
+                    >
+                      {item.estado}
+                    </span>
+                    <span
+                      className={
+                        item.estado === "Activo"
+                          ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
+                          : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
+                      }
+                    ></span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
