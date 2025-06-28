@@ -8,6 +8,7 @@ import CustomScrollSelect from "../common/CustomScrollSelect";
 import Input from "../common/Input";
 import DropdownMenu from "../common/DropdownMenu";
 import Switch from "../common/Switch";
+import Loader from "../common/Loader";
 import { useAuth } from "../../hooks/useAuth";
 
 import axios from "axios";
@@ -19,9 +20,11 @@ export default function CollaboratorsTable() {
   const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
     const fetchProyectos = async () => {
+      setLoading(true);
       const email = user?.email || user?.user_metadata?.email;
       try {
         // 1. Obtener el usuario por su correo
@@ -40,6 +43,7 @@ export default function CollaboratorsTable() {
 
         if (proyectos.length === 0) {
           setColaboradores([]);
+          setLoading(false);
           return;
         }
 
@@ -55,6 +59,8 @@ export default function CollaboratorsTable() {
         setColaboradores(data.colaboradores);
       } catch (error) {
         setColaboradores([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -106,13 +112,11 @@ export default function CollaboratorsTable() {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
     try {
-      // Esto lo cambia anny jiji
       await axios.patch(
         `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
         { estado: nuevoEstado }
       );
 
-      // Actualiza en el estado local
       setColaboradores((prev) =>
         prev.map((c, i) =>
           c.id === colaborador.id ? { ...c, estado: nuevoEstado } : c
@@ -136,8 +140,10 @@ export default function CollaboratorsTable() {
 
   const colaboradoresMostrados = colaboradoresFiltrados.slice(0, rowsPerPage);
 
-  // Generar opciones del 1 al 50
+  // Opciones del 1 al 50 (Culpa de anny)
   const opcionesFilas = [10, 20, 30, 40, 50];
+
+  // Mostrar loader mientras carga
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
@@ -176,45 +182,51 @@ export default function CollaboratorsTable() {
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-center">
-          <thead>
-            <tr className="border-b border-[#232336]">
-              <th className="py-2 px-3 font-semibold text-center">Nombre</th>
-              <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-              <th className="py-2 px-3 font-semibold text-center">Correo</th>
-              <th className="py-2 px-3 font-semibold text-center">Estado</th>
-              <th className="py-2 px-3 text-center"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {colaboradoresMostrados.map((c, idx) => (
-              <tr
-                key={c.nombre + c.apellido + c.correo}
-                className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
-              >
-                <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
-                <td className="py-2 px-3 text-center">{c.apellido}</td>
-                <td className="py-2 px-3 text-center">{c.correo}</td>
-                <td className="py-2 px-3 flex items-center gap-4 justify-center">
-                  <span
-                    className={
-                      c.estado === "Activo"
-                        ? "text-green-400 font-semibold"
-                        : "text-red-400 font-semibold"
-                    }
-                  >
-                    {c.estado}
-                  </span>
-                  <Switch
-                    checked={c.estado === "Activo"}
-                    onChange={() => handleSwitch(idx)}
-                  />
-                </td>
-                <td className="py-2 px-3 text-center"></td>
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader text="Cargando colaboradores..." />
+          </div>
+        ) : (
+          <table className="w-full text-center">
+            <thead>
+              <tr className="border-b border-[#232336]">
+                <th className="py-2 px-3 font-semibold text-center">Nombre</th>
+                <th className="py-2 px-3 font-semibold text-center">Apellido</th>
+                <th className="py-2 px-3 font-semibold text-center">Correo</th>
+                <th className="py-2 px-3 font-semibold text-center">Estado</th>
+                <th className="py-2 px-3 text-center"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {colaboradoresMostrados.map((c, idx) => (
+                <tr
+                  key={c.nombre + c.apellido + c.correo}
+                  className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
+                >
+                  <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
+                  <td className="py-2 px-3 text-center">{c.apellido}</td>
+                  <td className="py-2 px-3 text-center">{c.correo}</td>
+                  <td className="py-2 px-3 flex items-center gap-4 justify-center">
+                    <span
+                      className={
+                        c.estado === "Activo"
+                          ? "text-green-400 font-semibold"
+                          : "text-red-400 font-semibold"
+                      }
+                    >
+                      {c.estado}
+                    </span>
+                    <Switch
+                      checked={c.estado === "Activo"}
+                      onChange={() => handleSwitch(idx)}
+                    />
+                  </td>
+                  <td className="py-2 px-3 text-center"></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
       <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
         <div className="flex items-center gap-2">

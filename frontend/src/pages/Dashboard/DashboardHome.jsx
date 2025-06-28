@@ -5,11 +5,16 @@ import { Outlet, useParams } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore";
 
 const DashboardLayout = () => {
-  const user = useUserStore((state) => state.user)
-  console.log("USER EN DASHBOARD:", user); 
+  const user = useUserStore((state) => state.user);
+  console.log("USER EN DASHBOARD:", user);
 
-  const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "";
-  const { id } = useParams(); 
+  // Debido a complicaciones, tuve que obtener el nombre del usuario de diferentes maneras xd
+  const firstName =
+    user?.user_metadata?.nombre?.split(" ")[0] ||
+    user?.nombre?.split(" ")[0] ||
+    "";
+
+  const { id } = useParams();
 
   const baseMenuItems = [
     { label: "Dashboard", icon: "bi bi-house-door-fill", to: `/dashboard/${id}` },
@@ -23,7 +28,7 @@ const DashboardLayout = () => {
   };
 
   const getMenuItems = () => {
-    const rol = user.rol_idRol ?? user.rol_idrol;
+    const rol = user?.rol_idRol ?? user?.rol_idrol;
     if (rol === 2) {
       return baseMenuItems;
     }
@@ -39,7 +44,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
-      <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true}/>      
+      <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true}/>
       <div className="flex-1 flex flex-col">
         <Navbar
           showShareButton={true}

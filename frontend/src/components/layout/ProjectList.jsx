@@ -69,11 +69,15 @@ const ProjectList = ({ isColaborador = false }) => {
     );
   }
 
-  
   const handleProjectClick = async (project) => {
+    // Solo a los colaboradores se les valida el acceso
+    if (user?.rol_idrol === 1 || user?.rol_idRol === 1) {
+      window.open(`/dashboard/${project.id_proyecto}`, "_blank");
+      return;
+    }
     const toastId = showLoadingToast("Verificando acceso...");
     try {
-      await openDashboardIfActive(project.id_proyecto, user, toastId); // <-- PASA EL toastId AQUÍ
+      await openDashboardIfActive(project.id_proyecto, user, toastId);
     } finally {
       toast.dismiss(toastId);
     }
