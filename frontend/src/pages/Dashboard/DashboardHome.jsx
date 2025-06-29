@@ -3,9 +3,12 @@ import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { Outlet, useParams } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore";
+import { useProjectAccess } from "../../hooks/useProjectAccess";
+import Loader from "../../components/common/Loader";
 
 const DashboardLayout = () => {
   const user = useUserStore((state) => state.user);
+  const { isValidating, hasAccess } = useProjectAccess();
   console.log("USER EN DASHBOARD:", user);
 
   // Debido a complicaciones, tuve que obtener el nombre del usuario de diferentes maneras xd
@@ -17,14 +20,26 @@ const DashboardLayout = () => {
   const { id } = useParams();
 
   const baseMenuItems = [
-    { label: "Dashboard", icon: "bi bi-house-door-fill", to: `/dashboard/${id}` },
-    { label: "Calendario", icon: "bi bi-calendar-event", to: `/dashboard/${id}/calendario` },
-    { label: "Cliente / Inventario", icon: "bi bi-archive-fill", to: `/dashboard/${id}/inventario` },
+    {
+      label: "Dashboard",
+      icon: "bi bi-house-door-fill",
+      to: `/dashboard/${id}`,
+    },
+    {
+      label: "Calendario",
+      icon: "bi bi-calendar-event",
+      to: `/dashboard/${id}/calendario`,
+    },
+    {
+      label: "Cliente / Inventario",
+      icon: "bi bi-archive-fill",
+      to: `/dashboard/${id}/inventario`,
+    },
   ];
   const adminOnlyItem = {
     label: "Colaboradores",
     icon: "bi bi-people-fill",
-    to: `/dashboard/${id}/colaboradores`
+    to: `/dashboard/${id}/colaboradores`,
   };
 
   const getMenuItems = () => {
@@ -36,15 +51,29 @@ const DashboardLayout = () => {
       return [
         ...baseMenuItems.slice(0, 2),
         adminOnlyItem,
-        ...baseMenuItems.slice(2)
+        ...baseMenuItems.slice(2),
       ];
     }
     return baseMenuItems;
   };
 
+  // Mostrar loading mientras se valida el acceso
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-zinc-950">
+        <Loader text="Validando acceso..." />
+      </div>
+    );
+  }
+
+  // Si no tiene acceso, no renderizar nada
+  if (!hasAccess) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
-      <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true}/>
+      <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true} />
       <div className="flex-1 flex flex-col">
         <Navbar
           showShareButton={true}

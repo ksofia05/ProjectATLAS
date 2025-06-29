@@ -18,7 +18,7 @@ const Sidebar = ({
         {showLogo && (
           <div className="flex items-center gap-3 mb-10">
             <img src={logo} alt="Logo ATLAS" className="w-12 h-12 object-contain" />
-            <span className="text-3xl font-extrabold tracking-wide rainbow-text">ATLAS</span>
+            <span className="text-3xl font-bold tracking-wide">ATLAS</span>
           </div>
         )}
 
