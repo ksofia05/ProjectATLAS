@@ -4,8 +4,8 @@
   transition: box-shadow 0.3s, transform 0.3s;
 }
 .dashboard-hover-shadow:hover {
-  box-shadow: 0 0 0 0 rgba(0,0,0,0), 0 0 24px 4px rgba(167,139,250,0.13);
-  transform: scale(1.0100);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0), 0 0 24px 4px rgba(167, 139, 250, 0.13);
+  transform: scale(1.01);
 }
 
 /* Modo gei */
@@ -21,4 +21,32 @@
   );
   background-clip: text;
   color: transparent;
+}
+
+/* Estilos personalizados para el scroll (esta feito :<) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.6);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.8);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

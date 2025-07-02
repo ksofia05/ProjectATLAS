@@ -13,7 +13,7 @@ const Sidebar = ({
   const location = useLocation();
 
   return (
-    <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] text-white w-72 min-h-screen flex flex-col justify-between py-8 px-6">
+    <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto">
       <div>
         {showLogo && (
           <div className="flex items-center gap-3 mb-10">
@@ -39,7 +39,7 @@ const Sidebar = ({
                   <li key={item.label}>
                     <Link
                       to={item.to}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${
                         isActive
                           ? "bg-white/10 text-white"
                           : "text-gray-300 hover:bg-white/5 hover:text-purple-600"

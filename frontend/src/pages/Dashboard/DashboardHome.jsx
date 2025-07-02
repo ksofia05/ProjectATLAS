@@ -57,31 +57,37 @@ const DashboardLayout = () => {
     return baseMenuItems;
   };
 
-  // Mostrar loading mientras se valida el acceso
+  // Estamos mostrando el loader mientras validamos el acceso
   if (isValidating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 to-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f0f15]">
         <Loader text="Validando acceso..." />
       </div>
     );
   }
 
-  // Si no tiene acceso, no renderizar nada
+  // No renderizar nada si no tiene acceso
   if (!hasAccess) {
     return null;
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
+    <div className="min-h-screen flex bg-slate-950">
       <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true} />
-      <div className="flex-1 flex flex-col">
-        <Navbar
-          showShareButton={true}
-          showUpgradeButton={false}
-          title={`Bienvenido/a${firstName ? " " + firstName : ""}`}
-          subtitle="Aquí, Las estadísticas de esta semana!"
-        />
-        <div className="flex-1 p-8">
+      <div className="flex-1 flex flex-col h-screen">
+        {/* Navbar flotante con margen igual al contenido */}
+        <div className="sticky top-0 z-10 pt-6 bg-slate-950">
+          <div className="px-8">
+            <Navbar
+              showShareButton={true}
+              showUpgradeButton={false}
+              title={`Bienvenido/a${firstName ? " " + firstName : ""}`}
+              subtitle="Aquí, Las estadísticas de esta semana!"
+            />
+          </div>
+        </div>
+        {/* Contenido con padding normal (cambios por hacer :,b)*/}
+        <div className="flex-1 px-8 pb-8 pt-6 overflow-y-auto scrollbar-hide">
           <Outlet />
         </div>
       </div>
