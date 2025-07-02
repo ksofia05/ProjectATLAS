@@ -3,11 +3,9 @@ import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
-import { useUserRole } from "../hooks/useUserRole";
 import useUserStore from "../stores/useUserStore";
 
 const DashboardCreateProject = () => {
-  // const {userRole,isAdmin, isLoading, error} = useUserRole();
 
   const user = useUserStore((state) => state.user)
 
@@ -49,15 +47,22 @@ if (!user) {
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 ">
+    <div className="min-h-screen flex bg-slate-950">
       <Sidebar
         showLogo={true}
         showProjectsBlock={true}
         projectsBlock={projectsBlock}
       />
       <div className="flex-1 flex flex-col">
-        <Navbar />
-        <div className="flex-1">
+        <div className="pt-4 px-6">
+          <Navbar 
+            showShareButton={false}
+            showUpgradeButton={true}
+            title="Proyectos"
+            subtitle="Organiza tus espacios de trabajo."
+          />
+        </div>
+        <div className="flex-1 px-8 pb-8 pt-2">
           <CreateProjectPanel disableCreate={user?.rol_idRol === 2} />
         </div>
       </div>

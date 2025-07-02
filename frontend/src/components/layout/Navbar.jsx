@@ -30,9 +30,10 @@ const Navbar = ({
   const handleClose = () => setShowShareModal(false);
   const userName = getUserName();
 
-  // Obtener la foto de perfil del usuario (desde Supabase o default)
+  // Obtener la foto de perfil del usuario (desde Supabase o default Atlas)
   const fotoPerfil =
-    user?.user_metadata?.fotosPerfiles && user.user_metadata.fotosPerfiles.trim() !== ""
+    user?.user_metadata?.fotosPerfiles &&
+    user.user_metadata.fotosPerfiles.trim() !== ""
       ? user.user_metadata.fotosPerfiles
       : userAtlas;
 
@@ -52,18 +53,24 @@ const Navbar = ({
 
   return (
     <>
-      <nav className="w-full bg-gray-950 py-6 relative mb-0">
-        <div className="flex items-center justify-between px-10 pr-12">
+      <nav className="bg-gradient-to-l from-[#181825]/80 via-[#181825]/80 to-[#14141e]/80 backdrop-blur-md py-4 relative border border-slate-700/50 rounded-2xl shadow-lg">
+        <div className="flex items-center justify-between px-8 lg:px-8">
           {/* Título y subtítulo */}
-          <div>
-            <h1 className="text-2xl font-bold text-white">{title}</h1>
+          <div className="min-w-0 flex-1 mr-4">
+            <h1 className="text-xl lg:text-2xl font-bold text-white truncate">
+              {title}
+            </h1>
             {subtitle && (
-              <p className="text-gray-400 text-base">{subtitle}</p>
+              <p className="text-gray-400 text-sm lg:text-base truncate">
+                {subtitle}
+              </p>
             )}
           </div>
 
           {/* Botones y perfil */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
+            {" "}
+            {/* Responsive gap */}
             {/* Botón Compartir */}
             {showShareButton && (
               <>
@@ -79,22 +86,19 @@ const Navbar = ({
                   userName={userName}
                   projectId={projectId}
                 />
-                <div className="h-8 border-l border-gray-700 mx-3"></div>
+                <div className="h-6 border-l border-gray-500/30 mx-3"></div>
               </>
             )}
-
             {/* Botón Actualizar Plan */}
             {showUpgradeButton && (
-              <ButtonGrey
-                className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-6 py-2 rounded-xl shadow transition-all text-base"
-              >
-                Actualizar Plan
+              <ButtonGrey className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 md:px-6 py-2 rounded-xl shadow transition-all text-sm md:text-base">
+                <span className="hidden sm:inline">Actualizar Plan</span>
+                <span className="sm:hidden">Plan</span>
               </ButtonGrey>
             )}
-
             {/* Perfil de usuario */}
             <div
-              className="flex items-center gap-2 cursor-pointer relative"
+              className="flex items-center gap-3 cursor-pointer relative hover:bg-white/5 rounded-3xl px-2 py-1 transition-colors"
               ref={userRef}
               onClick={() => setMenuOpen((open) => !open)}
             >
@@ -102,11 +106,19 @@ const Navbar = ({
                 src={fotoPerfil}
                 alt="Usuario"
                 className="w-11 h-11 rounded-full object-cover"
-                onError={e => { e.target.onerror = null; e.target.src = userAtlas; }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = userAtlas;
+                }}
               />
-              <div className="text-right">
-                <div className="text-base font-semibold text-white text-right">
+              <div className="text-right min-w-0 hidden sm:block">
+                <div className="text-base font-semibold text-white text-right truncate flex items-center gap-2">
                   {getUserName()}
+                  <i
+                    className={`bi bi-chevron-down text-sm text-gray-400 hover:text-purple-400 transition-transform duration-200 ${
+                      menuOpen ? "rotate-180" : ""
+                    }`}
+                  ></i>
                 </div>
               </div>
               {/* Menú desplegable */}
@@ -116,17 +128,14 @@ const Navbar = ({
                 fotoPerfil={fotoPerfil}
               />
             </div>
-
             {/* Notificación */}
-            <div className="relative">
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-              <i className="bi bi-bell text-2xl text-white"></i>
+            <div className="relative cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors">
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+              <i className="bi bi-bell text-xl text-white hover:text-purple-400 transition-colors"></i>
             </div>
           </div>
         </div>
       </nav>
-      {/* Línea divisoria centrada y sutil */}
-      <div className="w-[95%] mx-auto border-b border-gray-800"></div>
     </>
   );
 };

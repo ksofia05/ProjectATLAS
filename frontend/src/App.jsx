@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { fetchAndStoreUser } from "./utils/fetchAndStoreUser";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -25,7 +25,7 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 
 import DashboardCreateProject from "./pages/DashboardCreateProject";
 import Error404 from "./pages/error404";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 
@@ -50,11 +50,14 @@ const App = () => {
         <Route path="/registrarse" element={<Register />} />
         <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
         <Route path="/email-recuperacion" element={<EmailRecovery />} />
-        <Route path="/reset-password" element={<PasswordReset />} />        
+        <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
         <Route path="/notenercuenta" element={<NoTenerCuenta />} />
-        <Route path="/invitacion-proyecto/:id" element={<InvitacionProyectoRoute />} />
+        <Route
+          path="/invitacion-proyecto/:id"
+          element={<InvitacionProyectoRoute />}
+        />
         <Route
           path="/dashboard-create-project"
           element={
@@ -77,11 +80,15 @@ const App = () => {
           <Route path="colaboradores" element={<CollaboratorsPage />} />
           <Route path="inventario" element={<InventoryPage />} />
         </Route>
-        <Route path="/perfil" element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }/>
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/404" element={<Error404 />} />
         <Route path="*" element={<Error404 />} />
       </Routes>
       <Toaster />
@@ -89,4 +96,4 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;
