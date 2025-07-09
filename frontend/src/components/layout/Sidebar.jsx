@@ -13,11 +13,15 @@ const Sidebar = ({
   const location = useLocation();
 
   return (
-    <aside className="bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto">
+    <aside className="fixed left-0 top-0 bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40">
       <div>
         {showLogo && (
           <div className="flex items-center gap-3 mb-10">
-            <img src={logo} alt="Logo ATLAS" className="w-12 h-12 object-contain" />
+            <img
+              src={logo}
+              alt="Logo ATLAS"
+              className="w-12 h-12 object-contain"
+            />
             <span className="text-3xl font-bold tracking-wide">ATLAS</span>
           </div>
         )}
@@ -33,7 +37,8 @@ const Sidebar = ({
                 const isDashboard = item.label === "Dashboard";
                 const isActive = isDashboard
                   ? location.pathname === item.to
-                  : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+                  : location.pathname === item.to ||
+                    location.pathname.startsWith(item.to + "/");
 
                 return (
                   <li key={item.label}>
@@ -66,12 +71,18 @@ const Sidebar = ({
               Términos de Servicio
             </Link>
             {" y "}
-            <Link to="/politica-de-privacidad" className="underline hover:text-[#7c2ae8]">
+            <Link
+              to="/politica-de-privacidad"
+              className="underline hover:text-[#7c2ae8]"
+            >
               Políticas de Privacidad
             </Link>
           </div>
           <div>
-            <Link to="/sobre-nosotros" className="underline hover:text-[#7c2ae8]">
+            <Link
+              to="/sobre-nosotros"
+              className="underline hover:text-[#7c2ae8]"
+            >
               Acerca de nosotros
             </Link>
           </div>
