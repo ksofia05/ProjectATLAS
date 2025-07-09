@@ -1,33 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-import CustomScrollSelect from "../common/CustomScrollSelect";
-import Input from "../common/Input";
-import DropdownMenu from "../common/DropdownMenu";
-import Switch from "../common/Switch";
-import Loader from "../common/Loader";
-import { useAuth } from "../../hooks/useAuth";
-
 import axios from "axios";
-import { useEffect } from "react";
+
+import DataTable from "../common/DataTable";
+import Switch from "../common/Switch";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function CollaboratorsTable() {
   const { user } = useAuth();
-  const [colaboradores, setColaboradores] = React.useState([]);
-  const [estadoSeleccionado, setEstadoSeleccionado] = React.useState("todos");
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [loading, setLoading] = React.useState(true);
+  const [colaboradores, setColaboradores] = useState([]);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProyectos = async () => {
       setLoading(true);
       const email = user?.email || user?.user_metadata?.email;
       try {
-        // 1. Obtener el usuario por su correo
+        // 1. Obtener el usuario por su correo (esto toca cambiarlo por culpa de anny)
         const usuarioResponse = await axios.get(
           `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
@@ -69,17 +64,6 @@ export default function CollaboratorsTable() {
     }
   }, [user]);
 
-  const opcionesEstado = [
-    { label: "Todos", value: "todos", selected: estadoSeleccionado === "todos" },
-    { label: "Activo", value: "activo", selected: estadoSeleccionado === "activo" },
-    { label: "Inactivo", value: "inactivo", selected: estadoSeleccionado === "inactivo" },
-  ];
-
-  const opcionesExportar = [
-    { label: "Excel", value: "excel" },
-    { label: "PDF", value: "pdf" },
-  ];
-
   // Exportar a Excel
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -96,19 +80,13 @@ export default function CollaboratorsTable() {
     doc.text("Colaboradores", 14, 10);
     autoTable(doc, {
       head: [["Nombre", "Apellido", "Correo", "Estado"]],
-      body: data.map((c) => [
-        c.nombre,
-        c.apellido,
-        c.correo,
-        c.estado,
-      ]),
+      body: data.map((c) => [c.nombre, c.apellido, c.correo, c.estado]),
       startY: 20,
     });
     doc.save("colaboradores.pdf");
   };
 
-  const handleSwitch = async (idx) => {
-    const colaborador = colaboradoresFiltrados[idx];
+  const handleSwitch = async (colaborador, idx) => {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
     try {
@@ -118,7 +96,7 @@ export default function CollaboratorsTable() {
       );
 
       setColaboradores((prev) =>
-        prev.map((c, i) =>
+        prev.map((c) =>
           c.id === colaborador.id ? { ...c, estado: nuevoEstado } : c
         )
       );
@@ -127,119 +105,113 @@ export default function CollaboratorsTable() {
     }
   };
 
-  // Aqui se fultra por el estado y la busqueda
+  // Filtrado de datos
   const colaboradoresFiltrados = colaboradores
     .filter((c) =>
       estadoSeleccionado === "todos"
         ? true
         : c.estado?.toLowerCase() === estadoSeleccionado
     )
-    .filter((c) =>
-      c.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    .filter((c) => c.nombre?.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const colaboradoresMostrados = colaboradoresFiltrados.slice(0, rowsPerPage);
+  // Organización de columnas
+  const columns = [
+    {
+      key: "nombre",
+      label: "Nombre",
+      width: "20%",
+    },
+    {
+      key: "apellido",
+      label: "Apellido",
+      width: "20%",
+    },
+    {
+      key: "correo",
+      label: "Correo",
+      width: "35%",
+      render: (colaborador) => (
+        <a
+          href={`mailto:${colaborador.correo}`}
+          className="text-violet-200 hover:underline"
+        >
+          {colaborador.correo}
+        </a>
+      ),
+    },
+    {
+      key: "estado",
+      label: "Estado",
+      width: "25%",
+      render: (colaborador, idx) => (
+        <div className="flex items-center justify-center gap-2">
+          <span
+            className={
+              colaborador.estado === "Activo"
+                ? "text-green-400 font-semibold"
+                : "text-red-400 font-semibold"
+            }
+          >
+            {colaborador.estado}
+          </span>
+          <Switch
+            checked={colaborador.estado === "Activo"}
+            onChange={() => handleSwitch(colaborador, idx)}
+          />
+        </div>
+      ),
+    },
+  ];
 
-  // Opciones del 1 al 50 (Culpa de anny)
-  const opcionesFilas = [10, 20, 30, 40, 50];
+  // Configuración de filtros
+  const filters = [
+    {
+      label: "Todos",
+      value: "todos",
+      selected: estadoSeleccionado === "todos",
+    },
+    {
+      label: "Activo",
+      value: "activo",
+      selected: estadoSeleccionado === "activo",
+    },
+    {
+      label: "Inactivo",
+      value: "inactivo",
+      selected: estadoSeleccionado === "inactivo",
+    },
+  ];
 
-  // Mostrar loader mientras carga
+  // Configuración de exportación
+  const exportOptions = [
+    { label: "Excel", value: "excel" },
+    { label: "PDF", value: "pdf" },
+  ];
+
+  const handleExport = (value) => {
+    if (value === "excel") exportToExcel(colaboradoresFiltrados);
+    if (value === "pdf") exportToPDF(colaboradoresFiltrados);
+  };
 
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
-      <div className="flex items-center justify-between mb-6 flex-wrap">
-        <div>
-          <DropdownMenu
-            buttonLabel="Exportar"
-            options={opcionesExportar}
-            onSelect={(value) => {
-              if (value === "excel") exportToExcel(colaboradoresFiltrados);
-              if (value === "pdf") exportToPDF(colaboradoresFiltrados);
-            }}
-            buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
-            icon={<i className="bi bi-download mr-2"></i>}
-          />
-        </div>
-        <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <div className="relative">
-            <Input
-              type="text"
-              name="search"
-              placeholder="Buscar colaborador..."
-              icon="bi-search"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
-              containerClassName="mb-0"
-            />
-          </div>
-          <DropdownMenu
-            buttonLabel="Estado"
-            options={opcionesEstado}
-            onSelect={setEstadoSeleccionado}
-            buttonClassName="px-4 py-2 font-semibold hover:shadow shadow-[#8d49e7] text-base flex items-center gap-2"
-          />
-        </div>
-      </div>
-      <div className="overflow-x-auto">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader text="Cargando colaboradores..." />
-          </div>
-        ) : (
-          <table className="w-full text-center">
-            <thead>
-              <tr className="border-b border-[#232336]">
-                <th className="py-2 px-3 font-semibold text-center">Nombre</th>
-                <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-                <th className="py-2 px-3 font-semibold text-center">Correo</th>
-                <th className="py-2 px-3 font-semibold text-center">Estado</th>
-                <th className="py-2 px-3 text-center"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {colaboradoresMostrados.map((c, idx) => (
-                <tr
-                  key={c.nombre + c.apellido + c.correo}
-                  className="border-b border-[#232336] hover:bg-[#232336]/40 transition"
-                >
-                  <td className="py-2 px-3 text-gray-200 text-center">{c.nombre}</td>
-                  <td className="py-2 px-3 text-center">{c.apellido}</td>
-                  <td className="py-2 px-3 text-center">{c.correo}</td>
-                  <td className="py-2 px-3 flex items-center gap-4 justify-center">
-                    <span
-                      className={
-                        c.estado === "Activo"
-                          ? "text-green-400 font-semibold"
-                          : "text-red-400 font-semibold"
-                      }
-                    >
-                      {c.estado}
-                    </span>
-                    <Switch
-                      checked={c.estado === "Activo"}
-                      onChange={() => handleSwitch(idx)}
-                    />
-                  </td>
-                  <td className="py-2 px-3 text-center"></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-      <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
-        <div className="flex items-center gap-2">
-          <span>
-            Visualizando: {colaboradoresMostrados.length} de {colaboradoresFiltrados.length} colaboradores
-          </span>
-          <CustomScrollSelect
-            value={rowsPerPage}
-            options={opcionesFilas}
-            onChange={setRowsPerPage}
-          />
-        </div>
-      </div>
-    </div>
+    <DataTable
+      title="colaboradores"
+      data={colaboradoresFiltrados}
+      columns={columns}
+      loading={loading}
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      searchPlaceholder="Buscar colaborador..."
+      filters={filters}
+      selectedFilter={estadoSeleccionado}
+      onFilterChange={setEstadoSeleccionado}
+      exportOptions={exportOptions}
+      onExport={handleExport}
+      rowsPerPage={rowsPerPage}
+      onRowsPerPageChange={setRowsPerPage}
+      rowsPerPageOptions={[10, 20, 30, 40, 50]}
+      loadingText="Cargando colaboradores..."
+      emptyMessage="No hay colaboradores disponibles"
+    />
   );
 }

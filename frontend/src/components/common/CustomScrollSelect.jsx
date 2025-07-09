@@ -1,58 +1,66 @@
 import React, { useState, useRef, useEffect } from "react";
 
-const CustomScrollSelect = ({
-  value,
-  options,
-  onChange,
-  className = "",
-  width = "w-16",
-  maxHeight = "max-h-40",
-}) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+export default function CustomScrollSelect({ value, options, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
+  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   return (
-    <div className={`relative ${width}`} ref={ref}>
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      {/* Button */}
       <button
-        className={`bg-[#232336] border border-[#232336] rounded px-2 py-1 text-gray-200 flex items-center justify-between w-full ${className}`}
-        onClick={() => setOpen((o) => !o)}
-        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1 bg-[#232336] text-gray-200 rounded-lg border border-gray-600 hover:border-gray-500 transition text-sm"
       >
-        {value}
-        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <span>{value}</span>
+        <i
+          className={`bi bi-chevron-up text-xs transition-transform duration-200 ${
+            isOpen ? "rotate-0" : "rotate-180"
+          }`}
+        ></i>
       </button>
-      {open && (
-        <ul
-          className={`absolute z-10 mt-1 bg-[#232336] border border-[#232336] rounded shadow-lg overflow-y-auto ${maxHeight} w-full`}
-        >
-          {options.map((opt) => (
-  <li
-    key={opt}
-    className={`px-2 py-1 cursor-pointer hover:bg-white/20 ${
-      value === opt ? "bg-white/10 text-white font-semibold" : ""
-    }`}
-    onClick={() => {
-      onChange(opt);
-      setOpen(false);
-    }}
-  >
-    {opt}
-  </li>
-))}
-        </ul>
-      )}
+
+      {/* Dropdown Menu - ahora tiene animaciones lindas :3 */}
+      <div
+        className={`
+          absolute bottom-full right-0 mb-1 w-16 bg-[#232336] border border-gray-600 rounded-lg shadow-lg z-50
+          transition-all duration-200 origin-bottom
+          ${
+            isOpen
+              ? "opacity-100 scale-100 pointer-events-auto"
+              : "opacity-0 scale-95 pointer-events-none"
+          }
+        `}
+        style={{ willChange: "opacity, transform" }}
+      >
+        <div className="py-1">
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => {
+                onChange(option);
+                setIsOpen(false);
+              }}
+              className="block w-full px-3 py-1 text-left text-sm text-gray-200 hover:bg-gray-700 transition"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
-};
-
-export default CustomScrollSelect;
+}
