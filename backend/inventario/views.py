@@ -9,6 +9,7 @@ from rest_framework.response import Response # Importa la clase Response para de
 from .models import Agendamiento,Cliente,Equipo,Equipoagendamiento # Importa el modelo Task, que representa la estructura de los datos en la base de datos.
 from rest_framework.response import Response
 import jwt
+from tasks.models import Usuario
 
 class AgendamientoViewSet(viewsets.ModelViewSet):
     queryset = Agendamiento.objects.all()  # Define la consulta para obtener todos los objetos Agendamiento.
