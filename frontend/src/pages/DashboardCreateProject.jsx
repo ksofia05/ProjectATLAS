@@ -6,15 +6,12 @@ import ProjectList from "../components/layout/ProjectList";
 import useUserStore from "../stores/useUserStore";
 
 const DashboardCreateProject = () => {
-
-  const user = useUserStore((state) => state.user)
+  const user = useUserStore((state) => state.user);
 
   let projectsBlock = null;
 
-if (!user) {
-    projectsBlock = (
-      <div className="text-white p-4">Cargando usuario...</div>
-    );
+  if (!user) {
+    projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
   } else if (user.rol_idRol === 1) {
     projectsBlock = (
       <div className="mb-8">
@@ -30,16 +27,21 @@ if (!user) {
   } else if (user.rol_idRol === 2) {
     projectsBlock = (
       <div>
-        <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
+        <h3 className="font-semibold mb-2 text-white">
+          Mis Proyectos (Colaborador)
+        </h3>
         <ProjectList isColaborador={true} />
       </div>
     );
   } else {
     projectsBlock = (
       <div>
-        <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Colaborador)</h3>
+        <h3 className="font-semibold mb-2 text-white">
+          Mis Proyectos (Colaborador)
+        </h3>
         <p className="text-sm text-gray-400">
-          Aún no formas parte de ningún proyecto.<br />
+          Aún no formas parte de ningún proyecto.
+          <br />
           Pide acceso a un administrador.
         </p>
       </div>
@@ -53,9 +55,11 @@ if (!user) {
         showProjectsBlock={true}
         projectsBlock={projectsBlock}
       />
-      <div className="flex-1 flex flex-col">
+      <div className="ml-72 flex-1 flex flex-col">
+        {" "}
+        {/* Agregué ml-72 aquí */}
         <div className="pt-4 px-6">
-          <Navbar 
+          <Navbar
             showShareButton={false}
             showUpgradeButton={true}
             title="Proyectos"

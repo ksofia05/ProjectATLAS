@@ -50,3 +50,32 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Scrollbar más sutil para los paneles */
+.scrollbar-subtle::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-thumb {
+  background: rgba(139, 139, 139, 0.3);
+  border-radius: 2px;
+}
+
+.scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 139, 139, 0.6);
+}
+
+/* Forzar que el scrollbar siempre esté presente */
+.scrollbar-subtle {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+/* Reservar espacio para scrollbar */
+.scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}

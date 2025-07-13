@@ -3,15 +3,12 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import axios from "axios";
 
-import Input from "../common/Input";
-import DropdownMenu from "../common/DropdownMenu";
-import ButtonGrey from "../common/ButtonGrey"; 
+import DataTable from "../common/DataTable";
+import ButtonGrey from "../common/ButtonGrey";
 import RegisterClientDrawer from "./RegisterClientDrawer";
 import { useAuth } from "../../hooks/useAuth";
-import axios from "axios";
-import CustomScrollSelect from "../common/CustomScrollSelect";
-import Loader from "../common/Loader"; 
 
 export default function InventoryTable({ onEmojiClick }) {
   const { user, isLoading } = useAuth();
@@ -19,16 +16,10 @@ export default function InventoryTable({ onEmojiClick }) {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
-
   const [usuarioIdActual, setUsuarioIdActual] = useState(null);
   const [idProyecto, setIdProyecto] = useState(null);
-
-  // Loader
   const [loading, setLoading] = useState(true);
-
-  // Paginado
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const opcionesFilas = [10, 20, 30, 40, 50];
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -76,18 +67,7 @@ export default function InventoryTable({ onEmojiClick }) {
     fetchClientes();
   }, [user, isLoading]);
 
-  const opcionesEstado = [
-    { label: "Todos", value: "todos" },
-    { label: "Activo", value: "Activo" },
-    { label: "Inactivo", value: "Inactivo" },
-  ];
-
-  const opcionesExportar = [
-    { label: "Excel", value: "excel" },
-    { label: "PDF", value: "pdf" },
-  ];
-
-  //Exportador de Excel
+  // Exportar a Excel
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(
       data.map((item) => ({
@@ -106,7 +86,7 @@ export default function InventoryTable({ onEmojiClick }) {
     saveAs(blob, "clientes.xlsx");
   };
 
-  //Exportador de PDF
+  // Exportar a PDF
   const exportToPDF = (data) => {
     const doc = new jsPDF();
     doc.text("Clientes", 14, 10);
@@ -125,122 +105,147 @@ export default function InventoryTable({ onEmojiClick }) {
     doc.save("clientes.pdf");
   };
 
+  // Filtrado de datos
   const clientesFiltrados = clientes.filter(
     (item) =>
       (estadoSeleccionado === "todos" || item.estado === estadoSeleccionado) &&
-      (
-        (item.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (item.apellido?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (item.correo?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-      )
+      ((item.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (item.apellido?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase()
+        ) ||
+        (item.correo?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
   );
 
-  // Paginado real
-  const clientesMostrados = clientesFiltrados.slice(0, rowsPerPage);
+  // Configuración de columnas
+  const columns = [
+    {
+      key: "equipo",
+      label: "Equipo",
+      width: "8%",
+      render: (item) => (
+        <i
+          className="bi bi-laptop text-2xl text-gray-400 cursor-pointer hover:text-blue-400"
+          onClick={() => onEmojiClick(item)}
+        ></i>
+      ),
+    },
+    {
+      key: "nombre",
+      label: "Nombre",
+      width: "15%",
+    },
+    {
+      key: "apellido",
+      label: "Apellido",
+      width: "15%",
+    },
+    {
+      key: "correo",
+      label: "Correo",
+      width: "25%",
+      render: (item) => (
+        <a
+          href={`mailto:${item.correo}`}
+          className="text-violet-200 hover:underline"
+        >
+          {item.correo}
+        </a>
+      ),
+    },
+    {
+      key: "telefono",
+      label: "Teléfono",
+      width: "18%",
+    },
+    {
+      key: "estado",
+      label: "Estado",
+      width: "19%",
+      render: (item) => (
+        <div className="flex items-center justify-center gap-2">
+          <span
+            className={
+              item.estado === "Activo"
+                ? "text-green-400 font-semibold"
+                : "text-red-400 font-semibold"
+            }
+          >
+            {item.estado}
+          </span>
+          <span
+            className={
+              item.estado === "Activo"
+                ? "w-3 h-3 rounded-full bg-green-500 inline-block"
+                : "w-3 h-3 rounded-full bg-red-500 inline-block"
+            }
+          ></span>
+        </div>
+      ),
+    },
+  ];
+
+  // Configuración de filtros
+  const filters = [
+    {
+      label: "Todos",
+      value: "todos",
+      selected: estadoSeleccionado === "todos",
+    },
+    {
+      label: "Activo",
+      value: "Activo",
+      selected: estadoSeleccionado === "Activo",
+    },
+    {
+      label: "Inactivo",
+      value: "Inactivo",
+      selected: estadoSeleccionado === "Inactivo",
+    },
+  ];
+
+  // Configuración de exportación
+  const exportOptions = [
+    { label: "Excel", value: "excel" },
+    { label: "PDF", value: "pdf" },
+  ];
+
+  const handleExport = (value) => {
+    if (value === "excel") exportToExcel(clientesFiltrados);
+    if (value === "pdf") exportToPDF(clientesFiltrados);
+  };
+
+  // Botón de agregar cliente
+  const extraActions = (
+    <ButtonGrey
+      className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-fit"
+      onClick={() => setShowDrawer(true)}
+    >
+      + Agregar nuevo equipo
+    </ButtonGrey>
+  );
 
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-        <div className="flex gap-3">
-          <ButtonGrey
-            className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-fit"
-            onClick={() => setShowDrawer(true)}
-          >
-            + Agregar nuevo equipo
-          </ButtonGrey>
-          <DropdownMenu
-            buttonLabel="Exportar"
-            options={opcionesExportar}
-            onSelect={(value) => {
-              if (value === "excel") exportToExcel(clientesFiltrados);
-              if (value === "pdf") exportToPDF(clientesFiltrados);
-            }}
-            buttonClassName="px-5 py-2 font-semibold text-base hover:shadow shadow-[#8d49e7]"
-            icon={<i className="bi bi-download mr-2"></i>}
-          />
-        </div>
-        <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <Input
-            type="text"
-            name="search"
-            placeholder="Buscar cliente..."
-            icon="bi-search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
-            containerClassName="mb-0"
-          />
-          <DropdownMenu
-            buttonLabel="Estado"
-            options={opcionesEstado}
-            onSelect={setEstadoSeleccionado}
-            buttonClassName="px-4 py-2 font-semibold hover:shadow shadow-[#8d49e7] text-base flex items-center gap-2"
-          />
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader text="Cargando clientes..." />
-          </div>
-        ) : (
-          <table className="w-full text-center">
-            <thead>
-              <tr className="border-b border-[#232336]">
-                <th className="py-2 px-3 font-semibold text-center">Equipo</th>
-                <th className="py-2 px-3 font-semibold text-center">Nombre</th>
-                <th className="py-2 px-3 font-semibold text-center">Apellido</th>
-                <th className="py-2 px-3 font-semibold text-center">Correo</th>
-                <th className="py-2 px-3 font-semibold text-center">Teléfono</th>
-                <th className="py-2 px-3 font-semibold text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientesMostrados.map((item, idx) => (
-                <tr key={item.correo + idx} className="border-b border-[#232336] hover:bg-[#232336]/40 transition">
-                  <td className="py-2 px-3 text-center text-2xl cursor-pointer" onClick={() => onEmojiClick?.(item)}>💻</td>
-                  <td className="py-2 px-3 text-center">{item.nombre}</td>
-                  <td className="py-2 px-3 text-center">{item.apellido}</td>
-                  <td className="py-2 px-3 text-center">{item.correo}</td>
-                  <td className="py-2 px-3 text-center">{item.telefono}</td>
-                  <td className="py-2 px-3 flex items-center gap-2 justify-center">
-                    <span
-                      className={
-                        item.estado === "Activo"
-                          ? "text-green-400 font-semibold"
-                          : "text-red-400 font-semibold"
-                      }
-                    >
-                      {item.estado}
-                    </span>
-                    <span
-                      className={
-                        item.estado === "Activo"
-                          ? "w-3 h-3 ml-7 rounded-full bg-green-500 inline-block"
-                          : "w-3 h-3 ml-4 rounded-full bg-red-500 inline-block"
-                      }
-                    ></span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <div className="flex items-center justify-end mt-4 text-gray-400 text-sm gap-4">
-        <div className="flex items-center gap-2">
-          <span>
-            Visualizando: {clientesMostrados.length} de {clientesFiltrados.length} clientes
-          </span>
-          <CustomScrollSelect
-            value={rowsPerPage}
-            options={opcionesFilas}
-            onChange={setRowsPerPage}
-          />
-        </div>
-      </div>
+    <>
+      <DataTable
+        title="clientes"
+        data={clientesFiltrados}
+        columns={columns}
+        loading={loading}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar cliente..."
+        filters={filters}
+        selectedFilter={estadoSeleccionado}
+        onFilterChange={setEstadoSeleccionado}
+        exportOptions={exportOptions}
+        onExport={handleExport}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={setRowsPerPage}
+        rowsPerPageOptions={[10, 20, 30, 40, 50]}
+        extraActions={extraActions}
+        loadingText="Cargando clientes..."
+        emptyMessage="No hay clientes disponibles"
+      />
 
       <RegisterClientDrawer
         open={showDrawer}
@@ -248,6 +253,6 @@ export default function InventoryTable({ onEmojiClick }) {
         idproyecto={idProyecto}
         usuarioIdActual={usuarioIdActual}
       />
-    </div>
+    </>
   );
 }

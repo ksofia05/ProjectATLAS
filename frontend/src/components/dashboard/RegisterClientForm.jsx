@@ -14,7 +14,11 @@ function getToday() {
   return today.toISOString().split("T")[0];
 }
 
-export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActual }) {
+export default function RegisterClientForm({
+  onClose,
+  idproyecto,
+  usuarioIdActual,
+}) {
   const [form, setForm] = useState({
     identificacion: "",
     nombre: "",
@@ -44,13 +48,16 @@ export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActua
     setShowSuggestions,
     handleIdInputChange,
     setSearchResults,
-  } = useClientAutocomplete(handleChange);
+  } = useClientAutocomplete(handleChange, idproyecto);
 
   // Se valida el formulario al cargar
   useEffect(() => {
     setErrors(validateClientForm(form));
   }, []);
 
+  useEffect(() => {
+    console.log("ID Proyecto en RegisterClientForm:", idproyecto);
+  }, [idproyecto]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -116,7 +123,7 @@ export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActua
 
   // Imagen
   const handleImageSave = (publicUrl) => {
-    setForm(prev => {
+    setForm((prev) => {
       const newForm = { ...prev, imagen: publicUrl };
       setErrors(validateClientForm(newForm));
       return newForm;
@@ -125,7 +132,7 @@ export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActua
   };
 
   const handleRemoveImage = () => {
-    setForm(prev => {
+    setForm((prev) => {
       const newForm = { ...prev, imagen: null };
       setErrors(validateClientForm(newForm));
       return newForm;
@@ -203,16 +210,17 @@ export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActua
       if (equipoError) throw equipoError;
 
       // 3. Insertar agendamiento
-      const { data: agendamientoData, error: agendamientoError } = await supabase
-        .from("Agendamiento")
-        .insert([
-          {
-            Cliente_dni: clienteData.dni,
-            Usuario_id: usuarioIdActual,
-          },
-        ])
-        .select()
-        .single();
+      const { data: agendamientoData, error: agendamientoError } =
+        await supabase
+          .from("Agendamiento")
+          .insert([
+            {
+              Cliente_dni: clienteData.dni,
+              Usuario_id: usuarioIdActual,
+            },
+          ])
+          .select()
+          .single();
 
       if (agendamientoError) throw agendamientoError;
 
@@ -282,10 +290,14 @@ export default function RegisterClientForm({ onClose, idproyecto, usuarioIdActua
       )}
 
       <Button
-        className={`w-full bg-purple-600 ${isSubmitting || Object.keys(errors).length > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full bg-purple-600 ${
+          isSubmitting || Object.keys(errors).length > 0
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
         type="submit"
         disabled={isSubmitting || Object.keys(errors).length > 0}
-        onClick={e => {
+        onClick={(e) => {
           if (isSubmitting || Object.keys(errors).length > 0) {
             e.preventDefault();
             showErrorToast("Campos incompletos");

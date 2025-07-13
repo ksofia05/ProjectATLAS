@@ -72,9 +72,9 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true} />
-      <div className="flex-1 flex flex-col h-screen">
+      <div className="ml-72 flex flex-col min-h-screen">
         {/* Navbar flotante con margen igual al contenido */}
         <div className="sticky top-0 z-10 pt-6 bg-slate-950">
           <div className="px-8">
@@ -86,8 +86,8 @@ const DashboardLayout = () => {
             />
           </div>
         </div>
-        {/* Contenido con padding normal (cambios por hacer :,b)*/}
-        <div className="flex-1 px-8 pb-8 pt-6 overflow-y-auto scrollbar-hide">
+        {/* Unico apartado donde hay scroll de manera general */}
+        <div className="flex-1 px-8 pb-6 pt-4 overflow-y-auto">
           <Outlet />
         </div>
       </div>
