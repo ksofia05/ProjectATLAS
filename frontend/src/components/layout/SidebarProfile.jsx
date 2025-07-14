@@ -20,7 +20,7 @@ export default function SidebarProfile() {
       : userAtlas;
 
   return (
-    <aside className="bg-gradient-to-b from-[#181825] via-[#1a1a2e] to-[#14141e] text-white w-80 min-h-screen flex flex-col justify-between py-8 px-6 border-r border-gray-800/50">
+    <aside className="fixed left-0 top-0 bg-gradient-to-b from-[#181825] via-[#1a1a2e] to-[#14141e] text-white w-72 h-screen flex flex-col justify-between py-8 px-6 border-r border-gray-800/50 shadow-lg z-40 overflow-y-auto">
       <div>
         {/* Header mejorado */}
         <div className="flex flex-col items-center mb-8">
@@ -28,15 +28,18 @@ export default function SidebarProfile() {
             <img
               src={fotoPerfil}
               alt="Perfil"
-              className="relative w-32 h-32 rounded-full object-cover border-4 border-gray-700/50 mb-4 cursor-pointer transition-transform duration-300 hover:scale-105"
-              onClick={() => setShowPhotoModal(true)}
-              title="Actualizar foto de perfil"
+              className="relative w-32 h-32 rounded-full object-cover border-4 border-gray-700/50 mb-4 transition-transform duration-300 hover:scale-105"
+              title="Foto de perfil"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = userAtlas;
               }}
             />
-            <div className="absolute bottom-6 right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors">
+            <div
+              className="absolute bottom-6 right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors"
+              onClick={() => setShowPhotoModal(true)}
+              title="Actualizar foto de perfil"
+            >
               <i className="bi bi-camera-fill text-white text-sm"></i>
             </div>
           </div>
@@ -103,8 +106,7 @@ export default function SidebarProfile() {
         </div>
       </div>
 
-      
-      <footer className="text-xs text-gray-500 border-t border-gray-700/50 pt-4">
+      <footer className="text-xs text-gray-500 border-t border-gray-700/50 pt-4 relative z-10">
         <div className="mb-3 text-center">
           <span className="text-purple-400 font-medium">
             &copy; 2025 AtlasCo.
@@ -113,21 +115,23 @@ export default function SidebarProfile() {
         <div className="flex flex-wrap justify-center gap-2">
           <Link
             to="/terminos"
-            className="hover:text-purple-400 transition-colors"
+            state={{ from: "/perfil" }}
+            className="hover:text-purple-400 transition-colors cursor-pointer"
           >
             Términos
           </Link>
           <span>•</span>
           <Link
             to="/politica-de-privacidad"
-            className="hover:text-purple-400 transition-colors"
+            state={{ from: "/perfil" }}
+            className="hover:text-purple-400 transition-colors cursor-pointer"
           >
             Privacidad
           </Link>
           <span>•</span>
           <Link
             to="/sobre-nosotros"
-            className="hover:text-purple-400 transition-colors"
+            className="hover:text-purple-400 transition-colors cursor-pointer"
           >
             Acerca de
           </Link>
