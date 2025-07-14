@@ -14,6 +14,7 @@ import PasswordReset from "./pages/Auth/PasswordReset";
 // Legales
 import Terms from "./pages/Legal/Terms";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
+import AboutUs from "./pages/Legal/AboutUs";
 
 // Dashboard y secciones
 import DashboardLayout from "./pages/Dashboard/DashboardHome"; // Este será el layout con sidebar/navbar
@@ -53,6 +54,7 @@ const App = () => {
         <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/terminos" element={<Terms />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
+        <Route path="/sobre-nosotros" element={<AboutUs />} />
         <Route path="/notenercuenta" element={<NoTenerCuenta />} />
         <Route
           path="/invitacion-proyecto/:id"

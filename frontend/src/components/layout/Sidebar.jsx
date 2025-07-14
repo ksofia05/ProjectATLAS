@@ -64,26 +64,32 @@ const Sidebar = ({
       </div>
 
       {footerLinks && (
-        <footer className="text-xs text-gray-500">
-          <div className="mb-2">&copy; 2025 AtlasCo.</div>
-          <div>
-            <Link to="/terminos" className="underline hover:text-[#7c2ae8]">
-              Términos de Servicio
+        <footer className="text-xs text-gray-500 border-t border-gray-700/50 pt-4 relative z-10">
+          <div className="mb-3 text-center">
+            <span className="text-purple-400 font-medium">
+              &copy; 2025 AtlasCo.
+            </span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              to="/terminos"
+              className="hover:text-purple-400 transition-colors cursor-pointer"
+            >
+              Términos
             </Link>
-            {" y "}
+            <span>•</span>
             <Link
               to="/politica-de-privacidad"
-              className="underline hover:text-[#7c2ae8]"
+              className="hover:text-purple-400 transition-colors cursor-pointer"
             >
-              Políticas de Privacidad
+              Privacidad
             </Link>
-          </div>
-          <div>
+            <span>•</span>
             <Link
               to="/sobre-nosotros"
-              className="underline hover:text-[#7c2ae8]"
+              className="hover:text-purple-400 transition-colors cursor-pointer"
             >
-              Acerca de nosotros
+              Acerca de
             </Link>
           </div>
         </footer>
