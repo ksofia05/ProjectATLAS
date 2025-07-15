@@ -35,6 +35,7 @@ export default function RegisterClientForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingSerie, setLoadingSerie] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [seriesSugeridas, setSeriesSugeridas] = useState([]);
 
   // (tengo unos problemas con los errores, no se marcan bien :b)
   const [touched, setTouched] = useState({});
@@ -72,54 +73,48 @@ export default function RegisterClientForm({
   }
 
   // Al seleccionar sugerencia
-  const handleSuggestionClick = async (cliente) => {
-    setForm((prev) => ({
-      ...prev,
-      identificacion: cliente.dni,
-      nombre: cliente.nombre || "",
-      apellido: cliente.apellido || "",
-      email: cliente.correo || "",
-      telefono: cliente.telefono || "",
-      serie: "",
-    }));
-    setShowSuggestions(false);
+const handleSuggestionClick = async (cliente) => {
+  setForm((prev) => ({
+    ...prev,
+    identificacion: cliente.dni,
+    nombre: cliente.nombre || "",
+    apellido: cliente.apellido || "",
+    email: cliente.correo || "",
+    telefono: cliente.telefono || "",
+    // serie: "", // No autocompletes aquí
+  }));
+  setShowSuggestions(false);
 
-    setLoadingSerie(true);
+  setLoadingSerie(true);
 
-    // Buscar último agendamiento
-    const { data: agendamientos } = await supabase
-      .from("Agendamiento")
-      .select("idAgendamiento")
-      .eq("Cliente_dni", cliente.dni)
-      .order("idAgendamiento", { ascending: false })
-      .limit(1);
+  // Buscar todos los agendamientos del cliente
+  const { data: agendamientos } = await supabase
+    .from("Agendamiento")
+    .select("idAgendamiento")
+    .eq("Cliente_dni", cliente.dni);
 
-    if (!agendamientos || agendamientos.length === 0) {
-      setLoadingSerie(false);
-      return;
-    }
-
-    const agendamientoId = agendamientos[0].idAgendamiento;
-
-    // Buscar EquipoAgendamiento relacionado
-    const { data: equipoAg } = await supabase
-      .from("EquipoAgendamiento")
-      .select("equipo_numeroSerie")
-      .eq("agendamiento_idAgendamiento", agendamientoId)
-      .order("agendamiento_equipo", { ascending: false })
-      .limit(1);
-
+  if (!agendamientos || agendamientos.length === 0) {
+    setSeriesSugeridas([]);
     setLoadingSerie(false);
+    return;
+  }
 
-    if (!equipoAg || equipoAg.length === 0) return;
+  const idsAgendamiento = agendamientos.map(a => a.idAgendamiento);
 
-    const numeroSerie = equipoAg[0].equipo_numeroSerie;
+  // Buscar todos los EquipoAgendamiento relacionados
+  const { data: equipoAgs } = await supabase
+    .from("EquipoAgendamiento")
+    .select("equipo_numeroSerie")
+    .in("agendamiento_idAgendamiento", idsAgendamiento);
 
-    setForm((prev) => ({
-      ...prev,
-      serie: numeroSerie || "",
-    }));
-  };
+  // Extraer y filtrar los números de serie únicos
+  const series = equipoAgs
+    ? [...new Set(equipoAgs.map(ea => ea.equipo_numeroSerie))]
+    : [];
+
+  setSeriesSugeridas(series);
+  setLoadingSerie(false);
+};
 
   // Imagen
   const handleImageSave = (publicUrl) => {
@@ -268,6 +263,7 @@ export default function RegisterClientForm({
         handleChange={handleChange}
         setShowSuggestions={setShowSuggestions}
         setTouched={setTouched}
+        seriesSugeridas={seriesSugeridas}
       />
 
       <ClientEquipmentFields
@@ -278,6 +274,7 @@ export default function RegisterClientForm({
         touched={touched}
         triedSubmit={triedSubmit}
         setTouched={setTouched}
+        seriesSugeridas={seriesSugeridas}
       />
 
       <ImageUploader
