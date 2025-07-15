@@ -1,5 +1,6 @@
-import React from "react";
 import Input from "../common/Input";
+import React, { useState } from "react";
+
 
 export default function ClientEquipmentFields({
   form,
@@ -9,7 +10,17 @@ export default function ClientEquipmentFields({
   touched,
   triedSubmit,
   setTouched,
+  seriesSugeridas = [],
 }) {
+  const [showSugerencias, setShowSugerencias] = useState(false);
+
+  // Filtra sugerencias según lo que escribe el usuario
+  const filteredSeries = form.serie
+    ? seriesSugeridas.filter(s =>
+        s.toLowerCase().includes(form.serie.toLowerCase())
+      )
+    : seriesSugeridas;
+
   return (
     <>
       <Input
@@ -25,22 +36,42 @@ export default function ClientEquipmentFields({
         <span className="text-red-400 text-xs">{errors.entrada}</span>
       )}
 
-      <Input
-        label="No. de serie"
-        name="serie"
-        value={loadingSerie ? "Cargando..." : form.serie}
-        onChange={handleChange}
-        placeholder="Número de serie"
-        inputClassName={`w-full ${errors.serie ? "border-red-500" : ""}`}
-        disabled={loadingSerie}
-        onBlur={() => setTouched(prev => ({ ...prev, serie: true }))}
-      />
+      <div className="relative mb-6">
+        <label className="text-white block mb-2">No. Serie</label>
+        <input
+          type="text"
+          name="serie"
+          value={loadingSerie ? "Cargando..." : form.serie}
+          onChange={handleChange}
+          placeholder="Número de serie"
+          className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errors.serie ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+          disabled={loadingSerie}
+          onFocus={() => setShowSugerencias(true)}
+          onBlur={() => setTimeout(() => setShowSugerencias(false), 100)}
+        />
+        {showSugerencias && filteredSeries.length > 0 && (
+          <div className="absolute left-0 right-0 mt-1 bg-[#232336] border-2 border-purple-400 rounded-xl shadow-lg z-50">
+            {filteredSeries.map((serie, idx) => (
+              <div
+                key={idx}
+                className="px-4 py-2 hover:bg-[#2d2d44] cursor-pointer text-white"
+                onMouseDown={() => {
+                  handleChange({ target: { name: "serie", value: serie } });
+                  setShowSugerencias(false);
+                }}
+              >
+                {serie}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {(touched.serie || triedSubmit) && errors.serie && (
         <span className="text-red-400 text-xs">{errors.serie}</span>
       )}
 
       <div className="mb-4">
-        <label className="text-white block mb-1">Comentario:</label>
+        <label className="text-white block mb-2">Comentario:</label>
         <textarea
           name="comentario"
           value={form.comentario}

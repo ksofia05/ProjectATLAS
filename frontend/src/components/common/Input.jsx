@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Input = ({ label, type, name, value, onChange, errorMessage, icon, required, containerClassName, placeholder, onIconClick, inputClassName }) => {
+const Input = ({ label, type, name, value, onChange, errorMessage, icon, required, containerClassName, placeholder, onIconClick, inputClassName,list }) => {
   return (
     <div className={containerClassName ? containerClassName : "mb-6"}>
       <label htmlFor={name} className="block text-gray-300 font-medium mb-2">{label}</label>
@@ -14,6 +14,7 @@ const Input = ({ label, type, name, value, onChange, errorMessage, icon, require
           required={required}
           className={`px-4 py-3 bg-[#2A273A] text-white border ${errorMessage ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${inputClassName ? inputClassName : "w-full"}`}
           placeholder={placeholder}
+          list={list}
         />
         {icon && (
           <button

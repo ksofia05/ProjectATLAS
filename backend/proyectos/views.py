@@ -21,7 +21,12 @@ class ProyectoViewSet(viewsets.ModelViewSet):
         queryset = Proyecto.objects.all()
         user_id = self.request.query_params.get('id_usuario')
         if user_id:
-            queryset = queryset.filter(id_usuario=user_id)
+            # Proyectos donde es admin
+            admin_projects = queryset.filter(id_usuario=user_id)
+            # Proyectos donde es colaborador
+            colaborador_projects = queryset.filter(colaboradorproyecto__usuario__idusuario=user_id)
+            # Unir ambos y eliminar duplicados
+            queryset = (admin_projects | colaborador_projects).distinct()
         return queryset
 
 class ProyectoUUIDViewSet(viewsets.ModelViewSet):
