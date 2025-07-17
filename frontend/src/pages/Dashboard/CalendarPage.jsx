@@ -1,8 +1,24 @@
 import React from "react";
+import CalendarCard from "../../components/dashboard/CalendarCard";
+import MyTasksCard from "../../components/calendar/MyTasksCard";
+
 export default function CalendarPage() {
   return (
-    <div className="text-white text-2xl font-bold p-10">
-      Simulación de lo que se vería en Calendario
-    </div>
+    <>
+      <h2 className="text-3xl font-bold text-white mb-2">
+        Calendario
+      </h2>
+      <p className="text-gray-300 mb-8">
+        Gestiona tus citas y tareas en el calendario!
+      </p>
+      <div className="flex flex-wrap gap-12 items-start">
+        <div className="flex gap-8 mb-8">
+          <CalendarCard />
+        </div>
+        <div className="flex mb-2">
+          <MyTasksCard />
+        </div>
+      </div>
+    </>
   );
 }
