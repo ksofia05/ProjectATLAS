@@ -31,6 +31,11 @@ const DashboardLayout = () => {
       to: `/dashboard/${id}/calendario`,
     },
     {
+      label: "Calendario Luis", // Esto es solo de prueba por ahora
+      icon: "bi bi-calendar4-week",
+      to: `/dashboard/${id}/calendario-luis`,
+    },
+    {
       label: "Cliente / Inventario",
       icon: "bi bi-archive-fill",
       to: `/dashboard/${id}/inventario`,
