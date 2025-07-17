@@ -22,18 +22,13 @@ const DashboardLayout = () => {
   const baseMenuItems = [
     {
       label: "Dashboard",
-      icon: "bi bi-house-door-fill",
+      icon: "bi bi-house-fill",
       to: `/dashboard/${id}`,
     },
     {
       label: "Calendario",
       icon: "bi bi-calendar-event",
       to: `/dashboard/${id}/calendario`,
-    },
-    {
-      label: "Calendario Luis", // Esto es solo de prueba por ahora
-      icon: "bi bi-calendar4-week",
-      to: `/dashboard/${id}/calendario-luis`,
     },
     {
       label: "Cliente / Inventario",
