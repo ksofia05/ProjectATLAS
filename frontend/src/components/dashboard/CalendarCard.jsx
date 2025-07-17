@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const diasSemana = ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
 const diasPendientes = [30, 5, 14, 9, 19];
@@ -8,8 +9,15 @@ const CalendarCard = ({
   year = 2025,
   diasConPendientes = diasPendientes,
 }) => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  const handleCalendarClick = () => {
+    navigate(`/dashboard/${id}/calendario-avanzado`);
+  };
+
   const diasMes = 31;
-  const primerDiaSemana = 5; // 0=Domingo, 5=Viernes para 1 Agosto 2025
+  const primerDiaSemana = 5;
   const semanas = [];
   let dia = 1 - primerDiaSemana;
 
@@ -26,7 +34,10 @@ const CalendarCard = ({
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow">
+    <div
+      className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow cursor-pointer hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-[#1a1a2e] hover:to-[#2a2a45] transition-all duration-300"
+      onClick={handleCalendarClick}
+    >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-3">
           <h3 className="text-2xl font-bold">Calendario</h3>

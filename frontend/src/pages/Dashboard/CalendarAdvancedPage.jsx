@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import CalendarView from "../../components/dashboard/CalendarView";
 
-export default function CalendarLuisPage() {
+export default function CalendarAdvancedPage() {
   const [currentYear, setCurrentYear] = useState(2025);
   const [currentMonth, setCurrentMonth] = useState(null);
   const [currentDay, setCurrentDay] = useState(null);
   const [viewMode, setViewMode] = useState("year");
+
   const handleYearChange = (year) => {
     setCurrentYear(year);
   };
@@ -191,7 +192,6 @@ export default function CalendarLuisPage() {
       </div>
 
       <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700">
-
         <BreadcrumbNavigation />
 
         {/* Navegación principal */}
