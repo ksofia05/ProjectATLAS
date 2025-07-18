@@ -6,6 +6,7 @@ import ImagenGenerica from "../../assets/pcDañada.jpg";
 import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
 import InputCalendario from "../common/InputCalendario";
 import { client as supabase } from "../../supabase/client";
+import { dateUtils } from "../../utils/dateUtils";
 
 const EquipmentClientModal = ({ cliente, onClose }) => {
   const [equipos, setEquipos] = useState([]);
@@ -62,9 +63,10 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
         }
 
         const equiposCompletos = equipoAgs.map((ea) => {
-          const equipo = equiposData.find(
-            (eq) => eq.numeroSerie === ea.equipo_numeroSerie
-          ) || {};
+          const equipo =
+            equiposData.find(
+              (eq) => eq.numeroSerie === ea.equipo_numeroSerie
+            ) || {};
           return {
             ...equipo,
             ingreso: ea.fechaIngreso,
@@ -90,8 +92,10 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
 
   const handleConfirmInactivar = async () => {
     const equipoActual = equipos[registroActual];
-    const nuevoEstado = equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
-    const fechaSalida = nuevoEstado === "Inactivo" ? new Date().toISOString().split("T")[0] : null;
+    const nuevoEstado =
+      equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
+    const fechaSalida =
+      nuevoEstado === "Inactivo" ? dateUtils.getToday() : null; // ✅ Usar dateUtils
 
     try {
       const { error } = await supabase
@@ -99,20 +103,27 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
         .update({
           Estado: nuevoEstado,
           fechaSalida: fechaSalida,
-          comentarioSalida: comentarioSalida, 
+          comentarioSalida: comentarioSalida,
         })
         .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
 
       if (error) {
         console.error("Error al actualizar estado:", error);
-        alert("No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase.");
+        alert(
+          "No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase."
+        );
         return;
       }
 
       setEquipos((prevEquipos) =>
         prevEquipos.map((eq, idx) =>
           idx === registroActual
-            ? { ...eq, estado: nuevoEstado, salida: fechaSalida, comentarioSalida }
+            ? {
+                ...eq,
+                estado: nuevoEstado,
+                salida: fechaSalida,
+                comentarioSalida,
+              }
             : eq
         )
       );
@@ -120,7 +131,7 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
       console.error("Error al cambiar estado:", error);
     } finally {
       setShowConfirmModal(false);
-      setComentarioSalida(""); 
+      setComentarioSalida("");
     }
   };
 
@@ -178,8 +189,10 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
-                value={equipoActual.comentarioSalida || "Sin comentario de salida"}
-                onChange={(e) => setComentarioSalida(e.target.value)} 
+                value={
+                  equipoActual.comentarioSalida || "Sin comentario de salida"
+                }
+                onChange={(e) => setComentarioSalida(e.target.value)}
                 placeholder="Comentario de salida"
               />
               <InputCalendario

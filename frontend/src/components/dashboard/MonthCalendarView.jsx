@@ -1,4 +1,6 @@
 import React from "react";
+import { dateUtils } from "../../utils/dateUtils";
+import dayjs from "dayjs";
 
 const MonthCalendarView = ({ year, month }) => {
   const monthNames = [
@@ -26,13 +28,9 @@ const MonthCalendarView = ({ year, month }) => {
     "Sábado",
   ];
 
-  const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year, month) => {
-    return new Date(year, month, 1).getDay();
-  };
+  const getDaysInMonth = (year, month) => dateUtils.getDaysInMonth(year, month);
+  const getFirstDayOfMonth = (year, month) =>
+    dateUtils.getFirstDayOfMonth(year, month);
 
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(year, month);
@@ -48,7 +46,11 @@ const MonthCalendarView = ({ year, month }) => {
       days.push({
         day: daysInPrevMonth - i,
         isCurrentMonth: false,
-        date: new Date(prevYear, prevMonth, daysInPrevMonth - i),
+        date: dayjs()
+          .year(prevYear)
+          .month(prevMonth)
+          .date(daysInPrevMonth - i)
+          .toDate(),
       });
     }
 
@@ -57,12 +59,12 @@ const MonthCalendarView = ({ year, month }) => {
       days.push({
         day,
         isCurrentMonth: true,
-        date: new Date(year, month, day),
+        date: dayjs().year(year).month(month).date(day).toDate(),
       });
     }
 
     // Días del mes siguiente
-    const totalCells = 42; 
+    const totalCells = 42;
     const remainingCells = totalCells - days.length;
     const nextMonth = month === 11 ? 0 : month + 1;
     const nextYear = month === 11 ? year + 1 : year;
@@ -71,7 +73,7 @@ const MonthCalendarView = ({ year, month }) => {
       days.push({
         day,
         isCurrentMonth: false,
-        date: new Date(nextYear, nextMonth, day),
+        date: dayjs().year(nextYear).month(nextMonth).date(day).toDate(),
       });
     }
 
@@ -79,7 +81,7 @@ const MonthCalendarView = ({ year, month }) => {
   };
 
   const days = generateCalendarDays();
-  const today = new Date();
+  const today = dayjs().toDate();
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-600">
@@ -98,7 +100,7 @@ const MonthCalendarView = ({ year, month }) => {
       {/* Días del mes */}
       <div className="grid grid-cols-7">
         {days.map((dayObj, index) => {
-          const isToday = dayObj.date.toDateString() === today.toDateString();
+          const isToday = dayjs(dayObj.date).isSame(dayjs(), "day");
 
           return (
             <div

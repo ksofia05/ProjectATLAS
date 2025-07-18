@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 
 const DayCalendarView = ({ year, month, day }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -17,9 +18,7 @@ const DayCalendarView = ({ year, month, day }) => {
     return `${hour - 12} PM`;
   };
 
-  const dayName = new Date(year, month, day).toLocaleDateString("es-ES", {
-    weekday: "long",
-  });
+  const dayName = dayjs().year(year).month(month).date(day).format("dddd");
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col h-[calc(100vh-240px)]">

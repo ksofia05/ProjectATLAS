@@ -1,30 +1,52 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { dateUtils } from "../../utils/dateUtils";
+import dayjs from "dayjs";
 
 const diasSemana = ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
-const diasPendientes = [30, 5, 14, 9, 19];
+
+const monthNames = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
 
 const CalendarCard = ({
-  mes = "Agosto",
-  year = 2025,
-  diasConPendientes = diasPendientes,
+  mes = null,
+  year = null,
+  diasConPendientes = [], 
 }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const today = dayjs();
+  const currentMonth = mes ? monthNames.indexOf(mes) : today.month();
+  const currentYear = year || today.year();
+  const monthName = monthNames[currentMonth];
 
   const handleCalendarClick = () => {
     navigate(`/dashboard/${id}/calendario-avanzado`);
   };
 
-  const diasMes = 31;
-  const primerDiaSemana = 5;
+  const daysInMonth = dateUtils.getDaysInMonth(currentYear, currentMonth);
+  const firstDay = dateUtils.getFirstDayOfMonth(currentYear, currentMonth);
+
   const semanas = [];
-  let dia = 1 - primerDiaSemana;
+  let dia = 1 - firstDay;
 
   for (let w = 0; w < 6; w++) {
     const semana = [];
     for (let d = 0; d < 7; d++, dia++) {
-      if (dia < 1 || dia > diasMes) {
+      if (dia < 1 || dia > daysInMonth) {
         semana.push(null);
       } else {
         semana.push(dia);
@@ -32,6 +54,10 @@ const CalendarCard = ({
     }
     semanas.push(semana);
   }
+
+  const isCurrentMonth =
+    today.month() === currentMonth && today.year() === currentYear;
+  const todayDay = isCurrentMonth ? today.date() : null;
 
   return (
     <div
@@ -43,7 +69,7 @@ const CalendarCard = ({
           <h3 className="text-2xl font-bold">Calendario</h3>
           <i className="bi bi-calendar-event text-2xl text-gray-300" />
         </div>
-        <div className="text-3xl font-bold">{mes}</div>
+        <div className="text-3xl font-bold">{monthName}</div>
       </div>
       <div className="text-gray-400 text-base font-semibold mb-2 ml-1">
         (Trabajos Pendientes)
@@ -62,6 +88,12 @@ const CalendarCard = ({
               <div
                 key={idx}
                 className={`text-center text-base relative ${
+                  
+                  d === todayDay
+                    ? "bg-purple-600 rounded-full font-bold text-white"
+                    : ""
+                } ${
+                  
                   diasConPendientes.includes(d)
                     ? "after:content-[''] after:block after:h-1 after:bg-violet-400 after:rounded-full after:mt-1"
                     : ""

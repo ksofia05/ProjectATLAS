@@ -1,4 +1,5 @@
 import React from "react";
+import { dateUtils } from "../../utils/dateUtils";
 
 const YearCalendarView = ({ year, onMonthSelect }) => {
   const monthNames = [
@@ -18,13 +19,9 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
 
   const dayNames = ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
 
-  const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year, month) => {
-    return new Date(year, month, 1).getDay();
-  };
+  const getDaysInMonth = (year, month) => dateUtils.getDaysInMonth(year, month);
+  const getFirstDayOfMonth = (year, month) =>
+    dateUtils.getFirstDayOfMonth(year, month);
 
   const generateCalendarDays = (year, month) => {
     const daysInMonth = getDaysInMonth(year, month);
@@ -45,7 +42,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
     }
 
     // Días del mes actual
-    const today = new Date();
+    const today = dateUtils.today();
     const isCurrentMonth =
       today.getFullYear() === year && today.getMonth() === month;
 
