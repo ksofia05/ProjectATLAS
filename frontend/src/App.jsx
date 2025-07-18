@@ -29,6 +29,7 @@ import Error404 from "./pages/error404";
 import { Toaster } from "react-hot-toast";
 import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
+import CalendarAdvancedPage from "./pages/Dashboard/CalendarAdvancedPage";
 
 const App = () => {
   useEffect(() => {
@@ -79,6 +80,10 @@ const App = () => {
         >
           <Route index element={<DashboardMain />} />
           <Route path="calendario" element={<CalendarPage />} />
+          <Route
+            path="calendario-avanzado"
+            element={<CalendarAdvancedPage />}
+          />
           <Route path="colaboradores" element={<CollaboratorsPage />} />
           <Route path="inventario" element={<InventoryPage />} />
         </Route>

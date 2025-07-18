@@ -1,4 +1,4 @@
-import React, { use } from "react";
+import React, { useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
@@ -7,7 +7,13 @@ import useUserStore from "../stores/useUserStore";
 
 const DashboardCreateProject = () => {
   const user = useUserStore((state) => state.user);
-
+  useEffect(() => {
+    const hasRefreshed = localStorage.getItem("hasRefreshed");
+    if (user && !hasRefreshed) {
+      localStorage.setItem("hasRefreshed", "true");
+      window.location.reload();
+    }
+  }, [user]);
   let projectsBlock = null;
 
   if (!user) {

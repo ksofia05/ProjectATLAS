@@ -22,7 +22,7 @@ const DashboardLayout = () => {
   const baseMenuItems = [
     {
       label: "Dashboard",
-      icon: "bi bi-house-door-fill",
+      icon: "bi bi-house-fill",
       to: `/dashboard/${id}`,
     },
     {
