@@ -61,7 +61,7 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
         }}
       >
         <div
-          className="border border-gray-700 relative bg-gradient-to-tr from-[#18162b] via-[#232041] to-[#2c2952] rounded-2xl shadow-2xl p-8 max-w-md w-full"
+          className="border border-gray-700 relative bg-gradient-to-tr from-[#17161d] via-[#1f1e29] to-[#323342] rounded-2xl shadow-2xl p-8 max-w-md w-full"
           style={{ minHeight: "220px" }}
         >
           {showClose && onClose && (
