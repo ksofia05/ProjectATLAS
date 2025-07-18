@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react"; // Importamos useEffect
 import FloatingModal from "../common/popUp/FloatingModal";
-import ButtonGrey from "../common/ButtonGrey";
+import ButtonBG from "../common/ButtonBG"; // Asegúrate que este es el componente del botón
 import Input from "../common/Input";
 
 export default function NewTaskModal({ onClose, onSave }) {
@@ -16,6 +16,22 @@ export default function NewTaskModal({ onClose, onSave }) {
     const endDateInputRef = useRef(null);
     const taskTimeInputRef = useRef(null);
 
+    // Estado para controlar si todos los campos están llenos
+    const [isFormValid, setIsFormValid] = useState(false);
+
+    // useEffect para validar el formulario cada vez que 'form' cambia
+    useEffect(() => {
+        const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
+        // console.log("Form values:", form); // Para depuración
+        const allFieldsFilled =
+            taskTitle.trim() !== "" &&
+            taskDescription.trim() !== "" &&
+            startDate.trim() !== "" &&
+            endDate.trim() !== "" &&
+            taskTime.trim() !== "";
+        setIsFormValid(allFieldsFilled);
+    }, [form]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prevForm) => ({
@@ -26,8 +42,13 @@ export default function NewTaskModal({ onClose, onSave }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Guardando tarea:", form);
-        onSave(form);
+        if (isFormValid) {
+            console.log("Guardando tarea:", form);
+            onSave(form); // Llama a la función onSave y cierra el modal
+        } else {
+            console.log("Formulario incompleto. No se puede guardar.");
+            // Opcional: podrías añadir un estado para mostrar/ocultar el mensaje aquí si no es solo condicional
+        }
     };
 
     return (
@@ -36,6 +57,9 @@ export default function NewTaskModal({ onClose, onSave }) {
             onClose={onClose}
             className="w-[500px] max-w-full"
         >
+            {/* Estilos CSS para ocultar los iconos nativos del input de fecha/hora
+                y para ajustar el tamaño de fuente y alineación de los inputs.
+            */}
             <style jsx>{`
                 input[type="date"]::-webkit-calendar-picker-indicator,
                 input[type="time"]::-webkit-calendar-picker-indicator {
@@ -119,7 +143,7 @@ export default function NewTaskModal({ onClose, onSave }) {
 
                 <div className="flex flex-col gap-2">
                     <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
-                    <div className="grid grid-cols-3 gap-4 items-center"> 
+                    <div className="grid grid-cols-3 gap-4 items-center">
                         {/* Input "Desde" */}
                         <div className="relative">
                             <span className="block text-gray-400 mb-1">Desde</span>
@@ -179,24 +203,36 @@ export default function NewTaskModal({ onClose, onSave }) {
                                 ></i>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
+                {/* Mensaje de advertencia */}
+                {!isFormValid && (
+                    <p className="text-red-500 text-xs mt-6">
+                        Primero debes de llenar todos los campos antes de guardar
+                    </p>
+                )}
+
                 <div className="flex justify-end mt-8 gap-6">
-                    <ButtonGrey
-                        className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-full h-12"
+                    <ButtonBG
+                        className="bg-[#343149] hover:bg-[#3c3a4b] text-white font-semibold px-6 py-2 rounded-xl shadow transition w-full h-12"
                         type="button"
                         onClick={onClose}
                     >
                         Cancelar
-                    </ButtonGrey>
-                    <ButtonGrey
+                    </ButtonBG>
+                    <ButtonBG
                         type="submit"
-                        className="bg-purple-800 hover:bg-purple-900 text-white font-semibold px-6 py-2 rounded-xl shadow transition w-full h-12"
+                        // Aplicar clase de opacidad si no es válido
+                        className={`font-semibold px-6 py-2 rounded-xl shadow transition w-full h-12 ${
+                            isFormValid
+                                ? "bg-[#7c2ae8] hover:bg-[#5a1bb7] text-white" // Estilos activo
+                                : "bg-[#7c2ae8] text-white opacity-50 cursor-not-allowed" // Estilos deshabilitado
+                        }`}
+                        disabled={!isFormValid} // Deshabilitar el botón
                     >
                         Guardar
-                    </ButtonGrey>
+                    </ButtonBG>
                 </div>
             </form>
         </FloatingModal>
