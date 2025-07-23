@@ -1,15 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { Outlet, useParams } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore";
+import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
+import useProjectStore from "../../stores/useProjectsStore";
 import { useProjectAccess } from "../../hooks/useProjectAccess";
 import Loader from "../../components/common/Loader";
 
 const DashboardLayout = () => {
   const user = useUserStore((state) => state.user);
   const { isValidating, hasAccess } = useProjectAccess();
-  console.log("USER EN DASHBOARD:", user);
+  const { id: projectId } = useParams(); // Renombrar para claridad
+
+  // Pre-cargar (zustand) datos del proyecto y colaboradores
+  const { fetchProjectInfo } = useProjectStore();
+  const { fetchCollaborators } = useCollaboratorsStore();
+
+  // Pre-cargar datos cuando ingresa al dashboard
+  useEffect(() => {
+    if (projectId && user && !isValidating && hasAccess) {
+      console.log("Pre-cargando datos del proyecto:", projectId);
+
+      // Cargar en paralelo
+      Promise.all([
+        fetchProjectInfo(projectId),
+        fetchCollaborators(projectId)
+      ]).then(() => {
+        console.log("Datos pre-cargados exitosamente");
+      }).catch(error => {
+        console.error("Error pre-cargando datos:", error);
+      });
+    }
+  }, [projectId, user, isValidating, hasAccess, fetchProjectInfo, fetchCollaborators]);
 
   // Debido a complicaciones, tuve que obtener el nombre del usuario de diferentes maneras xd
   const firstName =
@@ -17,29 +40,28 @@ const DashboardLayout = () => {
     user?.nombre?.split(" ")[0] ||
     "";
 
-  const { id } = useParams();
-
   const baseMenuItems = [
     {
       label: "Dashboard",
       icon: "bi bi-house-fill",
-      to: `/dashboard/${id}`,
+      to: `/dashboard/${projectId}`,
     },
     {
       label: "Calendario",
       icon: "bi bi-calendar-event",
-      to: `/dashboard/${id}/calendario`,
+      to: `/dashboard/${projectId}/calendario`,
     },
     {
       label: "Cliente / Inventario",
       icon: "bi bi-archive-fill",
-      to: `/dashboard/${id}/inventario`,
+      to: `/dashboard/${projectId}/inventario`,
     },
   ];
+
   const adminOnlyItem = {
     label: "Colaboradores",
     icon: "bi bi-people-fill",
-    to: `/dashboard/${id}/colaboradores`,
+    to: `/dashboard/${projectId}/colaboradores`,
   };
 
   const getMenuItems = () => {
