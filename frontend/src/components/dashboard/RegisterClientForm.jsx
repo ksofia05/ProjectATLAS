@@ -186,14 +186,36 @@ const handleSuggestionClick = async (cliente) => {
         .single();
 
       if (existingEquipo) {
-        equipoData = existingEquipo;
+        // Si la imagen es diferente, actualizarla (guardar la URL pública completa)
+        if (form.imagen && existingEquipo.fotoEquipo !== form.imagen) {
+          let nuevaFotoEquipo = form.imagen;
+          if (!form.imagen.startsWith("http")) {
+            nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+          }
+          const { error: updateError, data: updatedEquipo } = await supabase
+            .from("Equipo")
+            .update({ fotoEquipo: nuevaFotoEquipo })
+            .eq("numeroSerie", form.serie)
+            .select()
+            .single();
+          equipoData = updatedEquipo || existingEquipo;
+          equipoError = updateError;
+        } else {
+          equipoData = existingEquipo;
+        }
       } else {
+        // Guardar la URL pública completa si es posible
+        let nuevaFotoEquipo = form.imagen;
+        if (form.imagen && !form.imagen.startsWith("http")) {
+          nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+        }
         const insertEquipo = await supabase
           .from("Equipo")
           .insert([
             {
               numeroSerie: form.serie,
               marca: "",
+              fotoEquipo: nuevaFotoEquipo,
             },
           ])
           .select()
