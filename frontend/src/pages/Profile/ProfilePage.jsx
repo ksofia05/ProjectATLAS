@@ -1,157 +1,77 @@
 import React from "react";
 import SidebarProfile from "../../components/layout/SidebarProfile";
-import BackButton from "../../components/common/BackButton";
-import Button from "../../components/common/Button";
-import PasswordInput from "../../components/common/PasswordInput";
-import Input from "../../components/common/Input";
 import { useAuth } from "../../hooks/useAuth";
+import { useProfileLogic } from "../../hooks/useProfileLogic";
 import UpdateProfilePhotoModal from "../../components/layout/UpdateProfilePhotoModal";
-import { showErrorToast, showSuccessToast } from "../../components/common/popUp/Loading";
-import { client } from "../../supabase/client";
 import CancelProfileConfigModal from "./CancelProfileConfigModal";
-import { useNavigate } from "react-router-dom";
 
-// Función para validar la contraseña según los requisitos del registro
-function isPasswordValid(password) {
-  const lengthValid = password.length >= 8;
-  const upperCase = /[A-Z]/.test(password);
-  const lowerCase = /[a-z]/.test(password);
-  const number = /[0-9]/.test(password);
-  const special = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-  return lengthValid && upperCase && lowerCase && number && special;
-}
+// Componentes mejor optimizados xd
+import ProfileBackgroundEffects from "../../components/profile/ProfileBackgroundEffects";
+import ProfileHeader from "../../components/profile/ProfileHeader";
+import PersonalInfoCard from "../../components/profile/PersonalInfoCard";
+import SecurityCard from "../../components/profile/SecurityCard";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
-
-  const nombres = user?.user_metadata?.nombre || "";
-  const apellidos = user?.user_metadata?.apellido || "";
-  const correo = user?.email || user?.user_metadata?.email || "";
-
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [showPhotoModal, setShowPhotoModal] = React.useState(false);
-  const [showCancelModal, setShowCancelModal] = React.useState(false);
-  const navigate = useNavigate();
-  const [isSaved, setIsSaved] = React.useState(false);
-
-  // Validaciones
-  const passwordValid = isPasswordValid(password);
-  const passwordsMatch = password === confirmPassword && password.length > 0;
-  const canSave = passwordValid && passwordsMatch;
-
-  const handlePasswordUpdate = async (e) => {
-    e.preventDefault();
-    if (!canSave) {
-      showErrorToast(
-        !passwordValid
-          ? "La contraseña no cumple con los requisitos"
-          : "Las contraseñas no coinciden"
-      );
-      return;
-    }
-    const { error } = await client.auth.updateUser({ password });
-    if (error) {
-      showErrorToast("Error al actualizar la contraseña: " + error.message);
-    } else {
-      showSuccessToast("Contraseña actualizada correctamente");
-      setPassword("");
-      setConfirmPassword("");
-      setIsSaved(true);
-    }
-  };
-
-  // Si el usuario da click cuando el botón está deshabilitado
-  const handleDisabledClick = (e) => {
-    e.preventDefault();
-    showErrorToast(
-      !passwordValid
-        ? "La contraseña no cumple con los requisitos"
-        : "Las contraseñas no coinciden"
-    );
-  };
+  const {
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    showPhotoModal,
+    setShowPhotoModal,
+    showCancelModal,
+    setShowCancelModal,
+    canSave,
+    handlePasswordUpdate,
+    handleDisabledClick,
+    handleBackClick,
+    navigate,
+  } = useProfileLogic();
 
   if (isLoading) {
     return <div className="text-white text-center mt-10">Cargando...</div>;
   }
 
+  const nombres = user?.user_metadata?.nombre || "";
+  const apellidos = user?.user_metadata?.apellido || "";
+  const correo = user?.email || user?.user_metadata?.email || "";
+
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-gray-950 to-zinc-950 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-zinc-950 to-slate-900 relative">
+      <ProfileBackgroundEffects />
+
       <SidebarProfile onPhotoClick={() => setShowPhotoModal(true)} />
-      <div className="flex-1 flex flex-col relative">
+
+      <div className="ml-80 flex flex-col min-h-screen relative z-10">
         <main className="flex-1 flex flex-col py-6 px-6">
-          {/* Encabezado: botón y título */}
-          <div className="w-full max-w-5xl flex items-center justify-left gap-4 mb-5 px-4">
-            <BackButton
-              className="w-12 h-12 flex items-center justify-center bg-[#232336] hover:bg-[#2d2d44] text-white rounded-full shadow-lg transition-colors duration-200"
-              iconClassName="text-2xl"
-              onClick={() => {
-                if ((password !== "" || confirmPassword !== "") && !isSaved) {
-                  setShowCancelModal(true);
-                } else {
-                  navigate(-1);
-                }
-              }}
-            />
-            <h2 className="text-2xl font-bold text-white">Editar perfil</h2>
-          </div>
-          <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12 ">
+          <ProfileHeader onBackClick={handleBackClick} />
+
+          <div className="w-full max-w-8xl flex flex-col md:flex-row gap-12">
             <section className="flex-1">
               <hr className="border-gray-700 mb-12" />
-              <div className="max-w-5xl w-full mx-auto mt-12 bg-gradient-to-tr from-[#181825] via-[#181825] to-[#232335] border border-gray-700 rounded-3xl p-10 shadow-2xl">
+              <div className="max-w-5xl w-full mx-auto space-y-6">
+                <PersonalInfoCard
+                  nombres={nombres}
+                  apellidos={apellidos}
+                  correo={correo}
+                />
 
-              <form>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div>
-                    <label className="block text-gray-300 mb-2">Nombres:</label>
-                    <Input value={nombres} readOnly />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Contraseña:</label>
-                    <PasswordInput
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="********"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Apellidos:</label>
-                    <Input value={apellidos} readOnly />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Confirmar Contraseña:</label>
-                    <PasswordInput
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      placeholder="********"
-                    />
-                  </div>
-                  {/* Fila combinada para correo y botón */}
-                  <div className="md:col-span-2">
-                    <div className="flex flex-col md:flex-row items-center gap-4">
-                      <div className="flex-1 w-full">
-                        <label className="block text-gray-300 mb-2">Correo Electrónico:</label>
-                        <Input value={correo} readOnly />
-                      </div>
-                      <div className="w-full md:w-auto flex-shrink-0 flex items-center h-full">
-                        <Button
-                          type="submit"
-                          disabled={!canSave}
-                          className={canSave ? "" : "opacity-50 cursor-not-allowed"}
-                          onClick={canSave ? handlePasswordUpdate : handleDisabledClick}
-                        >
-                          Guardar Cambios
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
+                <SecurityCard
+                  password={password}
+                  setPassword={setPassword}
+                  confirmPassword={confirmPassword}
+                  setConfirmPassword={setConfirmPassword}
+                  canSave={canSave}
+                  onPasswordUpdate={handlePasswordUpdate}
+                  onDisabledClick={handleDisabledClick}
+                />
               </div>
             </section>
           </div>
         </main>
       </div>
+
       {showPhotoModal && (
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
@@ -159,6 +79,7 @@ export default function ProfilePage() {
           user={user}
         />
       )}
+
       {showCancelModal && (
         <CancelProfileConfigModal
           onClose={() => setShowCancelModal(false)}

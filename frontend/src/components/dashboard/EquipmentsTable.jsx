@@ -133,6 +133,7 @@ useEffect(() => {
         <EquipmentClientModal
           equipo={equipoSeleccionado}
           onClose={() => setEquipoSeleccionado(null)}
+          cliente={cliente}
         />
       )}
     </div>

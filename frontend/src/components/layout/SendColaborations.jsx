@@ -1,50 +1,45 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import ReactDOM from "react-dom";
 import { showErrorToast, showLoadingToast, showSuccessToast } from '../common/popUp/Loading';
 import toast from 'react-hot-toast';
 import FloatingModal from '../common/popUp/FloatingModal';
+import useProjectStore from '../../stores/useProjectsStore';
+import useCollaboratorsStore from '../../stores/useCollaboratorsStore';
 
 const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [email, setEmail] = useState('');
   const [showModal, setShowModal] = useState(open);
-  const [projectName, setProjectName] = useState('');
-  const [collaborators, setCollaborators] = useState([]);
   const [isSending, setIsSending] = useState(false);
 
-  const fetchProjectInfo = async () => {
-    if (!projectId) return;
-    
-    const endpoints = [
-      `http://localhost:8000/tasks/api/v1/info_proyecto_colaboradores/?id_proyecto=${projectId}`,
-      `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
-    ];
+  const { projectName, fetchProjectInfo } = useProjectStore();
+  const { collaborators, fetchCollaborators, forceRefresh } = useCollaboratorsStore();
 
-    for (const [index, endpoint] of endpoints.entries()) {
-      try {
-        const res = await fetch(endpoint);
-        if (!res.ok) continue;
-        
-        const data = await res.json();
-        console.log(`Endpoint ${index + 1}:`, data);
-        
-        setProjectName(data.nombreproyecto || data.nombre_proyecto || projectName);
-        
-        if (data.colaboradores?.length > 0) {
-          setCollaborators(data.colaboradores);
-          return;
-        }
-      } catch (error) {
-        console.error(`Error en endpoint ${index + 1}:`, error);
-      }
-    }
-    
-    setCollaborators([]);
-  };
+  // Filtrar solo colaboradores activos
+  const colaboradoresActivos = useMemo(() => {
+    return collaborators.filter(colab => colab.estado === "Activo");
+  }, [collaborators]);
 
   useEffect(() => {
     setShowModal(open);
-    if (open) fetchProjectInfo();
-  }, [open, projectId]);
+    if (open && projectId) {
+      // Solo cargar si no están en cache
+      fetchProjectInfo(projectId);
+      fetchCollaborators(projectId);
+    }
+  }, [open, projectId, fetchProjectInfo, fetchCollaborators]);
+
+  // Listener para cambios en tiempo real
+  useEffect(() => {
+    const handleStateChange = () => {
+      if (open && projectId) {
+        console.log("Actualizando colaboradores por cambio de estado");
+        forceRefresh(projectId);
+      }
+    };
+
+    window.addEventListener('collaboratorStateChanged', handleStateChange);
+    return () => window.removeEventListener('collaboratorStateChanged', handleStateChange);
+  }, [open, projectId, forceRefresh]);
 
   const handleClose = () => {
     setShowModal(false);
@@ -74,7 +69,8 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       if (data.success) {
         showSuccessToast("¡Invitación enviada!");
         setEmail('');
-        fetchProjectInfo();
+        // Fuerza la recarga para los nuevos colab
+        forceRefresh(projectId);
       } else {
         showErrorToast(data.message || "Error al enviar invitación");
       }
@@ -93,7 +89,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       <div className='p-1'>
         <h2 className='text-xl font-bold mb-4 text-white'>Compartir Proyecto</h2>
         <p className='text-gray-400 mb-6'>
-          Proyecto: <span className='font-semibold text-white'>{projectName}</span>
+          Proyecto: <span className='font-semibold text-white'>{projectName || 'Cargando...'}</span>
         </p>
         
         <form onSubmit={handleSubmit} className='flex gap-2 mb-6'>
@@ -121,10 +117,12 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
         <hr className='my-2 border-gray-700' />
         
         <div className='flex flex-col gap-3 max-h-48 overflow-y-auto'>
-          {collaborators.length === 0 ? (
-            <div className='text-gray-400 text-center py-4'>Sin colaboradores aún</div>
+          {colaboradoresActivos.length === 0 ? (
+            <div className='text-gray-400 text-center py-4'>
+              Sin colaboradores aún
+            </div>
           ) : (
-            collaborators.map((colab, idx) => (
+            colaboradoresActivos.map((colab, idx) => (
               <div className='flex items-center gap-3' key={colab.correo || idx}>
                 <div className='flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white'>
                   {colab.nombre?.charAt(0)}{colab.apellido?.charAt(0)}

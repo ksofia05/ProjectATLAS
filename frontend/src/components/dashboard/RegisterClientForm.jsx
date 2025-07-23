@@ -8,11 +8,7 @@ import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
 import { client as supabase } from "../../supabase/client";
 import { validateClientForm } from "../../utils/validateClientForm";
 import { useClientAutocomplete } from "../../hooks/useClientAutocomplete";
-
-function getToday() {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
-}
+import { dateUtils } from "../../utils/dateUtils";
 
 export default function RegisterClientForm({
   onClose,
@@ -25,7 +21,7 @@ export default function RegisterClientForm({
     apellido: "",
     email: "",
     telefono: "",
-    entrada: getToday(),
+    entrada: dateUtils.getToday(), // ✅ Usar dateUtils
     serie: "",
     comentario: "",
     imagen: null,
@@ -73,48 +69,48 @@ export default function RegisterClientForm({
   }
 
   // Al seleccionar sugerencia
-const handleSuggestionClick = async (cliente) => {
-  setForm((prev) => ({
-    ...prev,
-    identificacion: cliente.dni,
-    nombre: cliente.nombre || "",
-    apellido: cliente.apellido || "",
-    email: cliente.correo || "",
-    telefono: cliente.telefono || "",
-    // serie: "", // No autocompletes aquí
-  }));
-  setShowSuggestions(false);
+  const handleSuggestionClick = async (cliente) => {
+    setForm((prev) => ({
+      ...prev,
+      identificacion: cliente.dni,
+      nombre: cliente.nombre || "",
+      apellido: cliente.apellido || "",
+      email: cliente.correo || "",
+      telefono: cliente.telefono || "",
+      // serie: "", // No autocompletes aquí
+    }));
+    setShowSuggestions(false);
 
-  setLoadingSerie(true);
+    setLoadingSerie(true);
 
-  // Buscar todos los agendamientos del cliente
-  const { data: agendamientos } = await supabase
-    .from("Agendamiento")
-    .select("idAgendamiento")
-    .eq("Cliente_dni", cliente.dni);
+    // Buscar todos los agendamientos del cliente
+    const { data: agendamientos } = await supabase
+      .from("Agendamiento")
+      .select("idAgendamiento")
+      .eq("Cliente_dni", cliente.dni);
 
-  if (!agendamientos || agendamientos.length === 0) {
-    setSeriesSugeridas([]);
+    if (!agendamientos || agendamientos.length === 0) {
+      setSeriesSugeridas([]);
+      setLoadingSerie(false);
+      return;
+    }
+
+    const idsAgendamiento = agendamientos.map((a) => a.idAgendamiento);
+
+    // Buscar todos los EquipoAgendamiento relacionados
+    const { data: equipoAgs } = await supabase
+      .from("EquipoAgendamiento")
+      .select("equipo_numeroSerie")
+      .in("agendamiento_idAgendamiento", idsAgendamiento);
+
+    // Extraer y filtrar los números de serie únicos
+    const series = equipoAgs
+      ? [...new Set(equipoAgs.map((ea) => ea.equipo_numeroSerie))]
+      : [];
+
+    setSeriesSugeridas(series);
     setLoadingSerie(false);
-    return;
-  }
-
-  const idsAgendamiento = agendamientos.map(a => a.idAgendamiento);
-
-  // Buscar todos los EquipoAgendamiento relacionados
-  const { data: equipoAgs } = await supabase
-    .from("EquipoAgendamiento")
-    .select("equipo_numeroSerie")
-    .in("agendamiento_idAgendamiento", idsAgendamiento);
-
-  // Extraer y filtrar los números de serie únicos
-  const series = equipoAgs
-    ? [...new Set(equipoAgs.map(ea => ea.equipo_numeroSerie))]
-    : [];
-
-  setSeriesSugeridas(series);
-  setLoadingSerie(false);
-};
+  };
 
   // Imagen
   const handleImageSave = (publicUrl) => {

@@ -1,92 +1,149 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Input from "../common/Input";
 import WideFloatingModal from "../common/popUp/WideFloatingModal";
 import Switch from "../common/Switch";
 import ImagenGenerica from "../../assets/pcDañada.jpg";
 import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
 import InputCalendario from "../common/InputCalendario";
+import { client as supabase } from "../../supabase/client";
+import { dateUtils } from "../../utils/dateUtils";
 
-const EquipmentClientModal = ({ equipo, onClose }) => {
-  // Detecta si la marca tiene un número entre paréntesis (ej: "Dell (2)")
-  const match = equipo.marca.match(/\((\d+)\)/);
-  const cantidadRegistros = match ? parseInt(match[1], 10) : 1;
-
-  // Estados para navegación y datos
+const EquipmentClientModal = ({ cliente, onClose }) => {
+  const [equipos, setEquipos] = useState([]);
   const [registroActual, setRegistroActual] = useState(0);
-  const [fechaSalida, setFechaSalida] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [comentarioSalida, setComentarioSalida] = useState(""); // Nuevo estado para el comentario de salida
   const salidaRef = useRef(null);
 
-  // Estados individuales para cada registro
-  const [estadosEquipos, setEstadosEquipos] = useState(
-    Array.from({ length: cantidadRegistros }, () =>
-      equipo.estado === "Inactivo" ? "Inactivo" : "Activo"
-    )
-  );
-  const [bloquearSwitches, setBloquearSwitches] = useState(
-    Array.from({ length: cantidadRegistros }, () => equipo.estado === "Inactivo")
-  );
+  useEffect(() => {
+    if (!cliente) return;
 
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const fetchEquipos = async () => {
+      setLoading(true);
 
+      try {
+        const { data: agendamientos, error: errorAg } = await supabase
+          .from("Agendamiento")
+          .select("idAgendamiento")
+          .eq("Cliente_dni", cliente.dni);
 
-  //Los datos pueden ser dinamicos y de la BD en el futuro
-  const [comentariosEntrada] = useState(
-    Array.from({ length: cantidadRegistros }, (_, idx) =>
-      equipo.comentarioEntrada
-        ? `${equipo.comentarioEntrada} (${idx + 1})`
-        : `Comentario entrada ${idx + 1}`
-    )
-  );
+        if (errorAg || !agendamientos.length) {
+          setEquipos([]);
+          setLoading(false);
+          return;
+        }
 
-  const [comentariosSalida] = useState(
-    Array.from({ length: cantidadRegistros }, (_, idx) =>
-      `Comentario salida ${idx + 1}`
-    )
-  );
+        const idsAgendamiento = agendamientos.map((a) => a.idAgendamiento);
 
-  // Solo este campo es editable
-  const [fechasSalida, setFechasSalida] = useState(
-    Array.from({ length: cantidadRegistros }, () => "")
-  );
+        const { data: equipoAgs, error: errorEqAg } = await supabase
+          .from("EquipoAgendamiento")
+          .select(
+            "agendamiento_equipo, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado"
+          )
+          .in("agendamiento_idAgendamiento", idsAgendamiento);
 
-  // Genera los registros individuales
-  const registros = Array.from({ length: cantidadRegistros }, (_, idx) => ({
-    ...equipo,
-    marca: equipo.marca.replace(/\s*\(\d+\)/, ""), // Quita el número de la marca
-    registro: idx + 1,
-  }));
+        if (errorEqAg || !equipoAgs.length) {
+          setEquipos([]);
+          setLoading(false);
+          return;
+        }
 
-  function getToday() {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  }
+        const numerosSerie = equipoAgs.map((ea) => ea.equipo_numeroSerie);
 
-  // Maneja el cambio del switch
+        const { data: equiposData, error: errorEq } = await supabase
+          .from("Equipo")
+          .select("*")
+          .in("numeroSerie", numerosSerie);
+
+        if (errorEq) {
+          setEquipos([]);
+          setLoading(false);
+          return;
+        }
+
+        const equiposCompletos = equipoAgs.map((ea) => {
+          const equipo =
+            equiposData.find(
+              (eq) => eq.numeroSerie === ea.equipo_numeroSerie
+            ) || {};
+          return {
+            ...equipo,
+            ingreso: ea.fechaIngreso,
+            comentarioEntrada: ea.comentarioEntrada,
+            comentarioSalida: ea.comentarioSalida,
+            salida: ea.fechaSalida,
+            estado: ea.Estado,
+            agendamiento_equipo: ea.agendamiento_equipo,
+          };
+        });
+
+        setEquipos(equiposCompletos);
+      } catch (error) {
+        console.error("Error al obtener equipos:", error);
+        setEquipos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEquipos();
+  }, [cliente]);
+
+  const handleConfirmInactivar = async () => {
+    const equipoActual = equipos[registroActual];
+    const nuevoEstado =
+      equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
+    const fechaSalida =
+      nuevoEstado === "Inactivo" ? dateUtils.getToday() : null; // ✅ Usar dateUtils
+
+    try {
+      const { error } = await supabase
+        .from("EquipoAgendamiento")
+        .update({
+          Estado: nuevoEstado,
+          fechaSalida: fechaSalida,
+          comentarioSalida: comentarioSalida,
+        })
+        .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
+
+      if (error) {
+        console.error("Error al actualizar estado:", error);
+        alert(
+          "No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase."
+        );
+        return;
+      }
+
+      setEquipos((prevEquipos) =>
+        prevEquipos.map((eq, idx) =>
+          idx === registroActual
+            ? {
+                ...eq,
+                estado: nuevoEstado,
+                salida: fechaSalida,
+                comentarioSalida,
+              }
+            : eq
+        )
+      );
+    } catch (error) {
+      console.error("Error al cambiar estado:", error);
+    } finally {
+      setShowConfirmModal(false);
+      setComentarioSalida("");
+    }
+  };
+
   const handleSwitchChange = () => {
-    if (estadosEquipos[registroActual] === "Activo") {
+    if (equipoActual.estado === "Activo") {
       setShowConfirmModal(true);
     }
   };
 
-  // Confirmar inactivación
-  const handleConfirmInactivar = () => {
-    setEstadosEquipos((prev) =>
-      prev.map((estado, idx) =>
-        idx === registroActual ? "Inactivo" : estado
-      )
-    );
-    setBloquearSwitches((prev) =>
-      prev.map((bloqueado, idx) =>
-        idx === registroActual ? true : bloqueado
-      )
-    );
-    setShowConfirmModal(false);
-  };
+  if (loading) return;
 
-  // Cancelar inactivación
-  const handleCancelInactivar = () => {
-    setShowConfirmModal(false);
-  };
+  const equipoActual = equipos[registroActual];
 
   return (
     <>
@@ -96,19 +153,18 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
         </h1>
         <form className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* Inputs columna izquierda */}
             <div className="flex flex-col gap-8">
               <Input
                 label="Marca"
                 name="marca"
-                value={registros[registroActual].marca}
+                value={equipoActual.marca || "Sin marca"}
                 readOnly
                 placeholder="Marca del equipo"
               />
               <Input
                 label="Comentario Entrada"
                 name="comentarioEntrada"
-                value={comentariosEntrada[registroActual]}
+                value={equipoActual.comentarioEntrada || "Sin comentario"}
                 readOnly
                 placeholder="Comentario de entrada"
               />
@@ -116,45 +172,44 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
                 label="Ingreso"
                 name="ingreso"
                 type="date"
-                value={registros[registroActual].ingreso || getToday()}
+                value={equipoActual.ingreso || ""}
                 readOnly
                 icon="bi-calendar"
                 placeholder="Fecha de ingreso"
               />
             </div>
-            {/* Inputs columna derecha */}
             <div className="flex flex-col gap-8 h-full">
               <Input
                 label="No. Serie"
                 name="serie"
-                value={registros[registroActual].serie}
+                value={equipoActual.numeroSerie || "Sin número de serie"}
                 readOnly
                 placeholder="Número de serie"
               />
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
-                value={comentariosSalida[registroActual]}
-                readOnly
+                value={
+                  equipoActual.comentarioSalida || "Sin comentario de salida"
+                }
+                onChange={(e) => setComentarioSalida(e.target.value)}
                 placeholder="Comentario de salida"
               />
               <InputCalendario
                 label="Salida"
-                value={fechasSalida[registroActual]}
+                value={equipoActual.salida || ""}
                 readOnly
                 ref={salidaRef}
               />
             </div>
-            {/* Imagen a la derecha */}
             <div className="flex items-center justify-center">
               <img
-                src={ImagenGenerica}
+                src={equipoActual.fotoEquipo || ImagenGenerica}
                 alt="Equipo"
                 className="w-60 h-60 object-cover rounded-xl shadow"
               />
             </div>
           </div>
-          {/* Navegación entre registros */}
           <div className="flex justify-end items-center px-6 gap-4 mt-4">
             <button
               onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
@@ -164,41 +219,44 @@ const EquipmentClientModal = ({ equipo, onClose }) => {
             >
               &#8592;
             </button>
-            <span className="text-white shadow-2xl">{registroActual + 1} / {cantidadRegistros}</span>
+            <span className="text-white shadow-2xl">
+              {registroActual + 1} / {equipos.length}
+            </span>
             <button
-              onClick={() => setRegistroActual((prev) => Math.min(prev + 1, cantidadRegistros - 1))}
-              disabled={registroActual === cantidadRegistros - 1}
+              onClick={() =>
+                setRegistroActual((prev) =>
+                  Math.min(prev + 1, equipos.length - 1)
+                )
+              }
+              disabled={registroActual === equipos.length - 1}
               className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
               type="button"
             >
               &#8594;
             </button>
           </div>
-          {/* Switch de estado debajo de los inputs */}
           <div className="flex items-center gap-4 mt-4">
             <Switch
-              checked={estadosEquipos[registroActual] === "Activo"}
+              checked={equipoActual.estado === "Activo"}
               onChange={handleSwitchChange}
-              disabled={bloquearSwitches[registroActual]}
+              disabled={equipoActual.estado !== "Activo"}
             />
             <span
               className={
-                estadosEquipos[registroActual] === "Activo"
+                equipoActual.estado === "Activo"
                   ? "text-green-400 font-semibold"
                   : "text-red-400 font-semibold"
               }
             >
-              {estadosEquipos[registroActual]}
+              {equipoActual.estado}
             </span>
           </div>
         </form>
       </WideFloatingModal>
-      {/* Modal de confirmación */}
       {showConfirmModal && (
         <EstateAdEquipmentModal
-          onClose={handleCancelInactivar}
+          onClose={() => setShowConfirmModal(false)}
           onSave={handleConfirmInactivar}
-          message="¿Estás seguro de que deseas inactivar este equipo?"
         />
       )}
     </>
