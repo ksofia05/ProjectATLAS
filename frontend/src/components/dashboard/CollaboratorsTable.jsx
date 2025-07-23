@@ -1,68 +1,49 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import axios from "axios";
 
 import DataTable from "../common/DataTable";
 import Switch from "../common/Switch";
-import { useAuth } from "../../hooks/useAuth";
+import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
+import { showErrorToast, showSuccessToast } from "../common/popUp/Loading";
 
 export default function CollaboratorsTable() {
-  const { user } = useAuth();
-  const [colaboradores, setColaboradores] = useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
 
+  // Obtener projectId directamente de la URL
+  const { id: projectId } = useParams();
+
+  const { 
+    collaborators, 
+    isLoading, 
+    fetchCollaborators, 
+    updateCollaboratorState 
+  } = useCollaboratorsStore();
+
+  // Solo cargar colaboradores si no están en cache
   useEffect(() => {
-    const fetchProyectos = async () => {
-      setLoading(true);
-      const email = user?.email || user?.user_metadata?.email;
-      try {
-        // 1. Obtener el usuario por su correo (esto toca cambiarlo por culpa de anny)
-        const usuarioResponse = await axios.get(
-          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
-        );
-        const usuarioDb = usuarioResponse.data[0];
-        const usuarioId = usuarioDb.idusuario;
-
-        // 2. Obtener los proyectos del usuario
-        const proyectosResponse = await axios.get(
-          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
-        );
-
-        const proyectos = proyectosResponse.data;
-
-        if (proyectos.length === 0) {
-          setColaboradores([]);
-          setLoading(false);
-          return;
-        }
-
-        // Tomar el primer proyecto
-        const idProyecto = proyectos[0].id_proyecto;
-
-        // 3. Llamar al endpoint filtro_colaborador
-        const colaboradoresResponse = await axios.get(
-          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${idProyecto}`
-        );
-
-        const data = colaboradoresResponse.data;
-        setColaboradores(data.colaboradores);
-      } catch (error) {
-        setColaboradores([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchProyectos();
+    if (projectId) {
+      console.log("📊 CollaboratorsTable: Verificando colaboradores para proyecto", projectId);
+      fetchCollaborators(projectId);
     }
-  }, [user]);
+  }, [projectId, fetchCollaborators]);
+
+  // Manejo optimista del switch
+  const handleSwitch = async (colaborador, idx) => {
+    const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
+
+    try {
+      await updateCollaboratorState(colaborador.id || colaborador.idusuario, nuevoEstado);
+      showSuccessToast(`Colaborador ${nuevoEstado.toLowerCase()}`);
+    } catch (error) {
+      showErrorToast("Error al cambiar el estado del colaborador");
+    }
+  };
 
   // Exportar a Excel
   const exportToExcel = (data) => {
@@ -86,27 +67,8 @@ export default function CollaboratorsTable() {
     doc.save("colaboradores.pdf");
   };
 
-  const handleSwitch = async (colaborador, idx) => {
-    const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
-
-    try {
-      await axios.patch(
-        `http://localhost:8000/tasks/api/v1/usuarios/${colaborador.id}/estado/`,
-        { estado: nuevoEstado }
-      );
-
-      setColaboradores((prev) =>
-        prev.map((c) =>
-          c.id === colaborador.id ? { ...c, estado: nuevoEstado } : c
-        )
-      );
-    } catch (error) {
-      alert("Hubo un error al cambiar el estado del colaborador.");
-    }
-  };
-
   // Filtrado de datos
-  const colaboradoresFiltrados = colaboradores
+  const colaboradoresFiltrados = collaborators
     .filter((c) =>
       estadoSeleccionado === "todos"
         ? true
@@ -198,7 +160,7 @@ export default function CollaboratorsTable() {
       title="colaboradores"
       data={colaboradoresFiltrados}
       columns={columns}
-      loading={loading}
+      loading={isLoading}
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       searchPlaceholder="Buscar colaborador..."
