@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
-import Input from "../common/Input";
 import WideFloatingModal from "../common/popUp/WideFloatingModal";
 import Switch from "../common/Switch";
+import Input from "../common/Input";
+import InputCalendario from "../common/InputCalendario";
 import ImagenGenerica from "../../assets/pcDañada.jpg";
 import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
-import InputCalendario from "../common/InputCalendario";
 import { client as supabase } from "../../supabase/client";
+import { dateUtils } from "../../utils/dateUtils";
+import React, { useState, useEffect, useRef } from "react";
 
-const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
-  const [registros, setRegistros] = useState([]);
+const EquipmentClientModal = ({ cliente, onClose }) => {
+  const [equipos, setEquipos] = useState([]);
   const [registroActual, setRegistroActual] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -16,8 +17,8 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
   const salidaRef = useRef(null);
 
   useEffect(() => {
-    if (!cliente || !equipo) return;
-    const fetchRegistros = async () => {
+    if (!cliente) return;
+    const fetchEquipos = async () => {
       setLoading(true);
       try {
         const { data: agendamientos, error: errorAg } = await supabase
@@ -25,7 +26,7 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
           .select("idAgendamiento")
           .eq("Cliente_dni", cliente.dni);
         if (errorAg || !agendamientos.length) {
-          setRegistros([]);
+          setEquipos([]);
           setLoading(false);
           return;
         }
@@ -35,49 +36,54 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
           .select(
             "agendamiento_equipo, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado"
           )
-          .in("agendamiento_idAgendamiento", idsAgendamiento)
-          .eq("equipo_numeroSerie", equipo.numeroSerie);
+          .in("agendamiento_idAgendamiento", idsAgendamiento);
         if (errorEqAg || !equipoAgs.length) {
-          setRegistros([]);
+          setEquipos([]);
           setLoading(false);
           return;
         }
-        // Ordenar por fechaIngreso (opcional)
-        equipoAgs.sort((a, b) => new Date(a.fechaIngreso) - new Date(b.fechaIngreso));
-        // Obtener datos del equipo
-        const { data: equiposData } = await supabase
+        const numerosSerie = equipoAgs.map((ea) => ea.equipo_numeroSerie);
+        const { data: equiposData, error: errorEq } = await supabase
           .from("Equipo")
           .select("marca, fotoEquipo, numeroSerie")
-          .eq("numeroSerie", equipo.numeroSerie);
-        const equipoData = equiposData && equiposData[0] ? equiposData[0] : {};
-        // Unir datos, asegurando que fotoEquipo esté presente
-        const registrosCompletos = equipoAgs.map(ea => ({
-          marca: equipoData.marca,
-          fotoEquipo: equipoData.fotoEquipo,
-          numeroSerie: equipoData.numeroSerie,
-          ingreso: ea.fechaIngreso,
-          comentarioEntrada: ea.comentarioEntrada,
-          comentarioSalida: ea.comentarioSalida,
-          salida: ea.fechaSalida,
-          estado: ea.Estado,
-          agendamiento_equipo: ea.agendamiento_equipo,
-          repeticiones: equipoAgs.length,
-        }));
-        setRegistros(registrosCompletos);
+          .in("numeroSerie", numerosSerie);
+        if (errorEq) {
+          setEquipos([]);
+          setLoading(false);
+          return;
+        }
+        const equiposCompletos = equipoAgs.map((ea) => {
+          const equipo =
+            equiposData.find(
+              (eq) => eq.numeroSerie === ea.equipo_numeroSerie
+            ) || {};
+          return {
+            ...equipo,
+            ingreso: ea.fechaIngreso,
+            comentarioEntrada: ea.comentarioEntrada,
+            comentarioSalida: ea.comentarioSalida,
+            salida: ea.fechaSalida,
+            estado: ea.Estado,
+            agendamiento_equipo: ea.agendamiento_equipo,
+          };
+        });
+        setEquipos(equiposCompletos);
       } catch (error) {
-        console.error("Error al obtener registros:", error);
-        setRegistros([]);
+        console.error("Error al obtener equipos:", error);
+        setEquipos([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchRegistros();
-  }, [cliente, equipo]);
+    fetchEquipos();
+  }, [cliente]);
 
   const handleConfirmInactivar = async () => {
     const equipoActual = equipos[registroActual];
-    const nuevoEstado = equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
-    const fechaSalida = nuevoEstado === "Inactivo" ? new Date().toISOString().split("T")[0] : null;
+    const nuevoEstado =
+      equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
+    const fechaSalida =
+      nuevoEstado === "Inactivo" ? dateUtils.getToday() : null;
 
     try {
       const { error } = await supabase
@@ -85,20 +91,27 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
         .update({
           Estado: nuevoEstado,
           fechaSalida: fechaSalida,
-          comentarioSalida: comentarioSalida, 
+          comentarioSalida: comentarioSalida,
         })
         .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
 
       if (error) {
         console.error("Error al actualizar estado:", error);
-        alert("No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase.");
+        alert(
+          "No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase."
+        );
         return;
       }
 
       setEquipos((prevEquipos) =>
         prevEquipos.map((eq, idx) =>
           idx === registroActual
-            ? { ...eq, estado: nuevoEstado, salida: fechaSalida, comentarioSalida }
+            ? {
+                ...eq,
+                estado: nuevoEstado,
+                salida: fechaSalida,
+                comentarioSalida,
+              }
             : eq
         )
       );
@@ -106,11 +119,12 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
       console.error("Error al cambiar estado:", error);
     } finally {
       setShowConfirmModal(false);
-      setComentarioSalida(""); 
+      setComentarioSalida("");
     }
   };
 
   const handleSwitchChange = () => {
+    const equipoActual = equipos[registroActual];
     if (equipoActual.estado === "Activo") {
       setShowConfirmModal(true);
     }
@@ -118,7 +132,7 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
 
   if (loading) return;
 
-  const equipoActual = registros[registroActual];
+  const equipoActual = equipos[registroActual];
 
   return (
     <>
@@ -170,8 +184,10 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
-                value={equipoActual.comentarioSalida || "Sin comentario de salida"}
-                onChange={(e) => setComentarioSalida(e.target.value)} 
+                value={
+                  equipoActual.comentarioSalida || "Sin comentario de salida"
+                }
+                onChange={(e) => setComentarioSalida(e.target.value)}
                 placeholder="Comentario de salida"
               />
               <InputCalendario
@@ -203,33 +219,29 @@ const EquipmentClientModal = ({ cliente, equipo, onClose }) => {
             </div>
           </div>
           <div className="flex justify-end items-center px-6 gap-4 mt-4">
-            {equipoActual.repeticiones > 1 ? (
-              <>
-                <button
-                  onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
-                  disabled={registroActual === 0}
-                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
-                  type="button"
-                >
-                  &#8592;
-                </button>
-                <span className="text-white shadow-2xl">
-                  {registroActual + 1} / {registros.length}
-                </span>
-                <button
-                  onClick={() =>
-                    setRegistroActual((prev) =>
-                      Math.min(prev + 1, registros.length - 1)
-                    )
-                  }
-                  disabled={registroActual === registros.length - 1}
-                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
-                  type="button"
-                >
-                  &#8594;
-                </button>
-              </>
-            ) : null}
+            <button
+              onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
+              disabled={registroActual === 0}
+              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
+              type="button"
+            >
+              &#8592;
+            </button>
+            <span className="text-white shadow-2xl">
+              {registroActual + 1} / {equipos.length}
+            </span>
+            <button
+              onClick={() =>
+                setRegistroActual((prev) =>
+                  Math.min(prev + 1, equipos.length - 1)
+                )
+              }
+              disabled={registroActual === equipos.length - 1}
+              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
+              type="button"
+            >
+              &#8594;
+            </button>
           </div>
           <div className="flex items-center gap-4 mt-4">
             <Switch

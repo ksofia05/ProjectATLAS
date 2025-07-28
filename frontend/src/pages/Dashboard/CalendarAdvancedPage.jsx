@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import CalendarView from "../../components/dashboard/CalendarView";
+import { dateUtils } from "../../utils/dateUtils";
+import dayjs from "dayjs";
 
 export default function CalendarAdvancedPage() {
-  const [currentYear, setCurrentYear] = useState(2025);
-  const [currentMonth, setCurrentMonth] = useState(null);
-  const [currentDay, setCurrentDay] = useState(null);
+  const [currentYear, setCurrentYear] = useState(dateUtils.getCurrentYear());
+  const [currentMonth, setCurrentMonth] = useState(dateUtils.getCurrentMonth());
+  const [currentDay, setCurrentDay] = useState(dayjs().date());
   const [viewMode, setViewMode] = useState("year");
 
   const handleYearChange = (year) => {
@@ -68,15 +70,14 @@ export default function CalendarAdvancedPage() {
     if (value === "year") {
     } else if (value === "month") {
       if (currentMonth === null) {
-        setCurrentMonth(new Date().getMonth());
+        setCurrentMonth(dateUtils.getCurrentMonth()); 
       }
     } else if (value === "day") {
-      // Si no hay día seleccionado, usar día actual
       if (currentDay === null) {
-        const today = new Date();
-        setCurrentDay(today.getDate());
+        const today = dayjs();
+        setCurrentDay(today.date());
         if (currentMonth === null) {
-          setCurrentMonth(today.getMonth());
+          setCurrentMonth(today.month());
         }
       }
     }
@@ -94,16 +95,20 @@ export default function CalendarAdvancedPage() {
     if (viewMode === "year") {
       setCurrentYear((prev) => prev - 1);
     } else if (viewMode === "month") {
-      const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-      setCurrentMonth(prevMonth);
-      if (currentMonth === 0) setCurrentYear(prevYear);
+      const currentDate = dayjs().year(currentYear).month(currentMonth);
+      const prevMonth = currentDate.subtract(1, "month");
+      setCurrentMonth(prevMonth.month());
+      setCurrentYear(prevMonth.year());
     } else if (viewMode === "day") {
       // Navegar día anterior
-      const prevDay = new Date(currentYear, currentMonth, currentDay - 1);
-      setCurrentDay(prevDay.getDate());
-      setCurrentMonth(prevDay.getMonth());
-      setCurrentYear(prevDay.getFullYear());
+      const prevDay = dayjs()
+        .year(currentYear)
+        .month(currentMonth)
+        .date(currentDay)
+        .subtract(1, "day");
+      setCurrentDay(prevDay.date());
+      setCurrentMonth(prevDay.month());
+      setCurrentYear(prevDay.year());
     }
   };
 
@@ -111,16 +116,20 @@ export default function CalendarAdvancedPage() {
     if (viewMode === "year") {
       setCurrentYear((prev) => prev + 1);
     } else if (viewMode === "month") {
-      const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-      const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-      setCurrentMonth(nextMonth);
-      if (currentMonth === 11) setCurrentYear(nextYear);
+      const currentDate = dayjs().year(currentYear).month(currentMonth);
+      const nextMonth = currentDate.add(1, "month");
+      setCurrentMonth(nextMonth.month());
+      setCurrentYear(nextMonth.year());
     } else if (viewMode === "day") {
       // Navegar día siguiente
-      const nextDay = new Date(currentYear, currentMonth, currentDay + 1);
-      setCurrentDay(nextDay.getDate());
-      setCurrentMonth(nextDay.getMonth());
-      setCurrentYear(nextDay.getFullYear());
+      const nextDay = dayjs()
+        .year(currentYear)
+        .month(currentMonth)
+        .date(currentDay)
+        .add(1, "day");
+      setCurrentDay(nextDay.date());
+      setCurrentMonth(nextDay.month());
+      setCurrentYear(nextDay.year());
     }
   };
 
@@ -136,10 +145,11 @@ export default function CalendarAdvancedPage() {
     if (viewMode === "year") return "Vista anual";
     if (viewMode === "month") return "Vista mensual";
     if (viewMode === "day")
-      return new Date(currentYear, currentMonth, currentDay).toLocaleDateString(
-        "es-ES",
-        { weekday: "long" }
-      );
+      return dayjs()
+        .year(currentYear)
+        .month(currentMonth)
+        .date(currentDay)
+        .format("dddd"); 
   };
 
   const BreadcrumbNavigation = () => (
@@ -177,10 +187,10 @@ export default function CalendarAdvancedPage() {
   );
 
   const handleGoToToday = () => {
-    const today = new Date();
-    setCurrentYear(today.getFullYear());
-    setCurrentMonth(today.getMonth());
-    setCurrentDay(today.getDate());
+    const today = dayjs();
+    setCurrentYear(today.year());
+    setCurrentMonth(today.month());
+    setCurrentDay(today.date());
     setViewMode("day");
   };
 

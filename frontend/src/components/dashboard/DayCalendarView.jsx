@@ -1,14 +1,62 @@
 import React from "react";
+import NewTaskModal from "../calendar/NewTaskModal";
+import TaskDetailModal from "../calendar/TaskDetailModal";
+import dayjs from "dayjs";
 
 const DayCalendarView = ({ year, month, day }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  // Simulación de cosas para arreglar
-  const events = [
-    { hour: 10, title: "Arreglo del pc de Luisito", duration: 2 },
-    { hour: 14, title: "Arreglo de pc patata", duration: 1 },
-    { hour: 16, title: "Limpieza de ventilador de PC", duration: 1 },
-  ];
+  // Estado para tareas asignadas
+  const [tasks, setTasks] = React.useState([]);
+  const [showTaskModal, setShowTaskModal] = React.useState(false);
+  const [showDetailModal, setShowDetailModal] = React.useState(false);
+  const [selectedHour, setSelectedHour] = React.useState(null);
+  const [modalTaskData, setModalTaskData] = React.useState(null);
+  const [detailTaskData, setDetailTaskData] = React.useState(null);
+
+  // Abrir modal para añadir tarea
+  const handleHourClick = (hour) => {
+    setSelectedHour(hour);
+    setShowTaskModal(true);
+    setModalTaskData({
+      startDate: dayjs().year(year).month(month).date(day).format('YYYY-MM-DD'),
+      taskTime: `${hour.toString().padStart(2, '0')}:00`,
+    });
+  };
+
+  // Abrir modal de detalle de tarea
+  const handleTaskClick = (task) => {
+    setDetailTaskData(task);
+    setShowDetailModal(true);
+  };
+
+  // Añadir tarea (simulación, aquí se reutiliza la plantilla de añadir tarea)
+  const handleAddTask = (taskData) => {
+    setTasks([...tasks, {
+      hour: selectedHour,
+      title: taskData.taskTitle,
+      description: taskData.taskDescription,
+      startDate: taskData.startDate,
+      endDate: taskData.endDate,
+      taskTime: taskData.taskTime,
+    }]);
+    setShowTaskModal(false);
+    setSelectedHour(null);
+    setModalTaskData(null);
+  };
+
+  // Cerrar modal de nueva tarea
+  const handleCloseModal = () => {
+    setShowTaskModal(false);
+    setSelectedHour(null);
+    setModalTaskData(null);
+  };
+
+  // Cerrar modal de detalle
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setDetailTaskData(null);
+  };
 
   const formatHour = (hour) => {
     if (hour === 0) return "12 AM";
@@ -17,17 +65,14 @@ const DayCalendarView = ({ year, month, day }) => {
     return `${hour - 12} PM`;
   };
 
-  const dayName = new Date(year, month, day).toLocaleDateString("es-ES", {
-    weekday: "long",
-  });
+  const dayName = dayjs().year(year).month(month).date(day).format("dddd");
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col h-[calc(100vh-240px)]">
       <div className="flex-1 overflow-y-auto scrollbar-subtle">
         <div className="grid grid-cols-[80px_1fr] gap-0">
           {hours.map((hour) => {
-            const event = events.find((e) => e.hour === hour);
-
+            const task = tasks.find((t) => t.hour === hour);
             return (
               <React.Fragment key={hour}>
                 {/* Columna de hora */}
@@ -36,19 +81,19 @@ const DayCalendarView = ({ year, month, day }) => {
                 </div>
 
                 {/* Columna de contenido */}
-                <div className="relative border-b border-gray-600 min-h-[60px] p-2 hover:bg-gray-800/30 transition-colors">
-                  {event && (
+                <div
+                  className={`relative border-b border-gray-600 min-h-[60px] p-2 hover:bg-gray-800/30 transition-colors cursor-pointer`}
+                  onClick={() => task ? handleTaskClick(task) : handleHourClick(hour)}
+                >
+                  {/* Icono solo si hay tarea asignada */}
+                  {task && (
                     <div
-                      className="absolute left-2 right-2 bg-purple-600/80 text-white text-sm px-3 py-2 rounded-lg shadow-lg"
-                      style={{
-                        height: `${event.duration * 60 - 8}px`,
-                        top: "4px",
-                      }}
+                      className="absolute left-2 right-2 bg-purple-600/80 text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2"
+                      style={{ top: "4px" }}
                     >
-                      <div className="font-medium">{event.title}</div>
-                      <div className="text-xs text-purple-200">
-                        {formatHour(hour)} - {formatHour(hour + event.duration)}
-                      </div>
+                      <i className="bi bi-tools text-lg mr-2" />
+                      <span className="font-medium">{task.title}</span>
+                      <span className="text-xs text-purple-200 ml-2">({task.taskTime})</span>
                     </div>
                   )}
                 </div>
@@ -57,6 +102,27 @@ const DayCalendarView = ({ year, month, day }) => {
           })}
         </div>
       </div>
+      {/* Modal para añadir tarea usando NewTaskModal */}
+      {showTaskModal && (
+        <NewTaskModal
+          onClose={handleCloseModal}
+          onSave={handleAddTask}
+          startDate={modalTaskData?.startDate}
+          {...(modalTaskData || {})}
+        />
+      )}
+      {/* Modal de detalle de tarea */}
+      {showDetailModal && (
+        <TaskDetailModal
+          task={detailTaskData}
+          onClose={handleCloseDetailModal}
+          onDelete={(taskToDelete) => {
+            setTasks(tasks.filter(t => t.hour !== taskToDelete.hour));
+            setShowDetailModal(false);
+            setDetailTaskData(null);
+          }}
+        />
+      )}
     </div>
   );
 };

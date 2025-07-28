@@ -21,7 +21,7 @@ return (
         <p className="text-white mb-2">¿Estás seguro de no guardar los cambios?</p>
         <div className="flex gap-4 w-full mt-4">
         <ButtonBG
-          className="bg-[#282446] hover:bg-[#373263] text-white w-full rounded-lg"
+          className="bg-[#323141] hover:bg-[#292735] text-white w-full rounded-lg"
           onClick={onClose}
         >
           Cancelar
