@@ -92,11 +92,15 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
           Estado: nuevoEstado,
           fechaSalida: fechaSalida,
           comentarioSalida: comentarioSalida,
+          comentarioSalida: comentarioSalida,
         })
         .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
 
       if (error) {
         console.error("Error al actualizar estado:", error);
+        alert(
+          "No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase."
+        );
         alert(
           "No se pudo actualizar el estado. Verifica las políticas de seguridad en Supabase."
         );
@@ -112,6 +116,12 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
                 salida: fechaSalida,
                 comentarioSalida,
               }
+            ? {
+                ...eq,
+                estado: nuevoEstado,
+                salida: fechaSalida,
+                comentarioSalida,
+              }
             : eq
         )
       );
@@ -119,6 +129,7 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
       console.error("Error al cambiar estado:", error);
     } finally {
       setShowConfirmModal(false);
+      setComentarioSalida("");
       setComentarioSalida("");
     }
   };
@@ -184,6 +195,10 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
+                value={
+                  equipoActual.comentarioSalida || "Sin comentario de salida"
+                }
+                onChange={(e) => setComentarioSalida(e.target.value)}
                 value={
                   equipoActual.comentarioSalida || "Sin comentario de salida"
                 }
@@ -272,3 +287,4 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
 };
 
 export default EquipmentClientModal;
+
