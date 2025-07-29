@@ -4,11 +4,15 @@ import FormContainer from "../../components/common/FormContainer";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import PasswordInput from "../../components/common/PasswordInput";
-import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
+import {
+  showLoadingToast,
+  showSuccessToast,
+  showErrorToast,
+} from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
-import { client } from '../../supabase/client';
+import { client } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore";
-import { login } from "../../services/authService"
+import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
 
 const Login = () => {
@@ -19,6 +23,7 @@ const Login = () => {
     password: "",
   });
   const [errors, setErrors] = useState({});
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // Nuevo estado para bloqueo
 
   // Aqui se obtiene el parámetro "next" de la URL
   const params = new URLSearchParams(location.search);
@@ -28,7 +33,9 @@ const Login = () => {
   useEffect(() => {
     // Si ya está autenticado, redirige
     const checkAuth = async () => {
-      const { data: { user } } = await client.auth.getUser();
+      const {
+        data: { user },
+      } = await client.auth.getUser();
       if (user) {
         navigate(next);
       }
@@ -52,7 +59,7 @@ const Login = () => {
       if (!value) {
         error = "La contraseña es requerida";
       } else if (value.length < 8) {
-        error = "La contraseña debe tener al menos 8 caracteres";
+        error = "Contraseña no cumple con los requisitos";
       }
     }
     return error;
@@ -88,6 +95,7 @@ const Login = () => {
       return;
     }
 
+    setIsLoggingIn(true); // Bloquear botón
     const toastId = showLoadingToast("Ingresando...");
 
     try {
@@ -97,11 +105,14 @@ const Login = () => {
       if (error) {
         let errorMessage = "Error al iniciar sesión";
         if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
+          errorMessage =
+            "Credenciales inválidas. Verifica tu correo y contraseña.";
         } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
+          errorMessage =
+            "Por favor confirma tu correo electrónico antes de iniciar sesión.";
         } else if (error.message.includes("Too many requests")) {
-          errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
+          errorMessage =
+            "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
         showErrorToast(errorMessage);
         setErrors((prev) => ({
@@ -112,7 +123,7 @@ const Login = () => {
       }
 
       if (data.user && data.session) {
-        localStorage.setItem('token', data.session.access_token);
+        localStorage.setItem("token", data.session.access_token);
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
 
@@ -124,7 +135,8 @@ const Login = () => {
         if (userProfile) {
           useUserStore.getState().setUser({
             ...userProfile,
-            rol_idRol: userProfile.rol_idRol ?? userProfile.rol_idrol ?? userProfile.rol, // Normaliza el nombre del campo
+            rol_idRol:
+              userProfile.rol_idRol ?? userProfile.rol_idrol ?? userProfile.rol, // Normaliza el nombre del campo
             auth_user_id: data.user.id,
             email: data.user.email,
           });
@@ -133,11 +145,17 @@ const Login = () => {
 
         if (idProyecto && formData.email) {
           try {
-            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
-            });
+            await fetch(
+              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id_proyecto: idProyecto,
+                  email: formData.email,
+                }),
+              }
+            );
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
@@ -151,7 +169,6 @@ const Login = () => {
           }
         }, 1200);
       }
-
     } catch (error) {
       toast.dismiss(toastId);
       console.error("Error de login:", error);
@@ -160,6 +177,8 @@ const Login = () => {
         ...prev,
         password: "No se pudo conectar con el servidor.",
       }));
+    } finally {
+      setIsLoggingIn(false); // Desbloquear botón siempre
     }
   };
 
@@ -167,13 +186,16 @@ const Login = () => {
     return (
       !formData.email ||
       !formData.password ||
-      Object.values(errors).some((err) => err)
+      Object.values(errors).some((err) => err) ||
+      isLoggingIn // Agregar estado de login
     );
   };
 
   return (
     <FormContainer>
-      <h1 className="text-3xl font-bold text-center mb-6 text-white">Iniciar sesión</h1>
+      <h1 className="text-3xl font-bold text-center mb-6 text-white">
+        Iniciar sesión
+      </h1>
       <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
       <form onSubmit={handleSubmit}>
         <Input
@@ -184,6 +206,7 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.email}
           icon="bi-envelope-fill"
+          placeholder="Ingresa tu correo"
         />
         <PasswordInput
           label="Contraseña"
@@ -193,11 +216,16 @@ const Login = () => {
           onChange={handleChange}
           errorMessage={errors.password}
           icon="bi-eye-fill"
+          placeholder="Ingresa tu contraseña"
         />
         <Button
           type="submit"
           disabled={isButtonDisabled()}
-          className={`w-full mt-4 ${isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""}`}
+          loading={isLoggingIn}
+          loadingText="Ingresando..."
+          className={`w-full mt-4 ${
+            isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           Ingresar
         </Button>
