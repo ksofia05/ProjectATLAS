@@ -7,7 +7,7 @@ import useProjectStore from '../../stores/useProjectsStore';
 import useCollaboratorsStore from '../../stores/useCollaboratorsStore';
 
 const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [showModal, setShowModal] = useState(open);
   const [isSending, setIsSending] = useState(false);
 
@@ -43,26 +43,43 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
   const handleClose = () => {
     setShowModal(false);
-    setEmail('');
+    setEmail("");
     onClose?.();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar que el email no esté vacío
+    if (!email.trim()) {
+      showErrorToast("Por favor ingresa un correo electrónico");
+      return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showErrorToast("Por favor ingresa un correo electrónico válido");
+      return;
+    }
+
     setIsSending(true);
-    const toastId = showLoadingToast("Enviando invitación...");
-    
+    const toastId = showLoadingToast("Verificando y enviando invitación...");
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/tasks/api/v1/invitacionColaborador/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email, 
-          nombre_invitador: userName, 
-          id_proyecto: projectId 
-        }),
-      });
-      
+      const response = await fetch(
+        "http://127.0.0.1:8000/tasks/api/v1/invitacionColaborador/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            nombre_invitador: userName,
+            id_proyecto: projectId,
+          }),
+        }
+      );
+
       const data = await response.json();
       toast.dismiss(toastId);
       
@@ -76,9 +93,10 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       }
     } catch (error) {
       toast.dismiss(toastId);
-      showErrorToast("Error de conexión");
+      console.error("Error enviando invitación:", error);
+      showErrorToast("Error de conexión. Intenta nuevamente.");
     }
-    
+
     setIsSending(false);
   };
 
@@ -103,9 +121,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
             disabled={isSending}
           />
           <button
-            type='submit'
+            type="submit"
             className={`bg-purple-600 text-white px-4 py-2 rounded transition ${
-              isSending ? "opacity-50 cursor-not-allowed" : "hover:bg-purple-700"
+              isSending
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-purple-700"
             }`}
             disabled={isSending}
           >
@@ -127,15 +147,19 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
                 <div className='flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white'>
                   {colab.nombre?.charAt(0)}{colab.apellido?.charAt(0)}
                 </div>
-                <div className='flex-1'>
-                  <div className='text-white font-medium'>{colab.nombre} {colab.apellido}</div>
-                  <div className='text-gray-400 text-xs'>{colab.correo}</div>
+                <div className="flex-1">
+                  <div className="text-white font-medium">
+                    {colab.nombre} {colab.apellido}
+                  </div>
+                  <div className="text-gray-400 text-xs">{colab.correo}</div>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  colab.rol === "Administrador" 
-                    ? "bg-gray-800 text-white" 
-                    : "bg-gray-700 text-gray-200"
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    colab.rol === "Administrador"
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-700 text-gray-200"
+                  }`}
+                >
                   {colab.rol || "Colaborador"}
                 </span>
               </div>

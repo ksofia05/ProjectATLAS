@@ -3,11 +3,11 @@ import FloatingModal from "../common/popUp/FloatingModal";
 import ButtonBG from "../common/ButtonBG"; 
 import Input from "../common/Input";
 
-export default function NewTaskModal({ onClose, onSave }) {
+export default function NewTaskModal({ onClose, onSave, startDate }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
-        startDate: "",  
+        startDate: startDate || "",  // Rellenar automáticamente si se recibe
         endDate: "",
         taskTime: "",
     });
@@ -30,6 +30,16 @@ export default function NewTaskModal({ onClose, onSave }) {
             taskTime.trim() !== "";
         setIsFormValid(allFieldsFilled);
     }, [form]);
+
+    useEffect(() => {
+        // Si el prop startDate cambia y el campo está vacío, lo rellenamos
+        if (startDate && !form.startDate) {
+            setForm((prevForm) => ({
+                ...prevForm,
+                startDate: startDate,
+            }));
+        }
+    }, [form, startDate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

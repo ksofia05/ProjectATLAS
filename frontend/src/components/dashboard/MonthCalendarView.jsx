@@ -2,7 +2,7 @@ import React from "react";
 import { dateUtils } from "../../utils/dateUtils";
 import dayjs from "dayjs";
 
-const MonthCalendarView = ({ year, month }) => {
+const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const monthNames = [
     "Enero",
     "Febrero",
@@ -110,6 +110,15 @@ const MonthCalendarView = ({ year, month }) => {
                 ${dayObj.isCurrentMonth ? "bg-[#1a1a26]" : "bg-[#232336]"}
                 hover:bg-[#2a2a40] transition-colors cursor-pointer
               `}
+              onClick={() => {
+                if (dayObj.isCurrentMonth && onDaySelect) {
+                  onDaySelect(
+                    dayObj.date.getFullYear(),
+                    dayObj.date.getMonth(),
+                    dayObj.date.getDate()
+                  );
+                }
+              }}
             >
               <div className="h-full flex flex-col">
                 <div

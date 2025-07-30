@@ -194,21 +194,43 @@ e.preventDefault();
         .from("Equipo")
         .select("*")
         .eq("numeroSerie", form.serie)
-        .single();
+        .maybeSingle();
 
       if (existingEquipo) {
-        equipoData = existingEquipo;
+        // Si la imagen es diferente, actualizarla (guardar la URL pública completa)
+        if (form.imagen && existingEquipo.fotoEquipo !== form.imagen) {
+          let nuevaFotoEquipo = form.imagen;
+          if (!form.imagen.startsWith("http")) {
+            nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+          }
+          const { error: updateError, data: updatedEquipo } = await supabase
+            .from("Equipo")
+            .update({ fotoEquipo: nuevaFotoEquipo })
+            .eq("numeroSerie", form.serie)
+            .select()
+            .maybeSingle();
+          equipoData = updatedEquipo || existingEquipo;
+          equipoError = updateError;
+        } else {
+          equipoData = existingEquipo;
+        }
       } else {
+        // Guardar la URL pública completa si es posible
+        let nuevaFotoEquipo = form.imagen;
+        if (form.imagen && !form.imagen.startsWith("http")) {
+          nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+        }
         const insertEquipo = await supabase
           .from("Equipo")
           .insert([
             {
               numeroSerie: form.serie,
               marca: "",
+              fotoEquipo: nuevaFotoEquipo,
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
         equipoData = insertEquipo.data;
         equipoError = insertEquipo.error;
       }
@@ -226,7 +248,7 @@ e.preventDefault();
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
 
       if (agendamientoError) throw agendamientoError;
 
@@ -240,6 +262,7 @@ e.preventDefault();
             Estado: "Activo",
             equipo_numeroSerie: equipoData.numeroSerie,
             agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+            comentarioSalida: "", // Si tienes un campo para comentario de salida
           },
         ]);
 

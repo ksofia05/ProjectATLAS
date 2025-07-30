@@ -120,23 +120,34 @@ def get_user_projects(request):
 def asociar_colaborador(request):
     email = request.data.get('email')
     id_proyecto = request.data.get('id_proyecto')
+    
     if not email or not id_proyecto:
-        print("Faltan datos")
         return Response({'error': 'Faltan datos'}, status=400)
+    
     try:
         usuario = Usuario.objects.get(correoelectronico=email)
         proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
-        rol_admin = Rol.objects.get(idrol=1)
+        
+        if usuario.rol_idrol and usuario.rol_idrol.idrol == 1: #Aca se verifica que sea admin 
+            return Response({
+                'error': 'Un administrador no puede asociarse como colaborador.'
+            }, status=400)
+        
+        if ColaboradorProyecto.objects.filter(usuario=usuario).exists(): # Verificamos si el usuario ya es colaborador de algún proyecto
+            return Response({
+                'error': 'Un colaborador no puede estar en más de un proyecto.'
+            }, status=400)
+        
+        # Asignar rol de colaborador si no lo tiene
         rol_colaborador = Rol.objects.get(idrol=2)
-        if usuario.rol_idrol == rol_admin:
-            return Response({'error': 'Un administrador no puede asociarse como colaborador.'}, status=400)
-        if ColaboradorProyecto.objects.filter(usuario=usuario).exists():
-            return Response({'error': 'Un colaborador no puede estar en más de un proyecto.'}, status=400)
         if usuario.rol_idrol != rol_colaborador:
             usuario.rol_idrol = rol_colaborador
             usuario.save()
+        
+        #Con esto se obtiene la relacion Colaborador-Proyecto
         ColaboradorProyecto.objects.get_or_create(usuario=usuario, proyecto=proyecto)
         return Response({'success': True})
+        
     except Usuario.DoesNotExist:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     except Proyecto.DoesNotExist:

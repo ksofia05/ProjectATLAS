@@ -1,26 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import FormContainer from '../../components/common/FormContainer';
-import Input from '../../components/common/Input';
-import PasswordInput from '../../components/common/PasswordInput';
-import Checkbox from '../../components/common/Checkbox';
-import Button from '../../components/common/Button';
-import PasswordValidator from '../../components/functionalities/passwordValidation';
-import { useRegisterFormPersistence, saveRegisterFormToStorage } from '../../hooks/useRegisterFormPersistence';
-import { showLoadingToast, showSuccessToast, showErrorToast } from "../../components/common/popUp/Loading";
-import toast from "react-hot-toast";
-import { client } from '../../supabase/client';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import FormContainer from "../../components/common/FormContainer";
+import Input from "../../components/common/Input";
+import PasswordInput from "../../components/common/PasswordInput";
+import Checkbox from "../../components/common/Checkbox";
+import Button from "../../components/common/Button";
+import PasswordValidator from "../../components/functionalities/passwordValidation";
+import {
+  useRegisterFormPersistence,
+  saveRegisterFormToStorage,
+} from "../../hooks/useRegisterFormPersistence";
+import {
+  showSuccessToast,
+  showErrorToast,
+  showLoadingToast,
+} from "../../components/common/popUp/Loading";
+import { toast } from "react-hot-toast";
+import { client } from "../../supabase/client";
 
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
     termsAccepted: false,
   });
 
@@ -31,6 +38,9 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [isStep2SubmitDisabled, setIsStep2SubmitDisabled] = useState(true); // Nuevo estado para paso 2
+  const [isValidating, setIsValidating] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const validateField = (name, value) => {
     let error = "";
@@ -56,15 +66,44 @@ const Register = () => {
   };
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
+    console.log("handleChange ejecutado:", { name, value, type, checked }); // Debug
+
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
+
     const error = validateField(name, type === "checkbox" ? checked : value);
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: error,
     }));
+  };
+
+  // Nueva función para validar contraseña
+  const validatePassword = (password) => {
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_-]/.test(password); 
+
+    console.log("validatePassword debug:", {
+      password,
+      hasMinLength,
+      hasUpperCase,
+      hasLowerCase,
+      hasNumber,
+      hasSpecialChar,
+    });
+
+    return (
+      hasMinLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSpecialChar
+    );
   };
 
   useEffect(() => {
@@ -74,50 +113,109 @@ const Register = () => {
     const emailError = validateField("email", formData.email);
     const hasLocalErrors = !!(firstNameError || lastNameError || emailError);
     const hasBackendEmailError = !!errors.email;
-    setIsSubmitDisabled(!(isFilled && !hasLocalErrors && !hasBackendEmailError));
+    setIsSubmitDisabled(
+      !(isFilled && !hasLocalErrors && !hasBackendEmailError)
+    );
   }, [formData.firstName, formData.lastName, formData.email, errors]);
+
+  // Nuevo useEffect para el paso 2
+  useEffect(() => {
+    if (step === 2) {
+      const isPasswordValid = validatePassword(formData.password);
+      const doPasswordsMatch = formData.password === formData.confirmPassword;
+      const passwordsNotEmpty =
+        formData.password !== "" && formData.confirmPassword !== "";
+      const areTermsAccepted = formData.termsAccepted;
+
+      console.log("Validación paso 2:", {
+        isPasswordValid,
+        doPasswordsMatch,
+        passwordsNotEmpty,
+        areTermsAccepted,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        termsAccepted: formData.termsAccepted,
+      });
+
+      setIsStep2SubmitDisabled(
+        !(
+          isPasswordValid &&
+          doPasswordsMatch &&
+          passwordsNotEmpty &&
+          areTermsAccepted
+        )
+      );
+    }
+  }, [
+    formData.password,
+    formData.confirmPassword,
+    formData.termsAccepted,
+    step,
+  ]);
 
   const handleBack = () => setStep(1);
 
   const handleNext = async () => {
-    const emailError = validateField("email", formData.email);
-    setErrors(prevErrors => ({ ...prevErrors, email: emailError }));
+    const newErrors = {};
+    ["firstName", "lastName", "email"].forEach((field) => {
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
+    });
 
-    if (!emailError && formData.firstName && formData.lastName && formData.email) {
-      const toastId = showLoadingToast("Verificando...");
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
+      setIsValidating(true);
+      const toastId = showLoadingToast("Verificando correo...");
+
       try {
-        const response = await fetch("http://localhost:8000/tasks/api/v1/register/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ checkEmailOnly: true, email: formData.email }),
-        });
+        const response = await fetch(
+          "http://localhost:8000/tasks/api/v1/verificar-correo/",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: formData.email }),
+          }
+        );
+
         const data = await response.json();
         toast.dismiss(toastId);
 
-        if (response.ok) {
-          setStep(2);
+        if (data.exists) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            email: "Este correo ya está registrado.",
+          }));
         } else {
-          setErrors(prevErrors => ({ ...prevErrors, email: data.error || 'Este correo ya está registrado.' }));
+          setStep(2);
         }
       } catch (error) {
         toast.dismiss(toastId);
         console.error("Error al verificar el correo:", error);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: "Error al verificar el correo. Intenta nuevamente.",
+        }));
+      } finally {
+        setIsValidating(false); // Siempre se desbloquea aquí ;(
       }
+    } else {
+      setIsValidating(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.termsAccepted) {
-      showErrorToast('Debes aceptar los\ntérminos y condiciones.');
+      showErrorToast("Debes aceptar los\ntérminos y condiciones.");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      showErrorToast('Las contraseñas no coinciden.');
+      showErrorToast("Las contraseñas no coinciden.");
       return;
     }
 
     if (step === 2) {
+      setIsRegistering(true);
       const toastId = showLoadingToast("Registrando...");
 
       try {
@@ -128,17 +226,20 @@ const Register = () => {
           options: {
             data: {
               nombre: formData.firstName,
-              apellido: formData.lastName
-            }
-          }
+              apellido: formData.lastName,
+            },
+          },
         });
 
         if (authError) {
           toast.dismiss(toastId);
-          if (authError.message.includes('User already registered')) {
-            showErrorToast('Este correo ya está registrado.');
+          if (authError.message.includes("User already registered")) {
+            showErrorToast("Este correo ya está registrado.");
             setStep(1);
-            setErrors(prev => ({ ...prev, email: 'Este correo ya está registrado.' }));
+            setErrors((prev) => ({
+              ...prev,
+              email: "Este correo ya está registrado.",
+            }));
           } else {
             showErrorToast(authError.message || "Error al registrar.");
           }
@@ -148,7 +249,7 @@ const Register = () => {
         // guardar en tabla Usuario
         if (authData.user) {
           const { data: userData, error: dbError } = await client
-            .from('Usuario')
+            .from("Usuario")
             .insert([
               {
                 uuid_supabase: authData.user.id,
@@ -156,62 +257,69 @@ const Register = () => {
                 nombre: formData.firstName,
                 apellido: formData.lastName,
                 correoElectronico: formData.email,
-                estado: 'Activo',
-                suscripcion: 'Gratuito',
-                terminoServicio: 'TRUE'
-              }
+                estado: "Activo",
+                suscripcion: "Gratuito",
+                terminoServicio: "TRUE",
+              },
             ])
             .select()
             .single();
 
           if (dbError) {
-            console.error('Error al guardar en tabla Usuario:', dbError);
             toast.dismiss(toastId);
-            showErrorToast("Error al completar el registro en la base de datos.");
+            console.error("Error al guardar en tabla Usuario:", dbError);
+            showErrorToast(
+              "Error al completar el registro en la base de datos."
+            );
             return;
           }
 
           await client.auth.updateUser({
-            data: { usuario_db_id: userData.id }
+            data: { usuario_db_id: userData.id },
           });
         }
 
-        toast.dismiss(toastId);
-
         // Limpiar localStorage
-        localStorage.removeItem('registerFormData');
-        localStorage.removeItem('registerStep');
+        localStorage.removeItem("registerFormData");
+        localStorage.removeItem("registerStep");
 
-        // Cerrar cualquier sesión que se haya creado automáticamente (no esperes)
         if (authData.session) {
-          client.auth.signOut(); // No uses await aquí
+          client.auth.signOut();
         }
 
-        // Asociar colaborador si corresponde
         if (next && next.startsWith("/dashboard/")) {
           const idProyecto = next.split("/dashboard/")[1];
           try {
-            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id_proyecto: idProyecto, email: formData.email }),
-            });
+            await fetch(
+              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id_proyecto: idProyecto,
+                  email: formData.email,
+                }),
+              }
+            );
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
         }
 
-        // Redirige SIEMPRE al login, sin esperar nada más
+        // Redirige al login
         let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
-        const idProyectoParam = new URLSearchParams(location.search).get("id_proyecto");
+        const idProyectoParam = params.get("id_proyecto");
         if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
+
+        toast.dismiss(toastId);
         showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
         navigate(loginUrl);
-
       } catch (err) {
         toast.dismiss(toastId);
         showErrorToast("Error inesperado al registrar.");
-        console.error('Error en registro:', err);
+        console.error("Error en registro:", err);
+      } finally {
+        setIsRegistering(false); // Siempre se desbloquea aquí
       }
     }
   };
@@ -220,10 +328,15 @@ const Register = () => {
     <FormContainer>
       {step === 1 ? (
         <>
-          <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
+          <h1 className="text-2xl font-bold text-center mb-4">
+            Registrar cuenta
+          </h1>
           <p className="text-gray-400 text-center mb-6">
-            ¿Ya estás registrado?{' '}
-            <Link to="/iniciar-sesion" className="text-purple-500 hover:underline">
+            ¿Ya estás registrado?{" "}
+            <Link
+              to="/iniciar-sesion"
+              className="text-purple-500 hover:underline"
+            >
               Iniciar sesión
             </Link>
           </p>
@@ -256,16 +369,24 @@ const Register = () => {
           />
           <Button
             onClick={handleNext}
-            disabled={isSubmitDisabled}
-            className={isSubmitDisabled ? "opacity-50 cursor-not-allowed" : ""}
+            disabled={isSubmitDisabled || isValidating}
+            className={`${
+              isSubmitDisabled || isValidating
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
           >
             Siguiente
           </Button>
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-bold text-center mb-4">Registrar cuenta</h1>
-          <p className="text-gray-400 text-center mb-6">¡Casi listo! Continúa con la creación de tu contraseña.</p>
+          <h1 className="text-2xl font-bold text-center mb-4">
+            Registrar cuenta
+          </h1>
+          <p className="text-gray-400 text-center mb-6">
+            ¡Casi listo! Continúa con la creación de tu contraseña.
+          </p>
           <PasswordInput
             label="Crear Contraseña"
             type="password"
@@ -280,29 +401,32 @@ const Register = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             errorMessage={
-              formData.confirmPassword && formData.confirmPassword !== formData.password
-                ? 'Las contraseñas no coinciden'
-                : ''
+              formData.confirmPassword &&
+              formData.confirmPassword !== formData.password
+                ? "Las contraseñas no coinciden"
+                : ""
             }
           />
           <Checkbox
             label={
               <>
-                Acepto los{' '}
+                Acepto los{" "}
                 <Link
                   to="/terminos"
                   state={{ from: "/registrarse" }}
                   className="text-purple-500 hover:underline"
                   onClick={() => saveRegisterFormToStorage(formData, step)}
-                >Términos de Servicio
-                </Link>{' '}
-                y{' '}
+                >
+                  Términos de Servicio
+                </Link>{" "}
+                y{" "}
                 <Link
                   to="/politica-de-privacidad"
                   state={{ from: "/registrarse" }}
                   className="text-purple-500 hover:underline"
                   onClick={() => saveRegisterFormToStorage(formData, step)}
-                >Políticas de Privacidad
+                >
+                  Políticas de Privacidad
                 </Link>
               </>
             }
@@ -311,8 +435,19 @@ const Register = () => {
             onChange={handleChange}
           />
           <div className="flex justify-between space-x-8">
-            <Button onClick={handleBack}>Atrás</Button>
-            <Button onClick={handleSubmit} type="submit">
+            <Button onClick={handleBack} disabled={isRegistering}>
+              Atrás
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              type="submit"
+              disabled={isStep2SubmitDisabled || isRegistering} // Aqui usa el nuevo perro estado :/
+              className={`${
+                isStep2SubmitDisabled || isRegistering
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+            >
               Registrar
             </Button>
           </div>

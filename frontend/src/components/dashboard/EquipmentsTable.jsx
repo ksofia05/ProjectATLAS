@@ -5,8 +5,10 @@ import { useEffect } from "react";
 
 export default function EquipmentsTable({ cliente }) {
   const [equipos, setEquipos] = useState([]);
+  const [equiposContador, setEquiposContador] = useState([]);
   const [loading, setLoading] = useState(true);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+  const [numeroSerieSeleccionado, setNumeroSerieSeleccionado] = useState(null);
 
 useEffect(() => {
   if (!cliente) return;
@@ -56,7 +58,18 @@ useEffect(() => {
         };
       });
 
-      setEquipos(errorEq ? [] : equiposCompletos);
+      // Agrupar por numeroSerie y contar repeticiones
+      const contador = {};
+      equiposCompletos.forEach(eq => {
+        if (!contador[eq.numeroSerie]) contador[eq.numeroSerie] = 0;
+        contador[eq.numeroSerie]++;
+      });
+      // Mostrar solo un equipo por numeroSerie, pero con el contador
+      const equiposUnicos = Object.keys(contador).map(numSerie => {
+        const eq = equiposCompletos.find(e => e.numeroSerie === numSerie);
+        return { ...eq, repeticiones: contador[numSerie] };
+      });
+      setEquipos(errorEq ? [] : equiposUnicos);
       setLoading(false);
     });
 }, [cliente]);
@@ -93,9 +106,17 @@ useEffect(() => {
               <tr
                 key={equipo.numeroSerie + idx}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition cursor-pointer"
-                onClick={() => setEquipoSeleccionado(equipo)}
+            onClick={() => {
+              setEquipoSeleccionado(equipo);
+              setNumeroSerieSeleccionado(equipo.numeroSerie);
+            }}
               >
-                <td className="py-2 px-3 text-center">{equipo.numeroSerie}</td>
+                <td className="py-2 px-3 text-center">
+                  {equipo.numeroSerie}
+                  {equipo.repeticiones > 1 && (
+                    <span className="text-xs text-purple-400 ml-1">({equipo.repeticiones})</span>
+                  )}
+                </td>
                 <td className="py-2 px-3 text-center">{equipo.ingreso}</td>
                 <td className="py-2 px-3 text-center">
                   {equipo.salida ? (
@@ -105,7 +126,7 @@ useEffect(() => {
                       No hay salida aún
                     </span>
                   )}
-                  </td>
+                </td>
                 <td className="py-2 px-3 text-center">
                   {equipo.comentarioEntrada ? (
                     equipo.comentarioEntrada
@@ -132,7 +153,11 @@ useEffect(() => {
       {equipoSeleccionado && (
         <EquipmentClientModal
           equipo={equipoSeleccionado}
-          onClose={() => setEquipoSeleccionado(null)}
+          numeroSerieSeleccionado={numeroSerieSeleccionado}
+          onClose={() => {
+            setEquipoSeleccionado(null);
+            setNumeroSerieSeleccionado(null);
+          }}
           cliente={cliente}
         />
       )}
