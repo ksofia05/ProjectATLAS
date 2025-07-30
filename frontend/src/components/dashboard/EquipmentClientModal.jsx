@@ -8,7 +8,7 @@ import { client as supabase } from "../../supabase/client";
 import { dateUtils } from "../../utils/dateUtils";
 import React, { useState, useEffect, useRef } from "react";
 
-const EquipmentClientModal = ({ cliente, onClose }) => {
+const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClose }) => {
   const [equipos, setEquipos] = useState([]);
   const [registroActual, setRegistroActual] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -45,18 +45,20 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
         const numerosSerie = equipoAgs.map((ea) => ea.equipo_numeroSerie);
         const { data: equiposData, error: errorEq } = await supabase
           .from("Equipo")
-          .select("marca, fotoEquipo, numeroSerie")
+          .select("*")
           .in("numeroSerie", numerosSerie);
         if (errorEq) {
           setEquipos([]);
           setLoading(false);
           return;
         }
+        // Unir datos y contar repeticiones, asegurando que cada registro duplicado tenga su propia imagen
         const equiposCompletos = equipoAgs.map((ea) => {
           const equipo =
             equiposData.find(
               (eq) => eq.numeroSerie === ea.equipo_numeroSerie
             ) || {};
+          // Usar la foto de la tabla Equipo para cada registro
           return {
             ...equipo,
             ingreso: ea.fechaIngreso,
@@ -65,9 +67,28 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
             salida: ea.fechaSalida,
             estado: ea.Estado,
             agendamiento_equipo: ea.agendamiento_equipo,
+            fotoEquipo: equipo.fotoEquipo || ""
           };
         });
-        setEquipos(equiposCompletos);
+        // Agrupar por numeroSerie y contar repeticiones
+        const contador = {};
+        equiposCompletos.forEach(eq => {
+          if (!contador[eq.numeroSerie]) contador[eq.numeroSerie] = 0;
+          contador[eq.numeroSerie]++;
+        });
+        // Agregar repeticiones a todos los equipos
+        const equiposFinal = equiposCompletos.map(eq => ({ ...eq, repeticiones: contador[eq.numeroSerie] }));
+        setEquipos(equiposFinal);
+        // Inicializar registroActual según el número de serie seleccionado
+        if (numeroSerieSeleccionado) {
+          const idx = equiposFinal.findIndex(e => e.numeroSerie === numeroSerieSeleccionado);
+          setRegistroActual(idx >= 0 ? idx : 0);
+        } else if (equipo) {
+          const idx = equiposFinal.findIndex(e => e.numeroSerie === equipo.numeroSerie);
+          setRegistroActual(idx >= 0 ? idx : 0);
+        } else {
+          setRegistroActual(0);
+        }
       } catch (error) {
         console.error("Error al obtener equipos:", error);
         setEquipos([]);
@@ -76,7 +97,8 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
       }
     };
     fetchEquipos();
-  }, [cliente]);
+    // eslint-disable-next-line
+  }, [cliente, equipo, numeroSerieSeleccionado]);
 
   const handleConfirmInactivar = async () => {
     const equipoActual = equipos[registroActual];
@@ -116,12 +138,6 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
                 salida: fechaSalida,
                 comentarioSalida,
               }
-            ? {
-                ...eq,
-                estado: nuevoEstado,
-                salida: fechaSalida,
-                comentarioSalida,
-              }
             : eq
         )
       );
@@ -143,7 +159,20 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
 
   if (loading) return;
 
-  const equipoActual = equipos[registroActual];
+  // Filtrar solo los registros del equipo seleccionado (por número de serie)
+  let equiposFiltrados = equipos;
+  let equipoActual = {};
+  if (equipos.length > 0) {
+    const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
+    const duplicados = equipos.filter(eq => eq.numeroSerie === serie);
+    if (duplicados.length > 1) {
+      equiposFiltrados = duplicados;
+      equipoActual = equiposFiltrados[registroActual] || {};
+    } else {
+      equiposFiltrados = [equipos.find(eq => eq.numeroSerie === serie)];
+      equipoActual = equiposFiltrados[0] || {};
+    }
+  }
 
   return (
     <>
@@ -195,10 +224,7 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
               <Input
                 label="Comentario Salida"
                 name="comentarioSalida"
-                value={
-                  equipoActual.comentarioSalida || "Sin comentario de salida"
-                }
-                onChange={(e) => setComentarioSalida(e.target.value)}
+               
                 value={
                   equipoActual.comentarioSalida || "Sin comentario de salida"
                 }
@@ -234,29 +260,37 @@ const EquipmentClientModal = ({ cliente, onClose }) => {
             </div>
           </div>
           <div className="flex justify-end items-center px-6 gap-4 mt-4">
-            <button
-              onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
-              disabled={registroActual === 0}
-              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
-              type="button"
-            >
-              &#8592;
-            </button>
-            <span className="text-white shadow-2xl">
-              {registroActual + 1} / {equipos.length}
-            </span>
-            <button
-              onClick={() =>
-                setRegistroActual((prev) =>
-                  Math.min(prev + 1, equipos.length - 1)
-                )
-              }
-              disabled={registroActual === equipos.length - 1}
-              className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
-              type="button"
-            >
-              &#8594;
-            </button>
+            {equiposFiltrados.length > 1 ? (
+              <>
+                <button
+                  onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
+                  disabled={registroActual === 0}
+                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
+                  type="button"
+                >
+                  &#8592;
+                </button>
+                <span className="text-white shadow-2xl">
+                  {registroActual + 1} / {equiposFiltrados.length}
+                </span>
+                <button
+                  onClick={() =>
+                    setRegistroActual((prev) =>
+                      Math.min(prev + 1, equiposFiltrados.length - 1)
+                    )
+                  }
+                  disabled={registroActual === equiposFiltrados.length - 1}
+                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
+                  type="button"
+                >
+                  &#8594;
+                </button>
+              </>
+            ) : (
+              <span className="text-white shadow-2xl">
+                1 / 1
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-4 mt-4">
             <Switch

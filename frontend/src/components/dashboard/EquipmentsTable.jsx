@@ -8,6 +8,7 @@ export default function EquipmentsTable({ cliente }) {
   const [equiposContador, setEquiposContador] = useState([]);
   const [loading, setLoading] = useState(true);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+  const [numeroSerieSeleccionado, setNumeroSerieSeleccionado] = useState(null);
 
 useEffect(() => {
   if (!cliente) return;
@@ -105,7 +106,10 @@ useEffect(() => {
               <tr
                 key={equipo.numeroSerie + idx}
                 className="border-b border-[#232336] hover:bg-[#232336]/40 transition cursor-pointer"
-                onClick={() => setEquipoSeleccionado(equipo)}
+            onClick={() => {
+              setEquipoSeleccionado(equipo);
+              setNumeroSerieSeleccionado(equipo.numeroSerie);
+            }}
               >
                 <td className="py-2 px-3 text-center">
                   {equipo.numeroSerie}
@@ -149,7 +153,11 @@ useEffect(() => {
       {equipoSeleccionado && (
         <EquipmentClientModal
           equipo={equipoSeleccionado}
-          onClose={() => setEquipoSeleccionado(null)}
+          numeroSerieSeleccionado={numeroSerieSeleccionado}
+          onClose={() => {
+            setEquipoSeleccionado(null);
+            setNumeroSerieSeleccionado(null);
+          }}
           cliente={cliente}
         />
       )}

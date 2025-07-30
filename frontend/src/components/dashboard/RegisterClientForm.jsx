@@ -139,18 +139,34 @@ export default function RegisterClientForm({
 
     setIsSubmitting(true);
     try {
-      // 1. Insertar cliente (si no existe)
-      let clienteData;
-      let clienteError;
+      // 1. Buscar si el cliente ya existe
       const { data: existingCliente } = await supabase
         .from("Cliente")
         .select("*")
         .eq("dni", form.identificacion)
-        .single();
+        .maybeSingle();
+
+      let clienteData;
+      let clienteError;
 
       if (existingCliente) {
-        clienteData = existingCliente;
+        // Si existe, ACTUALIZA los datos
+        const { data, error } = await supabase
+          .from("Cliente")
+          .update({
+            nombre: form.nombre,
+            apellido: form.apellido,
+            correo: form.email,
+            telefono: form.telefono,
+            // ...otros campos si tienes
+          })
+          .eq("dni", form.identificacion)
+          .select()
+          .maybeSingle();
+        clienteData = data;
+        clienteError = error;
       } else {
+        // Si no existe, lo insertas (como ya tienes)
         const insertResult = await supabase
           .from("Cliente")
           .insert([
@@ -164,8 +180,7 @@ export default function RegisterClientForm({
             },
           ])
           .select()
-          .single();
-
+          .maybeSingle();
         clienteData = insertResult.data;
         clienteError = insertResult.error;
       }
@@ -179,7 +194,7 @@ export default function RegisterClientForm({
         .from("Equipo")
         .select("*")
         .eq("numeroSerie", form.serie)
-        .single();
+        .maybeSingle();
 
       if (existingEquipo) {
         // Si la imagen es diferente, actualizarla (guardar la URL pública completa)
@@ -193,7 +208,7 @@ export default function RegisterClientForm({
             .update({ fotoEquipo: nuevaFotoEquipo })
             .eq("numeroSerie", form.serie)
             .select()
-            .single();
+            .maybeSingle();
           equipoData = updatedEquipo || existingEquipo;
           equipoError = updateError;
         } else {
@@ -215,7 +230,7 @@ export default function RegisterClientForm({
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
         equipoData = insertEquipo.data;
         equipoError = insertEquipo.error;
       }
@@ -233,7 +248,7 @@ export default function RegisterClientForm({
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
 
       if (agendamientoError) throw agendamientoError;
 
@@ -247,6 +262,7 @@ export default function RegisterClientForm({
             Estado: "Activo",
             equipo_numeroSerie: equipoData.numeroSerie,
             agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+            comentarioSalida: "", // Si tienes un campo para comentario de salida
           },
         ]);
 
