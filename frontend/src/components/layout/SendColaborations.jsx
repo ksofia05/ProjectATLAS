@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react'
 import ReactDOM from "react-dom";
-import {
-  showErrorToast,
-  showLoadingToast,
-  showSuccessToast,
-} from "../common/popUp/Loading";
-import toast from "react-hot-toast";
-import FloatingModal from "../common/popUp/FloatingModal";
-import useProjectStore from "../../stores/useProjectsStore";
-import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
+import { showErrorToast, showLoadingToast, showSuccessToast } from '../common/popUp/Loading';
+import toast from 'react-hot-toast';
+import FloatingModal from '../common/popUp/FloatingModal';
+import useProjectStore from '../../stores/useProjectsStore';
+import useCollaboratorsStore from '../../stores/useCollaboratorsStore';
 
 const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [email, setEmail] = useState("");
@@ -16,12 +12,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [isSending, setIsSending] = useState(false);
 
   const { projectName, fetchProjectInfo } = useProjectStore();
-  const { collaborators, fetchCollaborators, forceRefresh } =
-    useCollaboratorsStore();
+  const { collaborators, fetchCollaborators, forceRefresh } = useCollaboratorsStore();
 
   // Filtrar solo colaboradores activos
   const colaboradoresActivos = useMemo(() => {
-    return collaborators.filter((colab) => colab.estado === "Activo");
+    return collaborators.filter(colab => colab.estado === "Activo");
   }, [collaborators]);
 
   useEffect(() => {
@@ -42,9 +37,8 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       }
     };
 
-    window.addEventListener("collaboratorStateChanged", handleStateChange);
-    return () =>
-      window.removeEventListener("collaboratorStateChanged", handleStateChange);
+    window.addEventListener('collaboratorStateChanged', handleStateChange);
+    return () => window.removeEventListener('collaboratorStateChanged', handleStateChange);
   }, [open, projectId, forceRefresh]);
 
   const handleClose = () => {
@@ -88,10 +82,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
       const data = await response.json();
       toast.dismiss(toastId);
-
-      if (response.ok && data.success) {
-        showSuccessToast("¡Invitación enviada exitosamente!");
-        setEmail("");
+      
+      if (data.success) {
+        showSuccessToast("¡Invitación enviada!");
+        setEmail('');
+        // Fuerza la recarga para los nuevos colab
         forceRefresh(projectId);
       } else {
         showErrorToast(data.message || "Error al enviar invitación");
@@ -109,21 +104,16 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
   return ReactDOM.createPortal(
     <FloatingModal onClose={handleClose}>
-      <div className="p-1">
-        <h2 className="text-xl font-bold mb-4 text-white">
-          Compartir Proyecto
-        </h2>
-        <p className="text-gray-400 mb-6">
-          Proyecto:{" "}
-          <span className="font-semibold text-white">
-            {projectName || "Cargando..."}
-          </span>
+      <div className='p-1'>
+        <h2 className='text-xl font-bold mb-4 text-white'>Compartir Proyecto</h2>
+        <p className='text-gray-400 mb-6'>
+          Proyecto: <span className='font-semibold text-white'>{projectName || 'Cargando...'}</span>
         </p>
-
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
-          <input
-            type="email"
-            className="flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400"
+        
+        <form onSubmit={handleSubmit} className='flex gap-2 mb-6'>
+          <input 
+            type="email" 
+            className='flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400'
             placeholder="Correo del colaborador"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -142,24 +132,20 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
             {isSending ? "Enviando..." : "Invitar"}
           </button>
         </form>
-
-        <h3 className="text-white font-semibold mb-2">Miembros Actuales</h3>
-        <hr className="my-2 border-gray-700" />
-
-        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
+        
+        <h3 className='text-white font-semibold mb-2'>Miembros Actuales</h3>
+        <hr className='my-2 border-gray-700' />
+        
+        <div className='flex flex-col gap-3 max-h-48 overflow-y-auto'>
           {colaboradoresActivos.length === 0 ? (
-            <div className="text-gray-400 text-center py-4">
+            <div className='text-gray-400 text-center py-4'>
               Sin colaboradores aún
             </div>
           ) : (
             colaboradoresActivos.map((colab, idx) => (
-              <div
-                className="flex items-center gap-3"
-                key={colab.correo || idx}
-              >
-                <div className="flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white">
-                  {colab.nombre?.charAt(0)}
-                  {colab.apellido?.charAt(0)}
+              <div className='flex items-center gap-3' key={colab.correo || idx}>
+                <div className='flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-purple-400 text-white'>
+                  {colab.nombre?.charAt(0)}{colab.apellido?.charAt(0)}
                 </div>
                 <div className="flex-1">
                   <div className="text-white font-medium">

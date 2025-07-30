@@ -23,7 +23,7 @@ const monthNames = [
 const CalendarCard = ({
   mes = null,
   year = null,
-  diasConPendientes = [], 
+  diasConPendientes = [],
 }) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -88,12 +88,10 @@ const CalendarCard = ({
               <div
                 key={idx}
                 className={`text-center text-base relative ${
-                  
                   d === todayDay
                     ? "bg-purple-600 rounded-full font-bold text-white"
                     : ""
                 } ${
-                  
                   diasConPendientes.includes(d)
                     ? "after:content-[''] after:block after:h-1 after:bg-violet-400 after:rounded-full after:mt-1"
                     : ""
