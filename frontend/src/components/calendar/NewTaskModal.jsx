@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react"; // Importamos useEffect
 import FloatingModal from "../common/popUp/FloatingModal";
-import ButtonBG from "../common/ButtonBG"; // Asegúrate que este es el componente del botón
+import ButtonBG from "../common/ButtonBG"; 
 import Input from "../common/Input";
 
 export default function NewTaskModal({ onClose, onSave }) {
@@ -16,13 +16,12 @@ export default function NewTaskModal({ onClose, onSave }) {
     const endDateInputRef = useRef(null);
     const taskTimeInputRef = useRef(null);
 
-    // Estado para controlar si todos los campos están llenos
+
     const [isFormValid, setIsFormValid] = useState(false);
 
-    // useEffect para validar el formulario cada vez que 'form' cambia
     useEffect(() => {
         const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
-        // console.log("Form values:", form); // Para depuración
+
         const allFieldsFilled =
             taskTitle.trim() !== "" &&
             taskDescription.trim() !== "" &&
@@ -44,10 +43,10 @@ export default function NewTaskModal({ onClose, onSave }) {
         e.preventDefault();
         if (isFormValid) {
             console.log("Guardando tarea:", form);
-            onSave(form); // Llama a la función onSave y cierra el modal
+            onSave(form); 
         } else {
             console.log("Formulario incompleto. No se puede guardar.");
-            // Opcional: podrías añadir un estado para mostrar/ocultar el mensaje aquí si no es solo condicional
+            
         }
     };
 
