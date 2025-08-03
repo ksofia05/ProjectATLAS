@@ -240,7 +240,7 @@ const Login = () => {
         <p className="text-gray-400 mt-2">
           ¿Olvidaste tu contraseña?{" "}
           <Link
-            to="/recuperar-contrasena"
+            to={`/recuperar-contrasena${next || idProyecto ? `?${params.toString()}` : ""}`}
             className="text-purple-400 hover:underline"
           >
             Recuperar contraseña
