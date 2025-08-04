@@ -16,6 +16,7 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
   const [comentarioSalida, setComentarioSalida] = useState("");
   const salidaRef = useRef(null);
 
+
   useEffect(() => {
     if (!cliente) return;
     const fetchEquipos = async () => {
@@ -100,6 +101,25 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
     // eslint-disable-next-line
   }, [cliente, equipo, numeroSerieSeleccionado]);
 
+  useEffect(()=> {
+    if (equipos.length > 0 && registroActual >= 0){
+      const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
+      const duplicados = equipos.filter(eq => eq.numeroSerie === serie);
+      let equipoActual = {};
+      if (duplicados.length > 1) {
+        equipoActual = duplicados[registroActual] || {};
+      } else {
+        equipoActual = equipos.find(eq => eq.numeroSerie === serie) || {};
+      }
+
+      if (equipoActual.comentarioSalida){
+        setComentarioSalida(equipoActual.comentarioSalida);
+      }else{
+        setComentarioSalida("");
+      }
+    }
+  }, [equipos, registroActual, numeroSerieSeleccionado, equipo]);
+
   const handleConfirmInactivar = async () => {
     const equipoActual = equipos[registroActual];
     const nuevoEstado =
@@ -173,6 +193,7 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
       equipoActual = equiposFiltrados[0] || {};
     }
   }
+  
 
   return (
     <>
@@ -226,10 +247,13 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
                 name="comentarioSalida"
                
                 value={
-                  equipoActual.comentarioSalida || "Sin comentario de salida"
+                  equipoActual.estado === "Inactivo"
+                  ? equipoActual.comentarioSalida
+                  : comentarioSalida || equipoActual.comentarioSalida
                 }
                 onChange={(e) => setComentarioSalida(e.target.value)}
                 placeholder="Comentario de salida"
+                readOnly={equipoActual.estado === "Inactivo"}
               />
               <InputCalendario
                 label="Salida"
