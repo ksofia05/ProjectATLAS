@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
@@ -15,7 +15,12 @@ const PasswordRecovery = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next");
+  const idProyecto = params.get("id_proyecto");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,10 +86,18 @@ const PasswordRecovery = () => {
         }
       }
 
+      let redirectTo = window.location.origin + "/reset-password";
+      if (next || idProyecto){
+        const redirectParams = new URLSearchParams();
+        if (next) redirectParams.set("next", next);
+        if (idProyecto) redirectParams.set("id_proyecto", idProyecto);
+        redirectTo += `?${redirectParams.toString()}`;
+      }
+
       const { data: supaData, error } = await client.auth.resetPasswordForEmail(
         email,
         {
-          redirectTo: window.location.origin + "/reset-password",
+          redirectTo: redirectTo,
         }
       );
 
