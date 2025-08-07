@@ -26,6 +26,10 @@ const PasswordReset = () => {
   });
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
+  const params = new URLSearchParams(location.search);
+  const next = params.get("next");
+  const idProyecto = params.get("id_proyecto");
+
   const PasswordValid = PasswordValidator({ password: formData.newPassword, onlyReturnValid: true });
   const ConfirmValid = formData.confirmPassword === formData.newPassword;
 
@@ -63,7 +67,11 @@ const PasswordReset = () => {
           if (error) {
             console.error('Error setting session:', error);
             showErrorToast("Enlace de recuperación inválido o expirado");
-            navigate("/recuperar-contrasena");
+            const  redirectParams = new URLSearchParams();
+            if (next) redirectParams.set("next", next);
+            if (idProyecto) redirectParams.set("id_proyecto", idProyecto);
+            const redirectUrl = `/recuperar-contrasena${redirectParams.toString() ? `?${redirectParams.toString()}` : ''}`;
+            navigate(redirectUrl);
           } else {
             console.log('Session set successfully:', data);
             setIsValidSession(true);
@@ -76,7 +84,11 @@ const PasswordReset = () => {
           if (error) {
             console.error('Error getting session:', error);
             showErrorToast("Error al verificar la sesión");
-            navigate("/recuperar-contrasena");
+            const redirectParams =  new URLSearchParams();
+            if (next) redirectParams.set("next", next);
+            if (idProyecto) redirectParams.set("id_proyecto", idProyecto);
+            const redirectUrl = `/recuperar-contrasena${redirectParams.toString() ? `?${redirectParams.toString()}` : ''}`;
+            navigate(redirectUrl);
           } else if (!session) {
             console.log('No active session found');
             console.log('Available URL params:', {
@@ -85,7 +97,11 @@ const PasswordReset = () => {
               pathname: location.pathname
             });
             showErrorToast("Enlace de recuperación inválido o expirado");
-            navigate("/recuperar-contrasena");
+            const redirectParams = new URLSearchParams();
+            if (next) redirectParams.set("next", next);
+            if (idProyecto) redirectParams.set("id_proyecto", idProyecto);
+            const redirectUrl = `/recuperar-contrasena${redirectParams.toString() ? `?${redirectParams.toString()}` : ''}`;
+            navigate(redirectUrl);
           } else {
             console.log('Active session found:', session);
             setIsValidSession(true);
@@ -94,7 +110,11 @@ const PasswordReset = () => {
       } catch (error) {
         console.error('Error in session verification:', error);
         showErrorToast("Error al verificar el enlace de recuperación");
-        navigate("/recuperar-contrasena");
+        const redirectParams = new URLSearchParams();
+        if (next) redirectParams.set("next", next);
+        if (idProyecto) redirectParams.set("id_proyecto", idProyecto);
+        const redirectUrl = `/recuperar-contrasena${redirectParams.toString() ? `?${redirectParams.toString()}` : ''}`;
+        navigate(redirectUrl);
       } finally {
         setIsLoading(false);
       }
@@ -166,8 +186,16 @@ const PasswordReset = () => {
         showSuccessToast("Contraseña cambiada exitosamente");
         // Cerrar sesión después de cambiar la contraseña
         await client.auth.signOut();
+
         setTimeout(() => {
-          navigate("/iniciar-sesion");
+          let loginURL = `/iniciar-sesion`;
+          if (next || idProyecto){
+            const loginParams = new URLSearchParams();
+            if (next) loginParams.set("next", next);
+            if (idProyecto) loginParams.set("id_proyecto", idProyecto);
+            loginURL += `?${loginParams.toString()}`;
+          }
+          navigate(loginURL);
         }, 1800);
       }
     } catch (error) {
