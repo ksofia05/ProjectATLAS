@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from tasks.models import Task, Usuario, Rol
 from proyectos.models import Proyecto
 from rest_framework.authtoken.models import Token
+from proyectos.models import Proyecto, ColaboradorProyecto
 
 class TaskView(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
@@ -151,34 +152,77 @@ def invitacion_colaborador(request):
     id_proyecto = request.data.get('id_proyecto')
 
     if not email or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return Response({'success': False, 'message': 'Debes ingresar un correo valido'})
+        return Response({'success': False, 'message': 'Debes ingresar un correo válido'}, status=400)
+    
     if not nombre_invitador or not id_proyecto:
-        return Response({'success': False, 'messagge': 'Faltan datos de invitador o proyecto'})
+        return Response({'success': False, 'message': 'Faltan datos de invitador o proyecto'}, status=400)
+    
     try:
-        usuario_invitado = Usuario.objects.get(correoelectronico=email)
-        if usuario_invitado.rol_idrol and int(usuario_invitado.rol_idrol.idrol) == 1:
-            if Proyecto.objects.filter(id_usuario=usuario_invitado).exists():
-                return Response({'success': False, 'message': 'Administrador no puede tener mas de un proyecto.'}, status=400)
-    except Usuario.DoesNotExist:
-        pass
-    invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
-    asunto = 'Invitacion a colaborar en un proyecto'
-    html_content = render_to_string('mensajeColabo.html', {
-        'email': email,
-        'nombre_invitador': nombre_invitador,
-        'invitacion_url': invitacion_url,
-    })
-    mensaje = strip_tags(html_content)
-    send_mail(
-        asunto,
-        mensaje,
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-        html_message=html_content,
-        fail_silently=False
-    )
-    return Response({'success': True, 'message': 'correo de recuperacion enviado correctamente.'})
-
+        try:
+            usuario_invitado = Usuario.objects.get(correoelectronico=email) #Verificacmos el correo en la BD
+            
+            
+            if usuario_invitado.rol_idrol and int(usuario_invitado.rol_idrol.idrol) == 1: #Verificamos si es admin
+                if Proyecto.objects.filter(id_usuario=usuario_invitado).exists(): #Verificamos su relacion con algun proyecto
+                    return Response({
+                        'success': False, 
+                        'message': 'Este usuario ya es administrador de un proyecto.'
+                    }, status=400)
+            
+            
+            if ColaboradorProyecto.objects.filter(usuario=usuario_invitado).exists(): #Verificamos si ya es colaborador de otro proyecto
+                proyecto_actual = Proyecto.objects.get(id_proyecto=id_proyecto)
+                colaboracion_existente = ColaboradorProyecto.objects.filter(usuario=usuario_invitado).first()
+                
+                if colaboracion_existente.proyecto.id_proyecto == int(id_proyecto): #Verificamos si el usuario ya esta en el mismo proyecto (que estupidez)
+                    return Response({
+                        'success': False, 
+                        'message': 'Este usuario ya hace parte de este proyecto.'
+                    }, status=400)
+                else:
+                    return Response({ #Este mensaje se muestra si el usuario ya hace parte de otro proyecto
+                        'success': False, 
+                        'message': 'Este usuario ya hace parte de otro proyecto.'
+                    }, status=400)
+            
+        except Usuario.DoesNotExist:
+            # Si el usuario no existe, está bien enviar la invitación
+            pass
+        
+        # Despues de todas las validaciones anteriores, ahora si que se envie el correo
+        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+        asunto = 'Invitación a colaborar en un proyecto'
+        html_content = render_to_string('mensajeColabo.html', {
+            'email': email,
+            'nombre_invitador': nombre_invitador,
+            'invitacion_url': invitacion_url,
+        })
+        mensaje = strip_tags(html_content)
+        
+        send_mail(
+            asunto,
+            mensaje,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            html_message=html_content,
+            fail_silently=False
+        )
+        
+        return Response({
+            'success': True, 
+            'message': 'Invitación enviada correctamente.'
+        })
+        
+    except Proyecto.DoesNotExist:
+        return Response({
+            'success': False, 
+            'message': 'El proyecto no existe.'
+        }, status=404)
+    except Exception as e:
+        return Response({
+            'success': False, 
+            'message': 'Error interno del servidor.' #Solo por si acaso (Verdad anny?)
+        }, status=500)
 
 @api_view(['POST'])
 def verificar_correo_existente(request):

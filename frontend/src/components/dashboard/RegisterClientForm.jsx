@@ -131,46 +131,61 @@ export default function RegisterClientForm({
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setTriedSubmit(true);
-    const validationErrors = validateClientForm(form);
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+e.preventDefault();
+  setTriedSubmit(true);
+  const validationErrors = validateClientForm(form);
+  setErrors(validationErrors);
+  if (Object.keys(validationErrors).length > 0) return;
 
-    setIsSubmitting(true);
-    try {
-      // 1. Insertar cliente (si no existe)
-      let clienteData;
-      let clienteError;
-      const { data: existingCliente } = await supabase
+  setIsSubmitting(true);
+  try {
+    // 1. Buscar si el cliente ya existe
+    const { data: existingCliente } = await supabase
+      .from("Cliente")
+      .select("*")
+      .eq("dni", form.identificacion)
+      .single();
+
+    let clienteData;
+    let clienteError;
+
+    if (existingCliente) {
+      // 2. Si existe, ACTUALIZA los datos
+      const { data, error } = await supabase
         .from("Cliente")
-        .select("*")
+        .update({
+          nombre: form.nombre,
+          apellido: form.apellido,
+          correo: form.email,
+          telefono: form.telefono,
+          // ...otros campos si tienes
+        })
         .eq("dni", form.identificacion)
+        .select()
         .single();
+      clienteData = data;
+      clienteError = error;
+    } else {
+      // 3. Si no existe, lo insertas (como ya tienes)
+      const insertResult = await supabase
+        .from("Cliente")
+        .insert([
+          {
+            dni: Number(form.identificacion),
+            nombre: form.nombre,
+            apellido: form.apellido,
+            correo: form.email,
+            telefono: form.telefono,
+            proyecto: Number(idproyecto),
+          },
+        ])
+        .select()
+        .single();
+      clienteData = insertResult.data;
+      clienteError = insertResult.error;
+    }
 
-      if (existingCliente) {
-        clienteData = existingCliente;
-      } else {
-        const insertResult = await supabase
-          .from("Cliente")
-          .insert([
-            {
-              dni: Number(form.identificacion),
-              nombre: form.nombre,
-              apellido: form.apellido,
-              correo: form.email,
-              telefono: form.telefono,
-              proyecto: Number(idproyecto),
-            },
-          ])
-          .select()
-          .single();
-
-        clienteData = insertResult.data;
-        clienteError = insertResult.error;
-      }
-
-      if (clienteError) throw clienteError;
+    if (clienteError) throw clienteError;
 
       // 2. Insertar equipo (si no existe)
       let equipoData;
@@ -179,21 +194,43 @@ export default function RegisterClientForm({
         .from("Equipo")
         .select("*")
         .eq("numeroSerie", form.serie)
-        .single();
+        .maybeSingle();
 
       if (existingEquipo) {
-        equipoData = existingEquipo;
+        // Si la imagen es diferente, actualizarla (guardar la URL pública completa)
+        if (form.imagen && existingEquipo.fotoEquipo !== form.imagen) {
+          let nuevaFotoEquipo = form.imagen;
+          if (!form.imagen.startsWith("http")) {
+            nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+          }
+          const { error: updateError, data: updatedEquipo } = await supabase
+            .from("Equipo")
+            .update({ fotoEquipo: nuevaFotoEquipo })
+            .eq("numeroSerie", form.serie)
+            .select()
+            .maybeSingle();
+          equipoData = updatedEquipo || existingEquipo;
+          equipoError = updateError;
+        } else {
+          equipoData = existingEquipo;
+        }
       } else {
+        // Guardar la URL pública completa si es posible
+        let nuevaFotoEquipo = form.imagen;
+        if (form.imagen && !form.imagen.startsWith("http")) {
+          nuevaFotoEquipo = `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${form.imagen}`;
+        }
         const insertEquipo = await supabase
           .from("Equipo")
           .insert([
             {
               numeroSerie: form.serie,
               marca: "",
+              fotoEquipo: nuevaFotoEquipo,
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
         equipoData = insertEquipo.data;
         equipoError = insertEquipo.error;
       }
@@ -211,7 +248,7 @@ export default function RegisterClientForm({
             },
           ])
           .select()
-          .single();
+          .maybeSingle();
 
       if (agendamientoError) throw agendamientoError;
 
@@ -225,6 +262,7 @@ export default function RegisterClientForm({
             Estado: "Activo",
             equipo_numeroSerie: equipoData.numeroSerie,
             agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+            comentarioSalida: "", // Si tienes un campo para comentario de salida
           },
         ]);
 

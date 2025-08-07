@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react"; // Importamos useEffect
+import React, { useState, useRef, useEffect } from "react";
 import FloatingModal from "../common/popUp/FloatingModal";
 import ButtonBG from "../common/ButtonBG"; 
 import Input from "../common/Input";
 
-export default function NewTaskModal({ onClose, onSave }) {
+export default function NewTaskModal({ onClose, onSave, startDate }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
-        startDate: "",
+        startDate: startDate || "",  // Rellenar automáticamente si se recibe
         endDate: "",
         taskTime: "",
     });
@@ -19,9 +19,9 @@ export default function NewTaskModal({ onClose, onSave }) {
 
     const [isFormValid, setIsFormValid] = useState(false);
 
+
     useEffect(() => {
         const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
-
         const allFieldsFilled =
             taskTitle.trim() !== "" &&
             taskDescription.trim() !== "" &&
@@ -30,6 +30,16 @@ export default function NewTaskModal({ onClose, onSave }) {
             taskTime.trim() !== "";
         setIsFormValid(allFieldsFilled);
     }, [form]);
+
+    useEffect(() => {
+        // Si el prop startDate cambia y el campo está vacío, lo rellenamos
+        if (startDate && !form.startDate) {
+            setForm((prevForm) => ({
+                ...prevForm,
+                startDate: startDate,
+            }));
+        }
+    }, [form, startDate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -56,9 +66,7 @@ export default function NewTaskModal({ onClose, onSave }) {
             onClose={onClose}
             className="w-[500px] max-w-full"
         >
-            {/* Estilos CSS para ocultar los iconos nativos del input de fecha/hora
-                y para ajustar el tamaño de fuente y alineación de los inputs.
-            */}
+
             <style jsx>{`
                 input[type="date"]::-webkit-calendar-picker-indicator,
                 input[type="time"]::-webkit-calendar-picker-indicator {
@@ -143,7 +151,7 @@ export default function NewTaskModal({ onClose, onSave }) {
                 <div className="flex flex-col gap-2">
                     <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
                     <div className="grid grid-cols-3 gap-4 items-center">
-                        {/* Input "Desde" */}
+
                         <div className="relative">
                             <span className="block text-gray-400 mb-1">Desde</span>
                             <div className="relative w-full">
@@ -163,7 +171,6 @@ export default function NewTaskModal({ onClose, onSave }) {
                             </div>
                         </div>
 
-                        {/* Input "Hasta" */}
                         <div className="relative">
                             <span className="block text-gray-400 mb-1">Hasta</span>
                             <div className="relative w-full text-sm">
@@ -183,7 +190,6 @@ export default function NewTaskModal({ onClose, onSave }) {
                             </div>
                         </div>
 
-                        {/* Input "Hora" (ajustado para alineación y tamaño) */}
                         <div className="relative">
                             <span className="block text-gray-400 mb-1">Hora</span>
                             <div className="relative w-full">
@@ -205,7 +211,6 @@ export default function NewTaskModal({ onClose, onSave }) {
                     </div>
                 </div>
 
-                {/* Mensaje de advertencia */}
                 {!isFormValid && (
                     <p className="text-red-500 text-xs mt-6">
                         Primero debes de llenar todos los campos antes de guardar
@@ -222,13 +227,13 @@ export default function NewTaskModal({ onClose, onSave }) {
                     </ButtonBG>
                     <ButtonBG
                         type="submit"
-                        // Aplicar clase de opacidad si no es válido
+
                         className={`font-semibold px-6 py-2 rounded-xl shadow transition w-full h-12 ${
                             isFormValid
-                                ? "bg-[#7c2ae8] hover:bg-[#5a1bb7] text-white" // Estilos activo
-                                : "bg-[#7c2ae8] text-white opacity-50 cursor-not-allowed" // Estilos deshabilitado
+                                ? "bg-[#7c2ae8] hover:bg-[#5a1bb7] text-white" 
+                                : "bg-[#7c2ae8] text-white opacity-50 cursor-not-allowed" 
                         }`}
-                        disabled={!isFormValid} // Deshabilitar el botón
+                        disabled={!isFormValid} 
                     >
                         Guardar
                     </ButtonBG>
