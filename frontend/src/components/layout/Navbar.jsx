@@ -5,13 +5,9 @@ import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
 import userAtlas from "../../assets/atlasUser.png";
+import { useNavbarTitle } from "../../context/NavbarTitleContext";
 
-const Navbar = ({
-  showShareButton = false,
-  showUpgradeButton = true,
-  title = "Proyectos",
-  subtitle = "",
-}) => {
+const Navbar = (props) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
@@ -20,6 +16,8 @@ const Navbar = ({
 
   const params = useParams();
   const projectId = params.id;
+
+  const { title, subtitle } = useNavbarTitle();
 
   const getUserName = () => {
     if (!user) return "Loading...";
@@ -58,7 +56,7 @@ const Navbar = ({
           {/* Título y subtítulo */}
           <div className="min-w-0 flex-1 mr-4">
             <h1 className="text-xl lg:text-2xl font-bold text-white truncate">
-              {title}
+              {title || props.title}
             </h1>
             {subtitle && (
               <p className="text-gray-400 text-sm lg:text-base truncate">
@@ -72,7 +70,7 @@ const Navbar = ({
             {" "}
             {/* Responsive gap */}
             {/* Botón Compartir */}
-            {showShareButton && (
+            {props.showShareButton && (
               <>
                 <ButtonGrey
                   onClick={() => setShowShareModal(true)}
@@ -90,7 +88,7 @@ const Navbar = ({
               </>
             )}
             {/* Botón Actualizar Plan */}
-            {showUpgradeButton && (
+            {props.showUpgradeButton && (
               <ButtonGrey className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 md:px-6 py-2 rounded-xl shadow transition-all text-sm md:text-base">
                 <span className="hidden sm:inline">Actualizar Plan</span>
                 <span className="sm:hidden">Plan</span>
