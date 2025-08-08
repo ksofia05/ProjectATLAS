@@ -1,22 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import InventoryTable from "../../components/dashboard/InventoryTable";
 import EquipmentsTable from "../../components/dashboard/EquipmentsTable";
 import ButtonBG from "../../components/common/ButtonBG";
+import { useNavbarTitle } from "../../context/NavbarTitleContext";
+
 
 export default function InventoryPage() {
   const [clienteSeleccionado, setClienteSeleccionado] = React.useState(null);
+  const { setTitle, setSubtitle } = useNavbarTitle();
+
+  useEffect(() => {
+    setTitle("Inventario");
+    setSubtitle("Organiza y registra los equipos de tus clientes!");
+  }, [setTitle, setSubtitle]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-shrink-0">
-        <h1 className="text-3xl font-bold text-white mb-1">
-          Cliente / Inventario
-        </h1>
-        <p className="text-gray-300 mb-4">
-          Organiza y registra los equipos de tus clientes!
-        </p>
-      </div>
-      
       {clienteSeleccionado ? (
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-hidden">

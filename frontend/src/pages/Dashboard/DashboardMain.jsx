@@ -4,14 +4,24 @@ import PendingTasksCard from "../../components/dashboard/PendingTasksCard";
 import CalendarCard from "../../components/dashboard/CalendarCard";
 import ClientHistoryTable from "../../components/dashboard/ClientHistoryTable";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavbarTitle } from "../../context/NavbarTitleContext";
 
 export default function DashboardMain() {
   const { id } = useParams();
   const [projectName, setProjectName] = useState("");
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { setTitle, setSubtitle } = useNavbarTitle();
+
+  const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "Usuario";
 
   useEffect(() => {
+    const newTitle = loading ? "Cargando..." : `Dashboard - ${projectName}`;
+    const newSubtitle = `Hola ${firstName}, ¿Qué deseas hacer el día de hoy?`;
+
+    setTitle(newTitle);
+    setSubtitle(newSubtitle);
+
     const fetchProjectName = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -36,21 +46,13 @@ export default function DashboardMain() {
         setLoading(false);
       }
     };
+
     fetchProjectName();
-  }, [id]);
-
-  const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "Usuario";
-
+  }, [id, user, loading, projectName, setTitle, setSubtitle, firstName]);
   const trabajosPendientes = [5, 14, 19, 25, 30];
 
   return (
     <>
-      <h2 className="text-3xl font-bold text-white mb-2">
-        {loading ? "Cargando..." : `Dashboard - ${projectName}`}
-      </h2>
-      <p className="text-gray-300 mb-8">
-        Hola {firstName}, ¿Qué deseas hacer el día de hoy?
-      </p>
       <div className="flex flex-wrap gap-8 mb-8">
         <PendingTasksCard />
         <CalendarCard diasConPendientes={trabajosPendientes} />

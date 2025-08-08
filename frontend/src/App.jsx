@@ -46,6 +46,8 @@ const App = () => {
   }, []);
   return (
     <BrowserRouter>
+    {/*Provider para el título y subtitulo del navbar*/}
+    <NavbarTitleProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
@@ -75,10 +77,7 @@ const App = () => {
           path="/dashboard/:id"
           element={
             <ProtectedRoute>
-              {/*Se agrego el provider para el título del navbar*/}
-              <NavbarTitleProvider>
                 <DashboardLayout />
-              </NavbarTitleProvider>
             </ProtectedRoute>
           }
         >
@@ -103,6 +102,7 @@ const App = () => {
         <Route path="*" element={<Error404 />} />
       </Routes>
       <Toaster />
+    </NavbarTitleProvider>
     </BrowserRouter>
   );
 };

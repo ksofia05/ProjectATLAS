@@ -23,7 +23,7 @@ export default function CalendarPage() {
 
   return (
     <>
-      <div className="flex flex-wrap gap-12 mt-4 items-start">
+      <div className="flex flex-wrap gap-12 items-start">
         <div className="flex gap-8 mb-8">
           <CalendarCard onDayClick={handleDayClick} />
         </div>
