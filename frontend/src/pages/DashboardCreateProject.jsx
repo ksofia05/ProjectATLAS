@@ -3,22 +3,21 @@ import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
-import useUserStore from "../stores/useUserStore";
+import { useAuth } from "../context/AuthProvider";
 
 const DashboardCreateProject = () => {
-  const user = useUserStore((state) => state.user);
-  useEffect(() => {
-    const hasRefreshed = localStorage.getItem("hasRefreshed");
-    if (user && !hasRefreshed) {
-      localStorage.setItem("hasRefreshed", "true");
-      window.location.reload();
-    }
-  }, [user]);
+    const { userProfile, isLoading, isAuthenticated } = useAuth();
+    console.log("Estado en DashboardCreateProject:", { 
+      userProfile, 
+      isLoading, 
+      isAuthenticated 
+    });
+  
   let projectsBlock = null;
 
-  if (!user) {
+  if (!userProfile) {
     projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
-  } else if (user.rol_idRol === 1) {
+  } else if (userProfile.rol_idRol === 1) {
     projectsBlock = (
       <div className="mb-8">
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
@@ -30,7 +29,7 @@ const DashboardCreateProject = () => {
         </ul>
       </div>
     );
-  } else if (user.rol_idRol === 2) {
+  } else if (userProfile.rol_idRol === 2) {
     projectsBlock = (
       <div>
         <h3 className="font-semibold mb-2 text-white">
@@ -73,7 +72,7 @@ const DashboardCreateProject = () => {
           />
         </div>
         <div className="flex-1 px-8 pb-8 pt-2">
-          <CreateProjectPanel disableCreate={user?.rol_idRol === 2} />
+          <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2} />
         </div>
       </div>
     </div>

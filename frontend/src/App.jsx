@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { fetchAndStoreUser } from "./utils/fetchAndStoreUser";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import HomePage from "./pages/Home/homepage";
@@ -30,22 +29,13 @@ import { Toaster } from "react-hot-toast";
 import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 import CalendarAdvancedPage from "./pages/Dashboard/CalendarAdvancedPage";
+import { AuthProvider } from "./context/AuthProvider";
 
 const App = () => {
-  useEffect(() => {
-    // Verificar si el usuario ya está autenticado y cargar su información
-    const checkUser = async () => {
-      try {
-        await fetchAndStoreUser();
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    };
-    checkUser();
-  }, []);
   return (
-    <BrowserRouter>
-      <Routes>
+      <BrowserRouter>
+      <AuthProvider>
+        <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/iniciar-sesion" element={<Login />} />
@@ -99,6 +89,7 @@ const App = () => {
         <Route path="*" element={<Error404 />} />
       </Routes>
       <Toaster />
+      </AuthProvider >
     </BrowserRouter>
   );
 };

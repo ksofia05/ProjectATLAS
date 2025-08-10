@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserMenu from "./UserMenu";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
@@ -16,14 +16,14 @@ const Navbar = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
 
-  const { user } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
 
   const params = useParams();
   const projectId = params.id;
 
   const getUserName = () => {
-    if (!user) return "Loading...";
-    const metadata = user.user_metadata;
+    if (!userProfile) return isLoading ? "Cargando..." : "Invitado";
+    const metadata = user.user_metadata || userProfile.nombre;
     return `${metadata.nombre} ${metadata.apellido}`;
   };
 
