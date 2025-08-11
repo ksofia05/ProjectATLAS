@@ -24,6 +24,7 @@ const CalendarCard = ({
   mes = null,
   year = null,
   diasConPendientes = [],
+  className,
 }) => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -61,7 +62,7 @@ const CalendarCard = ({
 
   return (
     <div
-      className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow cursor-pointer hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-[#1a1a2e] hover:to-[#2a2a45] transition-all duration-300"
+      className={`bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow cursor-pointer hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-[#1a1a2e] hover:to-[#2a2a45] transition-all duration-300 ${className}`}
       onClick={handleCalendarClick}
     >
       <div className="flex items-center justify-between mb-1">

@@ -30,12 +30,16 @@ import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 import CalendarAdvancedPage from "./pages/Dashboard/CalendarAdvancedPage";
 import { AuthProvider } from "./context/AuthProvider";
+import { NavbarTitleProvider } from "./context/NavbarTitleContext";
+
 
 const App = () => {
   return (
       <BrowserRouter>
       <AuthProvider>
-        <Routes>
+      <NavbarTitleProvider>
+      <Routes>
+
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/iniciar-sesion" element={<Login />} />
@@ -64,7 +68,7 @@ const App = () => {
           path="/dashboard/:id"
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+                <DashboardLayout />
             </ProtectedRoute>
           }
         >
@@ -89,6 +93,7 @@ const App = () => {
         <Route path="*" element={<Error404 />} />
       </Routes>
       <Toaster />
+      </NavbarTitleProvider>
       </AuthProvider >
     </BrowserRouter>
   );

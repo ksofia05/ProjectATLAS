@@ -262,6 +262,7 @@ e.preventDefault();
             Estado: "Activo",
             equipo_numeroSerie: equipoData.numeroSerie,
             agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
+            fotoEquipo: form.imagen,
             comentarioSalida: "", // Si tienes un campo para comentario de salida
           },
         ]);
