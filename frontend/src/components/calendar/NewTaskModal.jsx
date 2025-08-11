@@ -2,19 +2,19 @@ import React, { useState, useRef, useEffect } from "react";
 import MdFloatingModal from "../common/popUp/MdFloatingModal";
 import ButtonBG from "../common/ButtonBG";
 import Input from "../common/Input";
-import styled from "styled-components"
+import styled from "styled-components";
 
 const DateInput = styled.input`
-  &::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    display: none;
-  }
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: textfield;
+    &::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        display: none;
+    }
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
 `;
 
-export default function NewTaskModal({ onClose, onSave, startDate }) {
+export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTimeFields = false }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
@@ -31,14 +31,20 @@ export default function NewTaskModal({ onClose, onSave, startDate }) {
 
     useEffect(() => {
         const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
-        const allFieldsFilled =
-            taskTitle.trim() !== "" &&
-            taskDescription.trim() !== "" &&
-            startDate.trim() !== "" &&
-            endDate.trim() !== "" &&
-            taskTime.trim() !== "";
-        setIsFormValid(allFieldsFilled);
-    }, [form]);
+
+        // Lógica de validación corregida
+        if (hideDateAndTimeFields) {
+            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+        } else {
+            setIsFormValid(
+                taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "" &&
+                startDate.trim() !== "" &&
+                endDate.trim() !== "" &&
+                taskTime.trim() !== ""
+            );
+        }
+    }, [form, hideDateAndTimeFields]);
 
     useEffect(() => {
         if (startDate && !form.startDate) {
@@ -100,85 +106,87 @@ export default function NewTaskModal({ onClose, onSave, startDate }) {
                         }}
                     ></textarea>
                 </div>
-
-                <div className="flex flex-col gap-2">
-                    <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
-                    <div className="grid grid-cols-3 gap-4 items-center">
-                        {/* Desde */}
-                        <div className="relative">
-                            <span className="block text-gray-400 mb-1">Desde</span>
-                            <div className="relative w-full">
-                                <DateInput
-                                    ref={startDateInputRef}
-                                    type="date"
-                                    name="startDate"
-                                    value={form.startDate}
-                                    onChange={handleChange}
-                                    className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
-                                    style={{ backgroundColor: '#2b2b3a', color: 'white' }}
-                                />
-                                <span
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                                    onClick={() => startDateInputRef.current && startDateInputRef.current.showPicker()}
-                                    tabIndex={0}
-                                    role="button"
-                                    aria-label="Abrir calendario"
-                                >
-                                    <i className="bi bi-calendar text-gray-500" />
-                                </span>
+                
+                {!hideDateAndTimeFields && (
+                    <div className="flex flex-col gap-2">
+                        <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
+                        <div className="grid grid-cols-3 gap-4 items-center">
+                            {/* Desde */}
+                            <div className="relative">
+                                <span className="block text-gray-400 mb-1">Desde</span>
+                                <div className="relative w-full">
+                                    <DateInput
+                                        ref={startDateInputRef}
+                                        type="date"
+                                        name="startDate"
+                                        value={form.startDate}
+                                        onChange={handleChange}
+                                        className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
+                                        style={{ backgroundColor: '#2b2b3a', color: 'white' }}
+                                    />
+                                    <span
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                                        onClick={() => startDateInputRef.current && startDateInputRef.current.showPicker()}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label="Abrir calendario"
+                                    >
+                                        <i className="bi bi-calendar text-gray-500" />
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        {/* Hasta */}
-                        <div className="relative">
-                            <span className="block text-gray-400 mb-1">Hasta</span>
-                            <div className="relative w-full text-sm">
-                                <DateInput
-                                    ref={endDateInputRef}
-                                    type="date"
-                                    name="endDate"
-                                    value={form.endDate}
-                                    onChange={handleChange}
-                                    className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
-                                    style={{ backgroundColor: '#2b2b3a', color: 'white' }}
-                                />
-                                <span
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                                    onClick={() => endDateInputRef.current && endDateInputRef.current.showPicker()}
-                                    tabIndex={0}
-                                    role="button"
-                                    aria-label="Abrir calendario"
-                                >
-                                    <i className="bi bi-calendar text-gray-500" />
-                                </span>
+                            {/* Hasta */}
+                            <div className="relative">
+                                <span className="block text-gray-400 mb-1">Hasta</span>
+                                <div className="relative w-full text-sm">
+                                    <DateInput
+                                        ref={endDateInputRef}
+                                        type="date"
+                                        name="endDate"
+                                        value={form.endDate}
+                                        onChange={handleChange}
+                                        className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
+                                        style={{ backgroundColor: '#2b2b3a', color: 'white' }}
+                                    />
+                                    <span
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                                        onClick={() => endDateInputRef.current && endDateInputRef.current.showPicker()}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label="Abrir calendario"
+                                    >
+                                        <i className="bi bi-calendar text-gray-500" />
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        {/* Hora */}
-                        <div className="relative">
-                            <span className="block text-gray-400 mb-1">Hora</span>
-                            <div className="relative w-full">
-                                <DateInput
-                                    ref={taskTimeInputRef}
-                                    type="time"
-                                    name="taskTime"
-                                    value={form.taskTime}
-                                    onChange={handleChange}
-                                    className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
-                                    style={{ backgroundColor: '#2b2b3a', color: 'white' }}
-                                />
-                                <span
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                                    onClick={() => taskTimeInputRef.current && taskTimeInputRef.current.showPicker()}
-                                    tabIndex={0}
-                                    role="button"
-                                    aria-label="Abrir selector de hora"
-                                >
-                                    <i className="bi bi-clock text-gray-500" />
-                                </span>
+                            {/* Hora */}
+                            <div className="relative">
+                                <span className="block text-gray-400 mb-1">Hora</span>
+                                <div className="relative w-full">
+                                    <DateInput
+                                        ref={taskTimeInputRef}
+                                        type="time"
+                                        name="taskTime"
+                                        value={form.taskTime}
+                                        onChange={handleChange}
+                                        className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
+                                        style={{ backgroundColor: '#2b2b3a', color: 'white' }}
+                                    />
+                                    <span
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                                        onClick={() => taskTimeInputRef.current && taskTimeInputRef.current.showPicker()}
+                                        tabIndex={0}
+                                        role="button"
+                                        aria-label="Abrir selector de hora"
+                                    >
+                                        <i className="bi bi-clock text-gray-500" />
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
+                )}
+                
                 {!isFormValid && (
                     <p className="text-red-500 text-xs mt-6">
                         Primero debes de llenar todos los campos antes de guardar
