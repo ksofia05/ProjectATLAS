@@ -1,11 +1,11 @@
 import React from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import NoTenerCuenta from "../common/NoTenerCuenta";
 
 const InvitacionProyectoRoute = () => {
   const { id } = useParams();
-  const { isAuthenticated, isLoading } = useAuth({ redirectOnAuth: false });
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (

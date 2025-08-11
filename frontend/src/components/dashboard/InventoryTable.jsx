@@ -8,10 +8,10 @@ import axios from "axios";
 import DataTable from "../common/DataTable";
 import ButtonGrey from "../common/ButtonGrey";
 import RegisterClientDrawer from "./RegisterClientDrawer";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 
 export default function InventoryTable({ onEmojiClick }) {
-  const { user, isLoading } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
