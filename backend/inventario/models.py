@@ -45,6 +45,7 @@ class Equipoagendamiento(models.Model):
     agendamiento_equipo = models.AutoField(primary_key=True)
     equipo_numeroserie = models.ForeignKey(Equipo, models.DO_NOTHING, db_column='equipo_numeroSerie', blank=True, null=True)  # Field name made lowercase.
     agendamiento_idagendamiento = models.ForeignKey(Agendamiento, models.DO_NOTHING, db_column='agendamiento_idAgendamiento', blank=True, null=True)  # Field name made lowercase.
+    fotoequipo = models.CharField(db_column='fotoEquipo', max_length=150, blank=True, null=True)  # Nueva columna para imagen por registro
 
     class Meta:
         managed = False
