@@ -1,39 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { client } from '../../supabase/client';
+import { useAuth } from '../../context/AuthProvider';
 
 const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user } } = await client.auth.getUser();
-        setIsAuthenticated(!!user);
-      } catch (error) {
-        console.error('Error checking authentication:', error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    // Escuchar cambios en el estado de autenticación
-    const { data: { subscription } } = client.auth.onAuthStateChange(
-      (event, session) => {
-        setIsAuthenticated(!!session);
-        setIsLoading(false);
-      }
-    );
-
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
 
   // Mostrar loading mientras se verifica la autenticación
   if (isLoading) {
