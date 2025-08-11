@@ -16,14 +16,14 @@ const Navbar = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
 
-  const { user, userProfile, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   const params = useParams();
   const projectId = params.id;
 
   const getUserName = () => {
-    if (!userProfile) return isLoading ? "Cargando..." : "Invitado";
-    const metadata = user.user_metadata || userProfile.nombre;
+    if (!user) return isLoading ? "Cargando..." : "Invitado";
+    const metadata = user.user_metadata || user.nombre;
     return `${metadata.nombre} ${metadata.apellido}`;
   };
 
@@ -38,6 +38,7 @@ const Navbar = ({
       : userAtlas;
 
   useEffect(() => {
+    console.log('usuario', user)
     const handleClickOutside = (event) => {
       if (userRef.current && !userRef.current.contains(event.target)) {
         setMenuOpen(false);

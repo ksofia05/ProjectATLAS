@@ -6,8 +6,9 @@ import ProjectList from "../components/layout/ProjectList";
 import { useAuth } from "../context/AuthProvider";
 
 const DashboardCreateProject = () => {
-    const { userProfile, isLoading, isAuthenticated } = useAuth();
-    console.log("Estado en DashboardCreateProject:", { 
+    const { user, userProfile, isLoading, isAuthenticated } = useAuth();
+    console.log("Estado en DashboardCreateProject:", {
+      user,
       userProfile, 
       isLoading, 
       isAuthenticated 
@@ -35,7 +36,7 @@ const DashboardCreateProject = () => {
         <h3 className="font-semibold mb-2 text-white">
           Mis Proyectos (Colaborador)
         </h3>
-        <ProjectList isColaborador={true} />
+        <ProjectList />
       </div>
     );
   } else {
