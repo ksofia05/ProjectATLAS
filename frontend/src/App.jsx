@@ -30,6 +30,7 @@ import { Toaster } from "react-hot-toast";
 import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 import CalendarAdvancedPage from "./pages/Dashboard/CalendarAdvancedPage";
+import { NavbarTitleProvider } from "./context/NavbarTitleContext";
 
 const App = () => {
   useEffect(() => {
@@ -45,6 +46,8 @@ const App = () => {
   }, []);
   return (
     <BrowserRouter>
+    {/*Provider para el título y subtitulo del navbar*/}
+    <NavbarTitleProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
@@ -74,7 +77,7 @@ const App = () => {
           path="/dashboard/:id"
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+                <DashboardLayout />
             </ProtectedRoute>
           }
         >
@@ -99,6 +102,7 @@ const App = () => {
         <Route path="*" element={<Error404 />} />
       </Routes>
       <Toaster />
+    </NavbarTitleProvider>
     </BrowserRouter>
   );
 };
