@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import MdFloatingModal from "../common/popUp/MdFloatingModal";
 import ButtonBG from "../common/ButtonBG";
 import Input from "../common/Input";
-import styled from "styled-components";
+import styled from "styled-components"
 
 const DateInput = styled.input`
   &::-webkit-calendar-picker-indicator {
