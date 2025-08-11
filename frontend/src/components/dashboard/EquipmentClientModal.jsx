@@ -194,10 +194,26 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
     }
   }
   
+  const hasUnsavedChanges = () => {
+    return(
+      equipoActual.estado === "Activo" &&
+      comentarioSalida.trim()!==(equipoActual.comentarioSalida || "").trim() 
+    );
+  };
+
+  const handleDiscardChanges = () => {
+    setComentarioSalida(equipoActual.comentarioSalida || "");
+    if (onClose) onClose();
+  };
 
   return (
     <>
-      <WideFloatingModal className="max-w-6xl" onClose={onClose}>
+      <WideFloatingModal 
+        className="max-w-6xl" 
+        onClose={onClose}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onDiscardChanges={handleDiscardChanges}
+      >
         <h1 className="text-2xl font-bold text-white mx-8 mt-2 mb-2">
           Equipos Registrados
         </h1>
@@ -211,13 +227,19 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
                 readOnly
                 placeholder="Marca del equipo"
               />
-              <Input
-                label="Comentario Entrada"
-                name="comentarioEntrada"
-                value={equipoActual.comentarioEntrada || "Sin comentario"}
-                readOnly
-                placeholder="Comentario de entrada"
-              />
+              <div className="mb-4">
+                <label className="block text-gray-300 font-medium mb-2">Comentario Entrada</label>
+                  <textarea
+                  name="comentarioEntrada"
+                  label="Comentario Entrada"
+                  rows={3}
+                  value={equipoActual.comentarioEntrada || "Sin comentario"}
+                  readOnly
+                  placeholder="Comentario de entrada"
+                  className="text-white w-full border border-gray-600 rounded-lg bg-[#232335] p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              
               <Input
                 label="Ingreso"
                 name="ingreso"
@@ -242,19 +264,24 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
                 readOnly
                 placeholder="Número de serie"
               />
-              <Input
-                label="Comentario Salida"
-                name="comentarioSalida"
-               
-                value={
-                  equipoActual.estado === "Inactivo"
-                  ? equipoActual.comentarioSalida
-                  : comentarioSalida || equipoActual.comentarioSalida
-                }
-                onChange={(e) => setComentarioSalida(e.target.value)}
-                placeholder="Comentario de salida"
-                readOnly={equipoActual.estado === "Inactivo"}
-              />
+              <div className="mb-4">
+                <label className="block text-gray-300 font-medium mb-2">Comentario Salida</label>
+                <textarea
+                  name="comentarioSalida"
+                  rows={3}
+                  value={
+                    equipoActual.estado === "Inactivo"
+                    ? equipoActual.comentarioSalida
+                    : comentarioSalida || equipoActual.comentarioSalida
+                  }
+                  onChange={(e) => setComentarioSalida(e.target.value)}
+                  placeholder="Comentario de salida"
+                  readOnly={equipoActual.estado === "Inactivo"}
+                  className="text-white w-full border border-gray-600 rounded-lg bg-[#232335] p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+
+              </div>
+              
               <InputCalendario
                 label="Salida"
                 value={equipoActual.salida || ""}
