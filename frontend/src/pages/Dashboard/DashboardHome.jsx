@@ -96,6 +96,9 @@ const DashboardLayout = () => {
     return null;
   }
 
+  // Determinar si el usuario es colaborador (rol_idRol === 2)
+  const isColaborador = user?.rol_idRol === 2 || user?.rol_idrol === 2;
+
   return (
     <div className="min-h-screen bg-slate-950">
       <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true} />
@@ -104,7 +107,7 @@ const DashboardLayout = () => {
         <div className="sticky top-0 z-10 pt-6 bg-slate-950">
           <div className="px-8">
             <Navbar
-              showShareButton={true}
+              showShareButton={!isColaborador}
               showUpgradeButton={false}
               title={`Bienvenido/a${firstName ? " " + firstName : ""}`}
               subtitle="Aquí, Las estadísticas de esta semana!"

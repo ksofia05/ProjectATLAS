@@ -35,7 +35,7 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
         const { data: equipoAgs, error: errorEqAg } = await supabase
           .from("EquipoAgendamiento")
           .select(
-            "agendamiento_equipo, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado"
+            "agendamiento_equipo, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado, fotoEquipo"
           )
           .in("agendamiento_idAgendamiento", idsAgendamiento);
         if (errorEqAg || !equipoAgs.length) {
@@ -59,7 +59,7 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
             equiposData.find(
               (eq) => eq.numeroSerie === ea.equipo_numeroSerie
             ) || {};
-          // Usar la foto de la tabla Equipo para cada registro
+          // Usar primero la foto del registro, luego la general del equipo
           return {
             ...equipo,
             ingreso: ea.fechaIngreso,
@@ -68,7 +68,7 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
             salida: ea.fechaSalida,
             estado: ea.Estado,
             agendamiento_equipo: ea.agendamiento_equipo,
-            fotoEquipo: equipo.fotoEquipo || ""
+            fotoEquipo: ea.fotoEquipo || equipo.fotoEquipo || ""
           };
         });
         // Agrupar por numeroSerie y contar repeticiones

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import useUserStore from "../../stores/useUserStore";
 import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import { showLoadingToast } from "../common/popUp/Loading";
+import { useAuth } from "../../context/AuthProvider";
 
 const ProjectList = ({ isColaborador = false }) => {
-  const user = useUserStore((state) => state.user);
+  const { user, userProfile, isLoading } = useAuth();
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectError, setProjectError] = useState(null);
+  const [projectStates, setProjectStates] = useState({});
 
   useEffect(() => {
     const fetchUserProjects = async () => {
@@ -25,12 +26,59 @@ const ProjectList = ({ isColaborador = false }) => {
       setProjects([]);
 
       try {
-        const uuidSupabase = user?.auth_user_id || user?.id;
-        const response = await axios.get(
-          `http://localhost:8000/tasks/api/v1/ProyectoUUID/?uuid_supabase=${uuidSupabase}`
+        const email =
+          userProfile?.correoElectronico ||
+          user?.correoElectronico ||
+          user?.email;
+
+        if (!email) {
+          setProjects([]);
+          setLoadingProjects(false);
+          return;
+        }
+
+        const usuarioResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
-        const projectsData = response.data;
-        setProjects(projectsData && projectsData.length > 0 ? projectsData : []);
+        const usuarioDb = usuarioResponse.data[0];
+        if (!usuarioDb || !usuarioDb.idusuario) {
+          setProjects([]);
+          setLoadingProjects(false);
+          return;
+        }
+
+        const usuarioId = usuarioDb.idusuario;
+
+        if (usuarioDb.rol_idrol === 1) {
+          const proyectosResponse = await axios.get(
+            `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+          );
+          setProjects(proyectosResponse.data);
+        } else if (usuarioDb.rol_idrol === 2) {
+          const colaboradorResponse = await axios.get(
+            `http://localhost:8000/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
+          );
+          const proyectos = colaboradorResponse.data.proyectos || [];
+          setProjects(proyectos);
+
+          const estados = {};
+          for (const proyecto of proyectos) {
+            try {
+              const res = await axios.get(
+                `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
+              );
+              const colaborador = res.data.colaboradores.find(
+                (c) => c.correo === email
+              );
+              estados[proyecto.id_proyecto] = colaborador
+                ? colaborador.estado
+                : "Inactivo";
+            } catch {
+              estados[proyecto.id_proyecto] = "Inactivo";
+            }
+          }
+          setProjectStates(estados);
+        }
       } catch (error) {
         console.error("Error al cargar proyectos del usuario:", error);
         setProjectError(error.message || "Error al cargar proyectos.");
@@ -41,13 +89,22 @@ const ProjectList = ({ isColaborador = false }) => {
     };
 
     fetchUserProjects();
-  }, [user]);
+  }, [user, userProfile]);
 
   if (!user) {
     return (
       <ul className="text-sm text-gray-300 pl-2">
         <li>Cargando proyectos...</li>
       </ul>
+    );
+  }
+
+  // Loader mientras carga
+  if (loadingProjects) {
+    return (
+      <div className="text-gray-400 pl-2 animate-pulse">
+        <p>Cargando proyectos...</p>
+      </div>
     );
   }
 
@@ -70,8 +127,7 @@ const ProjectList = ({ isColaborador = false }) => {
   }
 
   const handleProjectClick = async (project) => {
-    // Solo a los colaboradores se les valida el acceso
-    if (user?.rol_idrol === 1 || user?.rol_idRol === 1) {
+    if (userProfile?.rol_idRol === 1) {
       window.open(`/dashboard/${project.id_proyecto}`, "_blank");
       return;
     }
@@ -96,7 +152,10 @@ const ProjectList = ({ isColaborador = false }) => {
               rel="noopener noreferrer"
               className="hover:text-[#7c2ae8] underline cursor-pointer"
             >
-              {project.nombreproyecto}
+              {project.nombreproyecto}{" "}
+              {isColaborador && projectStates[project.id_proyecto]
+                ? `(${projectStates[project.id_proyecto]})`
+                : ""}
             </a>
           </div>
         </li>
