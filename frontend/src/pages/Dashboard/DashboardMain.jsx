@@ -54,8 +54,8 @@ export default function DashboardMain() {
   return (
     <>
       <div className="flex flex-wrap gap-8 mb-8">
-        <PendingTasksCard />
-        <CalendarCard diasConPendientes={trabajosPendientes} />
+        <PendingTasksCard className="grow" />
+        <CalendarCard className="grow min-w-[540px]" diasConPendientes={trabajosPendientes} />
       </div>
       <ClientHistoryTable />
     </>
