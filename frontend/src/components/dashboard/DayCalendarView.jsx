@@ -108,7 +108,7 @@ const DayCalendarView = ({ year, month, day }) => {
           onClose={handleCloseModal}
           onSave={handleAddTask}
           startDate={modalTaskData?.startDate}
-          {...(modalTaskData || {})}
+          taskTime={modalTaskData?.taskTime}
         />
       )}
       {/* Modal de detalle de tarea */}

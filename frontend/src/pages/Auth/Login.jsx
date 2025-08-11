@@ -14,36 +14,132 @@ import { client } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
+import { useAuth } from "../../context/AuthProvider";
 
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, recheckAuth } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [isLoggingIn, setIsLoggingIn] = useState(false); // Nuevo estado para bloqueo
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Aqui se obtiene el parámetro "next" de la URL
   const params = new URLSearchParams(location.search);
   const next = params.get("next") || "/dashboard-create-project";
   const idProyecto = params.get("id_proyecto");
 
   useEffect(() => {
-    // Si ya está autenticado, redirige
-    const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await client.auth.getUser();
-      if (user) {
+    if (isAuthenticated && !isLoading) {
+      console.log('Usuario autenticado detectado, redirigiendo...');
+      setTimeout(() => {
         navigate(next);
+      }, 100);
+    }
+  }, [isAuthenticated, isLoading, navigate, next]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsLoggingIn(true);
+    const toastId = showLoadingToast("Ingresando...");
+
+    try {
+      const { data, error } = await login(formData.email, formData.password);
+      toast.dismiss(toastId);
+
+      if (error) {
+        let errorMessage = "Error al iniciar sesión";
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
+        } else if (error.message.includes("Too many requests")) {
+          errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
+        }
+        showErrorToast(errorMessage);
+        setErrors((prev) => ({
+          ...prev,
+          password: errorMessage,
+        }));
+        return;
       }
-    };
-    checkAuth();
-    setFormData({ email: "", password: "" });
-    setErrors({});
-  }, [location.pathname, navigate]);
+
+      if (data.user && data.session) {
+        console.log('✅ Login exitoso, token guardado, esperando AuthProvider...');
+        
+        // Guardar token para compatibilidad
+        localStorage.setItem("token", data.session.access_token);
+        
+        // MANTENER compatibilidad con useUserStore temporalmente
+        try {
+          const userProfile = await getUserProfile(data.user.id);
+          
+          const fullUserData = {
+            auth_user_id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata,
+            ...userProfile,
+          };
+          
+          useUserStore.getState().setUser(fullUserData);
+          console.log('Usuario guardado en store (compatibilidad):', fullUserData.nombre);
+        } catch (profileError) {
+          console.error('Error obteniendo perfil en login:', profileError);
+          useUserStore.getState().setUser({
+            auth_user_id: data.user.id,
+            email: data.user.email,
+            user_metadata: data.user.user_metadata,
+          });
+        }
+        
+        setErrors({});
+        showSuccessToast("¡Ingreso exitoso!");
+        
+        // Lógica de asociación de colaborador
+        if (idProyecto && formData.email) {
+          try {
+            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id_proyecto: idProyecto,
+                email: formData.email,
+              }),
+            });
+          } catch (err) {
+            showErrorToast("Error al asociar colaborador al proyecto.");
+          }
+        }
+
+        console.log('Login completado, forzando recheck del AuthProvider...');
+
+        // FORZAR RECHECK 
+        setTimeout(async () => {
+          if (recheckAuth) {
+            await recheckAuth();
+            console.log('Recheck completado, AuthProvider debería estar actualizado');
+          } else {
+            console.error('recheckAuth no está disponible');
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error("Error de login:", error);
+      showErrorToast("No se pudo conectar con el servidor.");
+      setErrors((prev) => ({
+        ...prev,
+        password: "No se pudo conectar con el servidor.",
+      }));
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const validateField = (name, value) => {
     let error = "";
@@ -89,105 +185,12 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoggingIn(true); // Bloquear botón
-    const toastId = showLoadingToast("Ingresando...");
-
-    try {
-      const { data, error } = await login(formData.email, formData.password);
-      toast.dismiss(toastId);
-
-      if (error) {
-        let errorMessage = "Error al iniciar sesión";
-        if (error.message.includes("Invalid login credentials")) {
-          errorMessage =
-            "Credenciales inválidas. Verifica tu correo y contraseña.";
-        } else if (error.message.includes("Email not confirmed")) {
-          errorMessage =
-            "Por favor confirma tu correo electrónico antes de iniciar sesión.";
-        } else if (error.message.includes("Too many requests")) {
-          errorMessage =
-            "Demasiados intentos. Intenta nuevamente en unos minutos.";
-        }
-        showErrorToast(errorMessage);
-        setErrors((prev) => ({
-          ...prev,
-          password: errorMessage,
-        }));
-        return;
-      }
-
-      if (data.user && data.session) {
-        localStorage.setItem("token", data.session.access_token);
-        setErrors({});
-        showSuccessToast("¡Ingreso exitoso!");
-
-        // 1. Obtener el perfil del usuario de la tabla Usuario (donde está idUsuario)
-        const userProfile = await getUserProfile(data.user.id); // data.user.id es el UUID de Supabase
-        console.log("PERFIL DEL BACKEND:", userProfile);
-
-        // 2. Guardar el perfil completo en el context que hizo karen
-        if (userProfile) {
-          useUserStore.getState().setUser({
-            ...userProfile,
-            rol_idRol:
-              userProfile.rol_idRol ?? userProfile.rol_idrol ?? userProfile.rol, // Normaliza el nombre del campo
-            auth_user_id: data.user.id,
-            email: data.user.email,
-          });
-          console.log("USER GUARDADO EN STORE:", useUserStore.getState().user);
-        }
-
-        if (idProyecto && formData.email) {
-          try {
-            await fetch(
-              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id_proyecto: idProyecto,
-                  email: formData.email,
-                }),
-              }
-            );
-          } catch (err) {
-            showErrorToast("Error al asociar colaborador al proyecto.");
-          }
-        }
-
-        setTimeout(() => {
-          if (idProyecto) {
-            navigate(`/dashboard-create-project?id_proyecto=${idProyecto}`);
-          } else {
-            navigate(next);
-          }
-        }, 1200);
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      console.error("Error de login:", error);
-      showErrorToast("No se pudo conectar con el servidor.");
-      setErrors((prev) => ({
-        ...prev,
-        password: "No se pudo conectar con el servidor.",
-      }));
-    } finally {
-      setIsLoggingIn(false); // Desbloquear botón siempre
-    }
-  };
-
   const isButtonDisabled = () => {
     return (
       !formData.email ||
       !formData.password ||
       Object.values(errors).some((err) => err) ||
-      isLoggingIn // Agregar estado de login
+      isLoggingIn
     );
   };
 

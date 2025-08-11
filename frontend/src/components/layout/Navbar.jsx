@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserMenu from "./UserMenu";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import SendColaboration from "./SendColaborations";
 import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
@@ -12,7 +12,7 @@ const Navbar = (props) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
 
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   const params = useParams();
   const projectId = params.id;
@@ -20,8 +20,8 @@ const Navbar = (props) => {
   const { title, subtitle } = useNavbarTitle();
 
   const getUserName = () => {
-    if (!user) return "Loading...";
-    const metadata = user.user_metadata;
+    if (!user) return isLoading ? "Cargando..." : "Invitado";
+    const metadata = user.user_metadata || user.nombre;
     return `${metadata.nombre} ${metadata.apellido}`;
   };
 
@@ -36,6 +36,7 @@ const Navbar = (props) => {
       : userAtlas;
 
   useEffect(() => {
+    console.log('usuario', user)
     const handleClickOutside = (event) => {
       if (userRef.current && !userRef.current.contains(event.target)) {
         setMenuOpen(false);
@@ -76,7 +77,7 @@ const Navbar = (props) => {
                   onClick={() => setShowShareModal(true)}
                   className="px-5 py-2 text-base font-semibold"
                 >
-                  Compartir
+                  COMPARTIR
                 </ButtonGrey>
                 <SendColaboration
                   open={showShareModal}
