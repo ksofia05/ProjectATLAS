@@ -78,7 +78,7 @@ const Navbar = ({
                   onClick={() => setShowShareModal(true)}
                   className="px-5 py-2 text-base font-semibold"
                 >
-                  Compartir
+                  COMPARTIR
                 </ButtonGrey>
                 <SendColaboration
                   open={showShareModal}

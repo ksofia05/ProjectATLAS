@@ -1,5 +1,5 @@
 import React from "react";
-import NewTaskModal from "../calendar/NewTaskModal";
+import NewDayTaskModal from "../calendar/NewDayTaskModal";
 import TaskDetailModal from "../calendar/TaskDetailModal";
 import dayjs from "dayjs";
 
@@ -102,13 +102,13 @@ const DayCalendarView = ({ year, month, day }) => {
           })}
         </div>
       </div>
-      {/* Modal para añadir tarea usando NewTaskModal */}
+      {/* Modal para añadir tarea usando NewDayTaskModal (diseño personalizado) */}
       {showTaskModal && (
-        <NewTaskModal
+        <NewDayTaskModal
           onClose={handleCloseModal}
           onSave={handleAddTask}
           startDate={modalTaskData?.startDate}
-          {...(modalTaskData || {})}
+          taskTime={modalTaskData?.taskTime}
         />
       )}
       {/* Modal de detalle de tarea */}

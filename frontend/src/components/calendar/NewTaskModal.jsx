@@ -7,7 +7,7 @@ export default function NewTaskModal({ onClose, onSave, startDate }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
-        startDate: startDate || "",  // Rellenar automáticamente si se recibe
+        startDate: startDate || "",  
         endDate: "",
         taskTime: "",
     });
