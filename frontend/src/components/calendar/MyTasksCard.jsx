@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import NewTaskModal from "./NewTaskModal";
-import TaskItem from "./TaskItem"; 
+import TaskItem from "./TaskItem";
 import TasksListDrawer from "./TasksListDrawer";
 
 export default function MyTasksCard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [tasks, setTasks] = useState([]); 
+    const [tasks, setTasks] = useState([]);
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -29,7 +29,7 @@ export default function MyTasksCard() {
             ...newTaskData,
             createdAt: new Date().toISOString(),
             id: Date.now(),
-            comment: "", 
+            comment: "",
         };
 
         setTasks((prevTasks) => {
@@ -45,7 +45,7 @@ export default function MyTasksCard() {
 
     return (
         <>
-            <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[520px] shadow-lg flex flex-col min-h-[700px] dashboard-hover-shadow">
+            <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[520px] shadow-lg flex flex-col dashboard-hover-shadow min-h-[calc(100vh-200px)]">
                 <div className="flex items-center justify-between mb-3">
                     <div>
                         <h3 className="text-2xl font-bold text-white leading-tight">
@@ -63,11 +63,13 @@ export default function MyTasksCard() {
                         </button>
                     </div>
                 </div>
-                <div className="flex flex-col gap-3 mt-3 overflow-y-auto pb-4" style={{ maxHeight: 'calc(700px - 200px)' }}>
+                <div className="flex flex-col gap-3 mt-3 overflow-y-auto pb-4 flex-grow">
                     {tasks.length === 0 ? (
-                        <p className="text-gray-500">No tienes tareas pendientes.</p>
+                        <div className="flex-grow flex">
+                            <p className="text-gray-500">No tienes tareas pendientes.</p>
+                        </div>
                     ) : (
-                        tasks.slice(0, 6).map((task) => (
+                        tasks.slice(0, 5).map((task) => (
                             <TaskItem key={task.id} task={task} />
                         ))
                     )}
@@ -93,7 +95,7 @@ export default function MyTasksCard() {
                 open={isDrawerOpen}
                 onClose={handleCloseDrawer}
                 tasks={tasks}
-                onTasksUpdate={updateTasksInCard} 
+                onTasksUpdate={updateTasksInCard}
             />
         </>
     );
