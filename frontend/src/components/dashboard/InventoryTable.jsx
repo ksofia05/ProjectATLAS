@@ -225,7 +225,7 @@ export default function InventoryTable({ onEmojiClick }) {
   );
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0">
       <DataTable
         title="clientes"
         data={clientesFiltrados}
@@ -246,13 +246,12 @@ export default function InventoryTable({ onEmojiClick }) {
         loadingText="Cargando clientes..."
         emptyMessage="No hay clientes disponibles"
       />
-
       <RegisterClientDrawer
         open={showDrawer}
         onClose={() => setShowDrawer(false)}
         idproyecto={idProyecto}
         usuarioIdActual={usuarioIdActual}
       />
-    </>
+    </div>
   );
 }
