@@ -4,7 +4,6 @@ import EquipmentsTable from "../../components/dashboard/EquipmentsTable";
 import BackButton from "../../components/common/BackButton";
 import { useNavbarTitle } from "../../context/NavbarTitleContext";
 
-
 export default function InventoryPage() {
   const [clienteSeleccionado, setClienteSeleccionado] = React.useState(null);
   const { setTitle, setSubtitle } = useNavbarTitle();
@@ -15,23 +14,20 @@ export default function InventoryPage() {
   }, [setTitle, setSubtitle]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       {clienteSeleccionado ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 overflow-hidden">
             <div className="flex justify-start flex-shrink-0 pd-20">
-            <BackButton
-              onClick={() => setClienteSeleccionado(null)}
-            >
-              ← Volver
-            </BackButton>
-          </div>
+              <BackButton onClick={() => setClienteSeleccionado(null)}>
+                ← Volver
+              </BackButton>
+            </div>
             <EquipmentsTable cliente={clienteSeleccionado} />
           </div>
-          
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <InventoryTable onEmojiClick={setClienteSeleccionado} />
         </div>
       )}

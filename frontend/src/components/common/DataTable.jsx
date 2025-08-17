@@ -30,7 +30,8 @@ const DataTable = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col h-[calc(100vh-240px)] ${className}`}
+      className={`bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col flex-1 min-h-0`}
+      style={{ maxHeight: "calc(100vh - 180px)" }} 
     >
       {/* Controles fijos en la parte superior */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4 flex-shrink-0">
@@ -68,7 +69,6 @@ const DataTable = ({
         </div>
       </div>
 
-      {/* Contenedor con scroll solo para la tabla (aun requiere unos cambios jij) */}
       <div className="overflow-hidden rounded-xl border border-gray-600 flex-1 min-h-0 flex flex-col">
         {loading ? (
           <div className="flex justify-center items-center h-full">
@@ -104,7 +104,7 @@ const DataTable = ({
             </div>
 
             {/* Contenido del panel con scroll independiente */}
-            <div className="flex-1 overflow-y-auto scrollbar-subtle">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle">
               <table className="w-full text-center table-fixed">
                 <colgroup>
                   {columns.map((col, idx) => (
@@ -133,7 +133,7 @@ const DataTable = ({
       </div>
 
       {/* Controles de paginación fijos en la parte inferior */}
-      <div className="flex items-center justify-end mt-3 text-gray-400 text-sm gap-4 flex-shrink-0">
+      <div className="flex items-center justify-end text-gray-400 text-sm gap-4 flex-shrink-0 pb-2">
         <div className="flex items-center gap-2">
           <span>
             Visualizando: {filteredData.length} de {data.length}{" "}
