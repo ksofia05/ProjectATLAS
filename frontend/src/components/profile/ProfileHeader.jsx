@@ -13,7 +13,6 @@ const ProfileHeader = ({ onBackClick }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <BackButton
-            className="w-12 h-12 flex items-center justify-center bg-gradient-to-br from-[#232336] to-[#2d2d44] hover:from-[#2d2d44] hover:to-[#383856] text-white rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
             iconClassName="text-xl"
             onClick={onBackClick}
           />

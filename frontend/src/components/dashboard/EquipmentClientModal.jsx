@@ -8,14 +8,18 @@ import { client as supabase } from "../../supabase/client";
 import { dateUtils } from "../../utils/dateUtils";
 import React, { useState, useEffect, useRef } from "react";
 
-const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClose }) => {
+const EquipmentClientModal = ({
+  cliente,
+  equipo,
+  numeroSerieSeleccionado,
+  onClose,
+}) => {
   const [equipos, setEquipos] = useState([]);
   const [registroActual, setRegistroActual] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [comentarioSalida, setComentarioSalida] = useState("");
   const salidaRef = useRef(null);
-
 
   useEffect(() => {
     if (!cliente) return;
@@ -68,24 +72,31 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
             salida: ea.fechaSalida,
             estado: ea.Estado,
             agendamiento_equipo: ea.agendamiento_equipo,
-            fotoEquipo: ea.fotoEquipo || equipo.fotoEquipo || ""
+            fotoEquipo: ea.fotoEquipo || equipo.fotoEquipo || "",
           };
         });
         // Agrupar por numeroSerie y contar repeticiones
         const contador = {};
-        equiposCompletos.forEach(eq => {
+        equiposCompletos.forEach((eq) => {
           if (!contador[eq.numeroSerie]) contador[eq.numeroSerie] = 0;
           contador[eq.numeroSerie]++;
         });
         // Agregar repeticiones a todos los equipos
-        const equiposFinal = equiposCompletos.map(eq => ({ ...eq, repeticiones: contador[eq.numeroSerie] }));
+        const equiposFinal = equiposCompletos.map((eq) => ({
+          ...eq,
+          repeticiones: contador[eq.numeroSerie],
+        }));
         setEquipos(equiposFinal);
         // Inicializar registroActual según el número de serie seleccionado
         if (numeroSerieSeleccionado) {
-          const idx = equiposFinal.findIndex(e => e.numeroSerie === numeroSerieSeleccionado);
+          const idx = equiposFinal.findIndex(
+            (e) => e.numeroSerie === numeroSerieSeleccionado
+          );
           setRegistroActual(idx >= 0 ? idx : 0);
         } else if (equipo) {
-          const idx = equiposFinal.findIndex(e => e.numeroSerie === equipo.numeroSerie);
+          const idx = equiposFinal.findIndex(
+            (e) => e.numeroSerie === equipo.numeroSerie
+          );
           setRegistroActual(idx >= 0 ? idx : 0);
         } else {
           setRegistroActual(0);
@@ -98,23 +109,22 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
       }
     };
     fetchEquipos();
-    // eslint-disable-next-line
   }, [cliente, equipo, numeroSerieSeleccionado]);
 
-  useEffect(()=> {
-    if (equipos.length > 0 && registroActual >= 0){
+  useEffect(() => {
+    if (equipos.length > 0 && registroActual >= 0) {
       const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
-      const duplicados = equipos.filter(eq => eq.numeroSerie === serie);
+      const duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
       let equipoActual = {};
       if (duplicados.length > 1) {
         equipoActual = duplicados[registroActual] || {};
       } else {
-        equipoActual = equipos.find(eq => eq.numeroSerie === serie) || {};
+        equipoActual = equipos.find((eq) => eq.numeroSerie === serie) || {};
       }
 
-      if (equipoActual.comentarioSalida){
+      if (equipoActual.comentarioSalida) {
         setComentarioSalida(equipoActual.comentarioSalida);
-      }else{
+      } else {
         setComentarioSalida("");
       }
     }
@@ -184,20 +194,20 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
   let equipoActual = {};
   if (equipos.length > 0) {
     const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
-    const duplicados = equipos.filter(eq => eq.numeroSerie === serie);
+    const duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
     if (duplicados.length > 1) {
       equiposFiltrados = duplicados;
       equipoActual = equiposFiltrados[registroActual] || {};
     } else {
-      equiposFiltrados = [equipos.find(eq => eq.numeroSerie === serie)];
+      equiposFiltrados = [equipos.find((eq) => eq.numeroSerie === serie)];
       equipoActual = equiposFiltrados[0] || {};
     }
   }
-  
+
   const hasUnsavedChanges = () => {
-    return(
+    return (
       equipoActual.estado === "Activo" &&
-      comentarioSalida.trim()!==(equipoActual.comentarioSalida || "").trim() 
+      comentarioSalida.trim() !== (equipoActual.comentarioSalida || "").trim()
     );
   };
 
@@ -208,168 +218,196 @@ const EquipmentClientModal = ({ cliente, equipo, numeroSerieSeleccionado, onClos
 
   return (
     <>
-      <WideFloatingModal 
-        className="max-w-6xl" 
+      <WideFloatingModal
+        className="w-full max-w-3xl bg-[#232335] shadow-xl rounded-3xl border border-[#2d2d44] px-0"
         onClose={onClose}
         hasUnsavedChanges={hasUnsavedChanges}
         onDiscardChanges={handleDiscardChanges}
       >
-        <h1 className="text-2xl font-bold text-white mx-8 mt-2 mb-2">
+        
+        <h1 className="text-2xl md:text-3xl font-bold text-white text-center pt-4 pb-12">
           Equipos Registrados
         </h1>
-        <form className="p-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="flex flex-col gap-8">
-              <Input
-                label="Marca"
-                name="marca"
-                value={equipoActual.marca || "Sin marca"}
-                readOnly
-                placeholder="Marca del equipo"
-              />
-              <div className="mb-4">
-                <label className="block text-gray-300 font-medium mb-2">Comentario Entrada</label>
-                  <textarea
-                  name="comentarioEntrada"
-                  label="Comentario Entrada"
-                  rows={3}
-                  value={equipoActual.comentarioEntrada || "Sin comentario"}
+        <div className="flex flex-col md:flex-row gap-8 px-4 md:px-10 items-start">
+          {/* Columna izquierda: tiene la imagen, la marca y el numero de serie del pc */}
+          <div className="flex flex-col items-center md:items-start w-full md:w-1/3">
+            <img
+              src={
+                equipoActual.fotoEquipo && equipoActual.fotoEquipo !== ""
+                  ? equipoActual.fotoEquipo.includes(
+                      "supabase.co/storage/v1/object/public/atlas/computadores/"
+                    )
+                    ? equipoActual.fotoEquipo
+                    : equipoActual.fotoEquipo.startsWith("http")
+                    ? equipoActual.fotoEquipo
+                    : `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${equipoActual.fotoEquipo}`
+                  : ImagenGenerica
+              }
+              alt={equipoActual.marca ? equipoActual.marca : "Equipo"}
+              className="w-44 h-44 md:w-56 md:h-56 object-cover rounded-xl shadow-lg border-3 border-purple-400 bg-white mb-6"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = ImagenGenerica;
+              }}
+            />
+            <div className="w-full flex flex-col gap-4">
+              <div>
+                <label className="text-gray-300 font-semibold">Marca</label>
+                <Input
+                  name="marca"
+                  value={equipoActual.marca || "Sin marca"}
                   readOnly
-                  placeholder="Comentario de entrada"
-                  className="text-white w-full border border-gray-600 rounded-lg bg-[#232335] p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
               </div>
-              
+              <div>
+                <label className="text-gray-300 font-semibold">No. Serie</label>
+                <Input
+                  name="serie"
+                  value={
+                    equipoActual.numeroSerie
+                      ? equipoActual.repeticiones > 1
+                        ? equipoActual.numeroSerie +
+                          ` (${equipoActual.repeticiones})`
+                        : equipoActual.numeroSerie
+                      : "Sin número de serie"
+                  }
+                  readOnly
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Columna derecha: resto de la info */}
+          <div className="w-full md:w-2/3 flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-gray-300 font-semibold">Ingreso</label>
+                <Input
+                  name="ingreso"
+                  type="date"
+                  value={equipoActual.ingreso || ""}
+                  readOnly
+                  icon="bi-calendar"
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-gray-300 font-semibold">Salida</label>
+                <InputCalendario
+                  value={equipoActual.salida || ""}
+                  readOnly
+                  ref={salidaRef}
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-gray-300 font-semibold">
+                Comentario Entrada
+              </label>
               <Input
-                label="Ingreso"
-                name="ingreso"
-                type="date"
-                value={equipoActual.ingreso || ""}
+                name="comentarioEntrada"
+                as="textarea"
+                rows={2}
+                value={equipoActual.comentarioEntrada || "Sin comentario"}
                 readOnly
-                icon="bi-calendar"
-                placeholder="Fecha de ingreso"
+                className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
               />
             </div>
-            <div className="flex flex-col gap-8 h-full">
-              <Input
-                label="No. Serie"
-                name="serie"
-                value={
-                  equipoActual.numeroSerie
-                    ? equipoActual.repeticiones > 1
-                      ? equipoActual.numeroSerie + ` (${equipoActual.repeticiones})`
-                      : equipoActual.numeroSerie
-                    : "Sin número de serie"
-                }
-                readOnly
-                placeholder="Número de serie"
-              />
-              <div className="mb-4">
-                <label className="block text-gray-300 font-medium mb-2">Comentario Salida</label>
-                <textarea
+            <div className="flex flex-row gap-4 items-start">
+              <div className="flex-1">
+                <label className="text-gray-300 font-semibold">
+                  Comentario Salida
+                </label>
+                <Input
                   name="comentarioSalida"
-                  rows={3}
+                  as="textarea"
+                  rows={2}
                   value={
                     equipoActual.estado === "Inactivo"
-                    ? equipoActual.comentarioSalida
-                    : comentarioSalida || equipoActual.comentarioSalida
+                      ? equipoActual.comentarioSalida
+                      : comentarioSalida || equipoActual.comentarioSalida
                   }
                   onChange={(e) => setComentarioSalida(e.target.value)}
-                  placeholder="Comentario de salida"
                   readOnly={equipoActual.estado === "Inactivo"}
-                  className="text-white w-full border border-gray-600 rounded-lg bg-[#232335] p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
-
               </div>
-              
-              <InputCalendario
-                label="Salida"
-                value={equipoActual.salida || ""}
-                readOnly
-                ref={salidaRef}
-              />
             </div>
-            <div className="flex items-center justify-center">
-              <img
-                src={
-                  equipoActual.fotoEquipo && equipoActual.fotoEquipo !== ""
-                    ? (equipoActual.fotoEquipo.includes("supabase.co/storage/v1/object/public/atlas/computadores/")
-                        ? equipoActual.fotoEquipo
-                        : equipoActual.fotoEquipo.startsWith("http")
-                          ? equipoActual.fotoEquipo
-                          : `https://ksofia05-org.supabase.co/storage/v1/object/public/atlas/computadores/${equipoActual.fotoEquipo}`
-                      )
-                    : ImagenGenerica
-                }
-                alt={equipoActual.marca ? equipoActual.marca : "Equipo"}
-                className="w-60 h-60 object-cover rounded-xl shadow"
-                onError={e => {
-                  e.target.onerror = null;
-                  e.target.src = ImagenGenerica;
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end items-center px-6 gap-4 mt-4">
-            {equiposFiltrados.length > 1 ? (
-              <>
-                <button
-                  onClick={() => setRegistroActual((prev) => Math.max(prev - 1, 0))}
-                  disabled={registroActual === 0}
-                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2 "
-                  type="button"
+            {/* Switch, estado y navegación juntos y alineads a la derecha (jodido boton de mrd) */}
+            <div className="flex justify-end items-center gap-4 mt-2">
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={equipoActual.estado === "Activo"}
+                  onChange={handleSwitchChange}
+                  disabled={equipoActual.estado !== "Activo"}
+                />
+                <span
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full font-semibold text-lg
+        ${
+          equipoActual.estado === "Activo"
+            ? "bg-green-900/30 text-green-400"
+            : "bg-red-900/30 text-red-400"
+        }`}
                 >
-                  &#8592;
-                </button>
-                <span className="text-white shadow-2xl">
-                  {registroActual + 1} / {equiposFiltrados.length}
+                  {equipoActual.estado === "Activo" ? (
+                    <i className="bi bi-check-circle-fill text-green-400 text-xl"></i>
+                  ) : (
+                    <i className="bi bi-x-circle-fill text-red-400 text-xl"></i>
+                  )}
+                  {equipoActual.estado}
                 </span>
-                <button
-                  onClick={() =>
-                    setRegistroActual((prev) =>
-                      Math.min(prev + 1, equiposFiltrados.length - 1)
-                    )
-                  }
-                  disabled={registroActual === equiposFiltrados.length - 1}
-                  className="text-gray-400 shadow-2xl hover:text-purple-600 hover:text-shadow-xs text-shadow-purple-500/50 transition-colors dashboard-hover-text-shadow text-2xl px-2"
-                  type="button"
-                >
-                  &#8594;
-                </button>
-              </>
-            ) : (
-              <span className="text-white shadow-2xl">
-                1 / 1
-              </span>
-            )}
+              </div>
+              {/* Navegación */}
+              <div className="flex items-center gap-2">
+                {equiposFiltrados.length > 1 ? (
+                  <>
+                    <button
+                      onClick={() =>
+                        setRegistroActual((prev) => Math.max(prev - 1, 0))
+                      }
+                      disabled={registroActual === 0}
+                      className="text-gray-400 hover:text-purple-500 text-2xl px-2 transition-colors"
+                      type="button"
+                    >
+                      <i className="bi bi-arrow-left-circle"></i>
+                    </button>
+                    <span className="text-white font-semibold">
+                      {registroActual + 1} / {equiposFiltrados.length}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setRegistroActual((prev) =>
+                          Math.min(prev + 1, equiposFiltrados.length - 1)
+                        )
+                      }
+                      disabled={registroActual === equiposFiltrados.length - 1}
+                      className="text-gray-400 hover:text-purple-500 text-2xl px-2 transition-colors"
+                      type="button"
+                    >
+                      <i className="bi bi-arrow-right-circle"></i>
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-white font-semibold">1 / 1</span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4 mt-4">
-            <Switch
-              checked={equipoActual.estado === "Activo"}
-              onChange={handleSwitchChange}
-              disabled={equipoActual.estado !== "Activo"}
-            />
-            <span
-              className={
-                equipoActual.estado === "Activo"
-                  ? "text-green-400 font-semibold"
-                  : "text-red-400 font-semibold"
-              }
-            >
-              {equipoActual.estado}
-            </span>
-          </div>
-        </form>
+        </div>
+        {showConfirmModal && (
+          <EstateAdEquipmentModal
+            onClose={() => setShowConfirmModal(false)}
+            onSave={handleConfirmInactivar}
+          />
+        )}
       </WideFloatingModal>
-      {showConfirmModal && (
-        <EstateAdEquipmentModal
-          onClose={() => setShowConfirmModal(false)}
-          onSave={handleConfirmInactivar}
-        />
-      )}
     </>
   );
 };
 
 export default EquipmentClientModal;
 
+//Psd : Si esta mrd funciona, porfavor no la toquen, att: luis
