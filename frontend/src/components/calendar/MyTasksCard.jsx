@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import NewTaskModal from "./NewTaskModal";
 import TaskItem from "./TaskItem";
 import TasksListDrawer from "./TasksListDrawer";
+import { client as supabase } from "../../supabase/client";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthProvider";
 
 export default function MyTasksCard() {
+    const { userProfile } = useContext(AuthContext); 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [tasks, setTasks] = useState([]);
+
+        useEffect(() => {
+        const fetchTasks = async () => {
+            const { data, error } = await supabase
+                .from("Tareas")
+                .select("*")
+                .eq("id_usuario", userProfile.idUsuario); // Filtra por el id del usuario
+
+            if (!error) setTasks(data || []);
+        };
+        fetchTasks();
+    }, [userProfile]); // Se actualiza cuando cambia el usuario
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -24,25 +40,40 @@ export default function MyTasksCard() {
         setIsDrawerOpen(false);
     };
 
-    const handleSaveTask = (newTaskData) => {
-        const newTask = {
-            ...newTaskData,
-            createdAt: new Date().toISOString(),
-            id: Date.now(),
-            comment: "",
-        };
+    const handleSaveTask = async (newTaskData) => {
+        if (!userProfile) return;
+        const { taskTitle, taskDescription, endDate, taskTime } = newTaskData;
+        const { data, error } = await supabase
+            .from('Tareas')
+            .insert([
+                {
+                    nombreTarea: taskTitle,
+                    descripcion: taskDescription,
+                    fechaCreacion: endDate,
+                    fechaLimite: taskTime,
+                    id_usuario: userProfile.idUsuario // Guarda el id del usuario
+                },
+            ])
+            .select()
+            .single();
 
-        setTasks((prevTasks) => {
-            const updatedTasks = [newTask, ...prevTasks];
-            return updatedTasks;
-        });
+        if (error) {
+            alert('Error al guardar la tarea: ' + error.message);
+            return;
+        }
+
+        // Vuelve a consultar las tareas del usuario actual
+        const { data: tareasActualizadas, error: errorFetch } = await supabase
+            .from("Tareas")
+            .select("*")
+            .eq("id_usuario", userProfile.idUsuario);
+
+        if (!errorFetch) setTasks(tareasActualizadas || []);
         handleCloseModal();
     };
-
     const updateTasksInCard = (updatedTasks) => {
         setTasks(updatedTasks);
     };
-
     return (
         <>
             <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[520px] shadow-lg flex flex-col dashboard-hover-shadow min-h-[calc(100vh-200px)]">
@@ -69,9 +100,16 @@ export default function MyTasksCard() {
                             <p className="text-gray-500">No tienes tareas pendientes.</p>
                         </div>
                     ) : (
-                        tasks.slice(0, 5).map((task) => (
-                            <TaskItem key={task.id} task={task} />
-                        ))
+                            tasks.slice(0, 5).map((task) => (
+                                <TaskItem
+                                    key={task.id_Tarea}
+                                    task={{
+                                        taskTitle: task.nombreTarea, // adapta el nombre
+                                        createdAt: task.fechaCreacion, // adapta la fecha
+                                        // puedes agregar otros campos si los necesitas
+                                    }}
+                                />
+                            ))
                     )}
                 </div>
                 <div className="mt-auto flex justify-center pt-4">

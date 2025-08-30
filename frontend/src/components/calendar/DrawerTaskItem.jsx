@@ -2,8 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import ButtonBG from "../common/ButtonBG";
 
 function formatTimeAgo(dateString) {
+    if (!dateString) return "";
     const now = new Date();
     const createdDate = new Date(dateString);
+
+    // Si es el mismo día
+    if (
+        now.getDate() === createdDate.getDate() &&
+        now.getMonth() === createdDate.getMonth() &&
+        now.getFullYear() === createdDate.getFullYear()
+    ) {
+        return "Hoy";
+    }
+
     const diffInSeconds = Math.floor((now - createdDate) / 1000);
 
     if (diffInSeconds < 60) {
@@ -45,7 +56,8 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
     const handleToggleSelect = () => {
         const newSelectedState = !isSelected;
         setIsSelected(newSelectedState);
-        onToggleSelect(task.id, newSelectedState);
+        // Cambia task.id por task.id_Tarea
+        onToggleSelect(task.id_Tarea, newSelectedState);
     };
 
     const handleEditClick = (e) => {
@@ -55,7 +67,7 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
     };
 
     const handleSaveComment = () => {
-        onUpdateComment(task.id, commentText);
+        if (onUpdateComment) onUpdateComment(task.id_Tarea, commentText);
         setIsEditingComment(false);
     };
 

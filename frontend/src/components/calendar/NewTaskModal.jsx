@@ -14,23 +14,23 @@ const DateInput = styled.input`
     -moz-appearance: textfield;
 `;
 
-export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTimeFields = false }) {
+export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateAndTimeFields = false }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
-        startDate: startDate || "",
+        // startDate: /*startDate ||*/ "",
         endDate: "",
         taskTime: "",
     });
 
-    const startDateInputRef = useRef(null);
+    // const startDateInputRef = useRef(null);
     const endDateInputRef = useRef(null);
     const taskTimeInputRef = useRef(null);
 
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
+        const { taskTitle, taskDescription, /*startDate,*/ endDate, taskTime } = form;
 
         // Lógica de validación corregida
         if (hideDateAndTimeFields) {
@@ -39,21 +39,21 @@ export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTi
             setIsFormValid(
                 taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
-                startDate.trim() !== "" &&
+                // startDate.trim() !== "" &&
                 endDate.trim() !== "" &&
                 taskTime.trim() !== ""
             );
         }
     }, [form, hideDateAndTimeFields]);
 
-    useEffect(() => {
-        if (startDate && !form.startDate) {
-            setForm((prevForm) => ({
-                ...prevForm,
-                startDate: startDate,
-            }));
-        }
-    }, [form, startDate]);
+    // useEffect(() => {
+    //     if (startDate && !form.startDate) {
+    //         setForm((prevForm) => ({
+    //             ...prevForm,
+    //             startDate: startDate,
+    //         }));
+    //     }
+    // }, [form, startDate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -112,7 +112,7 @@ export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTi
                         <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
                         <div className="grid grid-cols-3 gap-4 items-center">
                             {/* Desde */}
-                            <div className="relative">
+                            {/* <div className="relative">
                                 <span className="block text-gray-400 mb-1">Desde</span>
                                 <div className="relative w-full">
                                     <DateInput
@@ -128,16 +128,16 @@ export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTi
                                         className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
                                         onClick={() => startDateInputRef.current && startDateInputRef.current.showPicker()}
                                         tabIndex={0}
-                                        role="button"
+                                        role="button"   
                                         aria-label="Abrir calendario"
                                     >
                                         <i className="bi bi-calendar text-gray-500" />
                                     </span>
                                 </div>
-                            </div>
+                            </div> */}
                             {/* Hasta */}
                             <div className="relative">
-                                <span className="block text-gray-400 mb-1">Hasta</span>
+                                <span className="block text-gray-400 mb-1">Fecha</span>
                                 <div className="relative w-full text-sm">
                                     <DateInput
                                         ref={endDateInputRef}
