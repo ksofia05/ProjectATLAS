@@ -1,51 +1,45 @@
 import React, { useEffect, useRef, useState } from "react";
 import ButtonBG from "../common/ButtonBG";
 
-function formatTimeAgo(dateString) {
+export function formatTimeAgo(dateString) {
     if (!dateString) return "";
     const now = new Date();
     const createdDate = new Date(dateString);
 
-    // Si es el mismo día
+    // Log para depuración
+    console.log("Comparando días:", now.getDate(), createdDate.getDate());
+    console.log("Comparando meses:", now.getMonth(), createdDate.getMonth());
+    console.log("Comparando años:", now.getFullYear(), createdDate.getFullYear());
+
+    // Si es el mismo día, mes y año, muestra "Hoy"
     if (
         now.getDate() === createdDate.getDate() &&
         now.getMonth() === createdDate.getMonth() &&
         now.getFullYear() === createdDate.getFullYear()
     ) {
+        console.log("Es hoy!");
         return "Hoy";
     }
 
     const diffInSeconds = Math.floor((now - createdDate) / 1000);
 
-    if (diffInSeconds < 60) {
-        if (diffInSeconds < 10) return "Reciente";
-        return `Hace ${diffInSeconds} seg(s)`;
-    } else if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60);
-        return `Hace ${minutes} min(s)`;
-    } else if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return `Hace ${hours} h(s)`;
-    } else if (diffInSeconds < 604800) {
-        const days = Math.floor(diffInSeconds / 86400);
-        return `Hace ${days} día(s)`;
-    } else if (diffInSeconds < 2592000) {
-        const weeks = Math.floor(diffInSeconds / 604800);
-        return `Hace ${weeks} sem(s)`;
-    } else if (diffInSeconds < 31536000) {
-        const months = Math.floor(diffInSeconds / 2592000);
-        return `Hace ${months} mes(es)`;
-    } else {
-        const years = Math.floor(diffInSeconds / 31536000);
-        return `Hace ${years} año(s)`;
-    }
+    if (diffInSeconds < 60) return `Hace ${diffInSeconds} seg(s)`;
+    if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min(s)`;
+    if (diffInSeconds < 86400) return `Hace ${Math.floor(diffInSeconds / 3600)} h(s)`;
+    if (diffInSeconds < 604800) return `Hace ${Math.floor(diffInSeconds / 86400)} día(s)`;
+    if (diffInSeconds < 2592000) return `Hace ${Math.floor(diffInSeconds / 604800)} sem(s)`;
+    if (diffInSeconds < 31536000) return `Hace ${Math.floor(diffInSeconds / 2592000)} mes(es)`;
+    return `Hace ${Math.floor(diffInSeconds / 31536000)} año(s)`;
 }
-
 export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, isSelected: initialSelected }) {
     const [isSelected, setIsSelected] = useState(initialSelected);
     const [isEditingComment, setIsEditingComment] = useState(false);
     const [commentText, setCommentText] = useState(task.comment || "");
     const textareaRef = useRef(null);
+
+    // console.log("createdAt:", task.createdAt);
+    // console.log("Date parsed:", new Date(task.createdAt));
+    // console.log("Now:", new Date());
 
     const timeAgo = formatTimeAgo(task.createdAt);
 
@@ -83,6 +77,7 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
     }, [isEditingComment]);
 
     const isSaveCommentDisabled = commentText.trim().length === 0;
+    // console.log("Render timeAgo:", timeAgo);
 
     return (
         <div className="flex flex-col ">
@@ -116,6 +111,7 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
                 </div>
 
                 <span className="text-[#813dff] text-sm font-medium mt-1 ml-4 self-start">{timeAgo}</span>
+                {/* <span style={{color: 'red', fontWeight: 'bold'}}>DEBUG: {timeAgo}</span> */}
 
                 {isEditingComment && (
                     <div className="bg-[#20202E] shadow-xl rounded-b-lg p-4 mt-2">

@@ -104,9 +104,11 @@ export default function MyTasksCard() {
                                 <TaskItem
                                     key={task.id_Tarea}
                                     task={{
-                                        taskTitle: task.nombreTarea, // adapta el nombre
-                                        createdAt: task.fechaCreacion, // adapta la fecha
-                                        // puedes agregar otros campos si los necesitas
+                                        taskTitle: task.nombreTarea,
+                                        createdAt: task.fechaLimite
+                                            ? `${task.fechaCreacion}T${task.fechaLimite}`
+                                            : task.fechaCreacion,
+                                        // otros campos si los necesitas
                                     }}
                                 />
                             ))
