@@ -1,25 +1,26 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComplete }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(task.title || "");
-  const [editDescription, setEditDescription] = useState(task.description || "");
+  const [editTitle, setEditTitle] = useState(task.nombreTarea || "");
+  const [editDescription, setEditDescription] = useState(task.descripcion || "");
 
   if (!task) return null;
 
   const handleSave = () => {
     if (onUpdateInfo) {
-      onUpdateInfo(task.hour, editTitle, editDescription);
+      onUpdateInfo(task.id_Tarea, editTitle, editDescription);
     }
     setIsEditing(false);
   };
 
-  React.useEffect(() => {
-    if (!isEditing) {
-      setEditTitle(task.title || "");
-      setEditDescription(task.description || "");
-    }
-  }, [task.title, task.description, isEditing]);
+  useEffect(() => {
+    setEditTitle(task.nombreTarea || "");
+    setEditDescription(task.descripcion || "");
+    setIsEditing(false);
+  }, [task]);
+
+
 
   // Estado de completado
   const completed = !!task.completed;
@@ -56,29 +57,27 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
           <span className={`text-lg font-semibold text-white relative w-full ${completed ? "line-through" : ""}`}>
             {isEditing ? (
               <input
-                 className="bg-transparent border-b border-gray-600 text-white font-semibold text-lg pl-1 py-1 pr-10 max-w-[70%] rounded transition"
+                className="bg-transparent border-b border-gray-600 text-white font-semibold text-lg pl-1 py-1 pr-10 max-w-[70%] rounded transition"
                 value={editTitle}
                 onChange={e => setEditTitle(e.target.value)}
                 autoFocus
-                
               />
             ) : (
-              task.title || "(Sin título)"
+              task.nombreTarea || "(Sin título)"
             )}
-          
           </span>
         </div>
         {/* Fecha y hora */}
         <div className="flex items-center gap-2 text-purple-200 mb-1">
           <i className="bi bi-clock text-purple-300" />
-          <span>{task.startDate}</span>
-          <span>{task.taskTime}</span>
+          <span>{task.fechaCreacion}</span>
+          <span>{task.fechaLimite?.slice(0,5)}</span>
         </div>
         {/* Descripción */}
         <div className="mb-2">
           <div className="flex items-center gap-2 mb-1">
             <i className="bi bi-card-text text-lg text-purple-300" />
-            <span className="text-sm text-white">Descripcion</span>
+            <span className="text-sm text-white">Descripción</span>
           </div>
           {isEditing ? (
             <textarea
@@ -89,7 +88,7 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
             />
           ) : (
             <div className={`bg-[#232335] rounded-lg p-2 text-sm min-h-[40px] border border-gray-700 ${completed ? "line-through text-purple-400" : "text-purple-100"}`}>
-              {task.description || "Sin descripción"}
+              {task.descripcion || "Sin descripción"}
             </div>
           )}
         </div>
@@ -115,21 +114,21 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
             </button>
           </div>
         )}
-       {/* Botón completar/no completado ABAJO */}
-{!isEditing && (
-  <div className="flex justify-end mt-6">
-    <button
-      className={`px-4 py-2 rounded-lg font-semibold transition ${
-        completed
-          ? "bg-gray-700 text-purple-300 hover:bg-gray-600"
-          : "bg-purple-600 text-white hover:bg-purple-700"
-      }`}
-      onClick={() => onToggleComplete && onToggleComplete(task.hour)}
-    >
-      {completed ? "No completado" : "Completar"}
-    </button>
-  </div>
-)}
+        {/* Botón completar/no completado ABAJO */}
+        {!isEditing && (
+          <div className="flex justify-end mt-6">
+            <button
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                completed
+                  ? "bg-gray-700 text-purple-300 hover:bg-gray-600"
+                  : "bg-purple-600 text-white hover:bg-purple-700"
+              }`}
+              onClick={() => onToggleComplete && onToggleComplete(task.id_Tarea)}
+            >
+              {completed ? "No completado" : "Completar"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
