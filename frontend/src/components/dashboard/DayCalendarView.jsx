@@ -2,6 +2,9 @@ import React from "react";
 import NewTaskModal from "../calendar/NewTaskModal";
 import TaskDetailModal from "../calendar/TaskDetailModal";
 import dayjs from "dayjs";
+import { client as supabase } from "../../supabase/client";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthProvider";
 
 const DayCalendarView = ({ year, month, day }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -31,51 +34,72 @@ const DayCalendarView = ({ year, month, day }) => {
     setShowDetailModal(true);
   };
 
-  // Añadir tarea
-  const handleAddTask = (taskData) => {
-    setTasks([...tasks, {
-      hour: selectedHour,
-      title: taskData.taskTitle,
-      description: taskData.taskDescription,
-      startDate: taskData.startDate,
-      endDate: taskData.endDate,
-      taskTime: taskData.taskTime,
-    }]);
+const { userProfile } = useContext(AuthContext);
+
+const handleAddTask = async (taskData) => {
+    if (!userProfile) return;
+    // Usa startDate del modal, no endDate del formulario
+    const fechaCreacion = modalTaskData?.startDate;
+    const { error } = await supabase
+        .from('Tareas')
+        .insert([
+            {
+                nombreTarea: taskData.taskTitle,
+                descripcion: taskData.taskDescription,
+                fechaCreacion: fechaCreacion, // <-- la fecha del calendario
+                fechaLimite: taskData.taskTime, // la hora seleccionada
+                id_usuario: userProfile.idUsuario
+            },
+        ]);
+    if (error) {
+        alert("Error al guardar la tarea: " + error.message);
+        return;
+    }
+    fetchTasksForDay();
     setShowTaskModal(false);
     setSelectedHour(null);
     setModalTaskData(null);
-  };
+};
 
-  // Actualizar tarea (título y descripción)
-  const handleUpdateInfo = (id, newTitle, newDescription) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.hour === id
-          ? { ...t, title: newTitle, description: newDescription }
-          : t
-      )
-    );
-    // Sincroniza el objeto seleccionado con la lista actualizada
-    setDetailTaskData(prev => {
-      const updated = tasks.find(t => t.hour === id);
-      return updated ? { ...updated, title: newTitle, description: newDescription } : prev;
-    });
-  };
+const fetchTasksForDay = async () => {
+    if (!userProfile) return;
+    const fechaActual = dayjs().year(year).month(month).date(day).format('YYYY-MM-DD');
+    const { data, error } = await supabase
+        .from('Tareas')
+        .select('*')
+        .eq('fechaCreacion', fechaActual)
+        .eq('id_usuario', userProfile.idUsuario); // <-- Filtras por usuario
+    if (!error) setTasks(data || []);
+};
+// Actualizar tarea (título y descripción)
+const handleUpdateInfo = (id, newTitle, newDescription) => {
+  setTasks(prev =>
+    prev.map(t =>
+      t.id_Tarea === id
+        ? { ...t, nombreTarea: newTitle, descripcion: newDescription }
+        : t
+    )
+  );
+  setDetailTaskData(prev => {
+    const updated = tasks.find(t => t.id_Tarea === id);
+    return updated ? { ...updated, nombreTarea: newTitle, descripcion: newDescription } : prev;
+  });
+};
 
-  // Completar/no completado
-  const handleToggleComplete = (hour) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.hour === hour
-          ? { ...t, completed: !t.completed }
-          : t
-      )
-    );
-    setDetailTaskData(prev => {
-      const updated = tasks.find(t => t.hour === hour);
-      return updated ? { ...updated, completed: !prev.completed } : prev;
-    });
-  };
+// Completar/no completado
+const handleToggleComplete = (id_Tarea) => {
+  setTasks(prev =>
+    prev.map(t =>
+      t.id_Tarea === id_Tarea
+        ? { ...t, completed: !t.completed }
+        : t
+    )
+  );
+  setDetailTaskData(prev => {
+    const updated = tasks.find(t => t.id_Tarea === id_Tarea);
+    return updated ? { ...updated, completed: !prev.completed } : prev;
+  });
+};
 
   // Cerrar modal de nueva tarea
   const handleCloseModal = () => {
@@ -98,45 +122,45 @@ const DayCalendarView = ({ year, month, day }) => {
   };
 
   const dayName = dayjs().year(year).month(month).date(day).format("dddd");
+  React.useEffect(() => {
+    fetchTasksForDay();
+    // eslint-disable-next-line
+  }, [year, month, day, userProfile]);
 
   return (
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col h-[calc(100vh-240px)]">
       <div className="flex-1 overflow-y-auto scrollbar-subtle">
         <div className="grid grid-cols-[80px_1fr] gap-0">
           {hours.map((hour) => {
-            const task = tasks.find((t) => t.hour === hour);
+            // Busca tareas para esta franja horaria
+            const tareasHora = tasks.filter(
+              t => t.fechaLimite && parseInt(t.fechaLimite.slice(0, 2), 10) === hour
+            );
             return (
               <React.Fragment key={hour}>
                 {/* Columna de hora */}
                 <div className="text-right pr-4 py-4 text-sm text-gray-400 border-r border-gray-600">
                   {formatHour(hour)}
                 </div>
-
                 {/* Columna de contenido */}
                 <div
                   className={`relative border-b border-gray-600 min-h-[60px] p-2 hover:bg-gray-800/30 transition-colors cursor-pointer`}
-                  onClick={() => task ? handleTaskClick(task) : handleHourClick(hour)}
+                  onClick={() => tareasHora.length > 0 ? handleTaskClick(tareasHora[0]) : handleHourClick(hour)}
                 >
-                  {/* Icono solo si hay tarea asignada */}
-                  {task && (
+                  {/* Renderiza todas las tareas de esa hora */}
+                  {tareasHora.map(task => (
                     <div
+                      key={task.id_Tarea}
                       className={`absolute left-2 right-2 text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 ${task.completed ? "bg-purple-400/80" : "bg-purple-600/80"}`}
                       style={{ top: "4px" }}
                     >
                       <i className="bi bi-tools text-lg mr-2" />
                       <span className={`font-medium relative ${task.completed ? "line-through" : ""}`}>
-                        {task.title}
-                        {/* Animación de línea tachada */}
-                        {task.completed && (
-                          <span
-                            className="absolute left-0 right-0 top-1/2 h-[2px] bg-white opacity-70 animate-[fadeIn_0.5s_ease]"
-                            style={{ transform: "translateY(-50%)" }}
-                          />
-                        )}
+                        {task.nombreTarea}
                       </span>
-                      <span className="text-xs text-purple-200 ml-2">({task.taskTime})</span>
+                      <span className="text-xs text-purple-200 ml-2">({task.fechaLimite.slice(0, 5)})</span>
                     </div>
-                  )}
+                  ))}
                 </div>
               </React.Fragment>
             );
@@ -149,7 +173,7 @@ const DayCalendarView = ({ year, month, day }) => {
           onClose={handleCloseModal}
           onSave={handleAddTask}
           startDate={modalTaskData?.startDate}
-          hideDateAndTimeFields={true}
+          onlyTimeField={true} // <-- Solo hora en el modal de calendario
         />
       )}
       {/* Modal de detalle de tarea */}
