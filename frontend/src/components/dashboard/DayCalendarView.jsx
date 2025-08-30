@@ -24,13 +24,14 @@ const DayCalendarView = ({ year, month, day }) => {
     });
   };
 
-  // Abrir modal de detalle de tarea
+  // Abrir modal de detalle de tarea (siempre sincroniza con tasks)
   const handleTaskClick = (task) => {
-    setDetailTaskData(task);
+    const updatedTask = tasks.find(t => t.hour === task.hour);
+    setDetailTaskData(updatedTask);
     setShowDetailModal(true);
   };
 
-  // Añadir tarea (simulación, aquí se reutiliza la plantilla de añadir tarea)
+  // Añadir tarea
   const handleAddTask = (taskData) => {
     setTasks([...tasks, {
       hour: selectedHour,
@@ -43,6 +44,37 @@ const DayCalendarView = ({ year, month, day }) => {
     setShowTaskModal(false);
     setSelectedHour(null);
     setModalTaskData(null);
+  };
+
+  // Actualizar tarea (título y descripción)
+  const handleUpdateInfo = (id, newTitle, newDescription) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.hour === id
+          ? { ...t, title: newTitle, description: newDescription }
+          : t
+      )
+    );
+    // Sincroniza el objeto seleccionado con la lista actualizada
+    setDetailTaskData(prev => {
+      const updated = tasks.find(t => t.hour === id);
+      return updated ? { ...updated, title: newTitle, description: newDescription } : prev;
+    });
+  };
+
+  // Completar/no completado
+  const handleToggleComplete = (hour) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.hour === hour
+          ? { ...t, completed: !t.completed }
+          : t
+      )
+    );
+    setDetailTaskData(prev => {
+      const updated = tasks.find(t => t.hour === hour);
+      return updated ? { ...updated, completed: !prev.completed } : prev;
+    });
   };
 
   // Cerrar modal de nueva tarea
@@ -88,11 +120,20 @@ const DayCalendarView = ({ year, month, day }) => {
                   {/* Icono solo si hay tarea asignada */}
                   {task && (
                     <div
-                      className="absolute left-2 right-2 bg-purple-600/80 text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2"
+                      className={`absolute left-2 right-2 text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 ${task.completed ? "bg-purple-400/80" : "bg-purple-600/80"}`}
                       style={{ top: "4px" }}
                     >
                       <i className="bi bi-tools text-lg mr-2" />
-                      <span className="font-medium">{task.title}</span>
+                      <span className={`font-medium relative ${task.completed ? "line-through" : ""}`}>
+                        {task.title}
+                        {/* Animación de línea tachada */}
+                        {task.completed && (
+                          <span
+                            className="absolute left-0 right-0 top-1/2 h-[2px] bg-white opacity-70 animate-[fadeIn_0.5s_ease]"
+                            style={{ transform: "translateY(-50%)" }}
+                          />
+                        )}
+                      </span>
                       <span className="text-xs text-purple-200 ml-2">({task.taskTime})</span>
                     </div>
                   )}
@@ -108,7 +149,7 @@ const DayCalendarView = ({ year, month, day }) => {
           onClose={handleCloseModal}
           onSave={handleAddTask}
           startDate={modalTaskData?.startDate}
-          taskTime={modalTaskData?.taskTime}
+          hideDateAndTimeFields={true}
         />
       )}
       {/* Modal de detalle de tarea */}
@@ -121,6 +162,8 @@ const DayCalendarView = ({ year, month, day }) => {
             setShowDetailModal(false);
             setDetailTaskData(null);
           }}
+          onUpdateInfo={handleUpdateInfo}
+          onToggleComplete={handleToggleComplete}
         />
       )}
     </div>

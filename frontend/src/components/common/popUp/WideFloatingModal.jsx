@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import UnsaveChangesModal from "../../dashboard/UnsaveChangesModal"; 
 
 const ANIMATION_DURATION = 300;
 
@@ -7,10 +8,13 @@ const WideFloatingModal = ({
   onClose,
   showClose = true,
   open = true,
-  className = "max-w-5xl" // Por defecto más ancho
+  className = "max-w-5xl",
+  hasUnsavedChanges,     
+  onDiscardChanges        
 }) => {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(open);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const timeoutRef = useRef();
   const firstRender = useRef(true);
 
@@ -30,18 +34,37 @@ const WideFloatingModal = ({
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
 
+  // Maneja el cierre con advertencia
   const handleClose = () => {
+    if (hasUnsavedChanges && hasUnsavedChanges()) {
+      setShowUnsavedModal(true);
+    } else {
+      setShow(false);
+      setTimeout(() => {
+        if (onClose) onClose();
+      }, ANIMATION_DURATION);
+    }
+  };
+
+  // Descarta cambios y cierra
+  const handleDiscard = () => {
+    setShowUnsavedModal(false);
     setShow(false);
     setTimeout(() => {
+      if (onDiscardChanges) onDiscardChanges();
       if (onClose) onClose();
     }, ANIMATION_DURATION);
+  };
+
+  // Continúa editando
+  const handleStayEditing = () => {
+    setShowUnsavedModal(false);
   };
 
   if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
-      {/* Fondo con blur y transición poco a poco*/}
       <div
         className={`
           fixed inset-0 transition-all duration-300
@@ -53,7 +76,6 @@ const WideFloatingModal = ({
         onClick={handleClose}
         aria-label="Cerrar modal"
       />
-      {/* Modal flotante con animación */}
       <div
         className={`
           fixed inset-0 flex items-center justify-center z-50
@@ -82,6 +104,13 @@ const WideFloatingModal = ({
           {typeof children === "function" ? children({ handleClose }) : children}
         </div>
       </div>
+      {showUnsavedModal && (
+        <UnsaveChangesModal
+          onClose={handleStayEditing}
+          onDiscard={handleDiscard}
+          onStay={handleStayEditing}
+        />
+      )}
     </div>
   );
 };

@@ -18,17 +18,20 @@ export default function CollaboratorsTable() {
   // Obtener projectId directamente de la URL
   const { id: projectId } = useParams();
 
-  const { 
-    collaborators, 
-    isLoading, 
-    fetchCollaborators, 
-    updateCollaboratorState 
+  const {
+    collaborators,
+    isLoading,
+    fetchCollaborators,
+    updateCollaboratorState,
   } = useCollaboratorsStore();
 
   // Solo cargar colaboradores si no están en cache
   useEffect(() => {
     if (projectId) {
-      console.log("📊 CollaboratorsTable: Verificando colaboradores para proyecto", projectId);
+      console.log(
+        "📊 CollaboratorsTable: Verificando colaboradores para proyecto",
+        projectId
+      );
       fetchCollaborators(projectId);
     }
   }, [projectId, fetchCollaborators]);
@@ -38,7 +41,10 @@ export default function CollaboratorsTable() {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
     try {
-      await updateCollaboratorState(colaborador.id || colaborador.idusuario, nuevoEstado);
+      await updateCollaboratorState(
+        colaborador.id || colaborador.idusuario,
+        nuevoEstado
+      );
       showSuccessToast(`Colaborador ${nuevoEstado.toLowerCase()}`);
     } catch (error) {
       showErrorToast("Error al cambiar el estado del colaborador");
@@ -156,24 +162,26 @@ export default function CollaboratorsTable() {
   };
 
   return (
-    <DataTable
-      title="colaboradores"
-      data={colaboradoresFiltrados}
-      columns={columns}
-      loading={isLoading}
-      searchTerm={searchTerm}
-      onSearchChange={setSearchTerm}
-      searchPlaceholder="Buscar colaborador..."
-      filters={filters}
-      selectedFilter={estadoSeleccionado}
-      onFilterChange={setEstadoSeleccionado}
-      exportOptions={exportOptions}
-      onExport={handleExport}
-      rowsPerPage={rowsPerPage}
-      onRowsPerPageChange={setRowsPerPage}
-      rowsPerPageOptions={[10, 20, 30, 40, 50]}
-      loadingText="Cargando colaboradores..."
-      emptyMessage="No hay colaboradores disponibles"
-    />
+    <div className="flex flex-col flex-1 min-h-0">
+      <DataTable
+        title="colaboradores"
+        data={colaboradoresFiltrados}
+        columns={columns}
+        loading={isLoading}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar colaborador..."
+        filters={filters}
+        selectedFilter={estadoSeleccionado}
+        onFilterChange={setEstadoSeleccionado}
+        exportOptions={exportOptions}
+        onExport={handleExport}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={setRowsPerPage}
+        rowsPerPageOptions={[10, 20, 30, 40, 50]}
+        loadingText="Cargando colaboradores..."
+        emptyMessage="No hay colaboradores disponibles"
+      />
+    </div>
   );
 }

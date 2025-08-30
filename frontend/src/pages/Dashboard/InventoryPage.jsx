@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
 import InventoryTable from "../../components/dashboard/InventoryTable";
 import EquipmentsTable from "../../components/dashboard/EquipmentsTable";
-import ButtonBG from "../../components/common/ButtonBG";
+import BackButton from "../../components/common/BackButton";
 import { useNavbarTitle } from "../../context/NavbarTitleContext";
-
 
 export default function InventoryPage() {
   const [clienteSeleccionado, setClienteSeleccionado] = React.useState(null);
@@ -15,23 +14,20 @@ export default function InventoryPage() {
   }, [setTitle, setSubtitle]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       {clienteSeleccionado ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 overflow-hidden">
+            <div className="flex justify-start flex-shrink-0 pd-20">
+              <BackButton onClick={() => setClienteSeleccionado(null)}>
+                ← Volver
+              </BackButton>
+            </div>
             <EquipmentsTable cliente={clienteSeleccionado} />
-          </div>
-          <div className="flex justify-end flex-shrink-0">
-            <ButtonBG
-              className="mt-6 px-4 py-2 w-30 bg-purple-800 rounded-xl shadow-2xl text-white text-center hover:bg-purple-900 hover:shadow-md hover:shadow-purple-600/50 transition-colors"
-              onClick={() => setClienteSeleccionado(null)}
-            >
-              ← Volver
-            </ButtonBG>
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <InventoryTable onEmojiClick={setClienteSeleccionado} />
         </div>
       )}

@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 
 const ANIMATION_DURATION = 300;
 
-const FloatingModal = ({ children, onClose, showClose = true, open = true }) => {
+const FloatingModal = ({
+  children,
+  onClose,
+  showCloseIcon = true,
+  open = true,
+}) => {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(open);
   const timeoutRef = useRef();
@@ -19,7 +24,10 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
       }
     } else if (mounted) {
       setShow(false);
-      timeoutRef.current = setTimeout(() => setMounted(false), ANIMATION_DURATION);
+      timeoutRef.current = setTimeout(
+        () => setMounted(false),
+        ANIMATION_DURATION
+      );
     }
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
@@ -39,11 +47,15 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
       <div
         className={`
           fixed inset-0 transition-all duration-300
-          ${show
-            ? "backdrop-blur-[2px] bg-black/5 opacity-100 pointer-events-auto"
-            : "backdrop-blur-0 bg-transparent opacity-0 pointer-events-auto"}
+          ${
+            show
+              ? "backdrop-blur-[2px] bg-black/5 opacity-100 pointer-events-auto"
+              : "backdrop-blur-0 bg-transparent opacity-0 pointer-events-auto"
+          }
         `}
-        style={{ transitionProperty: "backdrop-filter, background-color, opacity" }}
+        style={{
+          transitionProperty: "backdrop-filter, background-color, opacity",
+        }}
         onClick={handleClose}
         aria-label="Cerrar modal"
       />
@@ -52,19 +64,21 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
         className={`
           fixed inset-0 flex items-center justify-center z-50
           transition-all duration-300
-          ${show
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-95 translate-y-8 pointer-events-none"}
+          ${
+            show
+              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 scale-95 translate-y-8 pointer-events-none"
+          }
         `}
         style={{
           transitionProperty: "opacity, transform",
         }}
       >
         <div
-          className="border border-gray-700 relative bg-gradient-to-tr from-[#17161d] via-[#1f1e29] to-[#323342] rounded-2xl shadow-2xl p-8 max-w-md w-full"
+          className="border border-gray-700 relative bg-[#232335] rounded-2xl shadow-2xl p-8 max-w-md w-full"
           style={{ minHeight: "220px" }}
         >
-          {showClose && onClose && (
+          {showCloseIcon && onClose && (
             <button
               onClick={handleClose}
               className="absolute top-3 right-3 text-purple-400 hover:text-purple-600 text-xl font-bold"
@@ -73,7 +87,9 @@ const FloatingModal = ({ children, onClose, showClose = true, open = true }) => 
               ✕
             </button>
           )}
-          {typeof children === "function" ? children({ handleClose }) : children}
+          {typeof children === "function"
+            ? children({ handleClose })
+            : children}
         </div>
       </div>
     </div>
