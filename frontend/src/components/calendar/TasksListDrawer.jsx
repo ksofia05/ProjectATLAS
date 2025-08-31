@@ -1,20 +1,30 @@
 import React, { useEffect, useRef, useState } from "react";
-import DrawerTaskItem from "./DrawerTaskItem";
+import DrawerTaskItem, { formatTimeAgo } from "./DrawerTaskItem";
 import ButtonBG from "../common/ButtonBG";
-import EstateAdEquipmentModal from "../dashboard/EstateAdEquipmentModal"; // Modal para confirmación
+import EstateAdEquipmentModal from "../dashboard/EstateAdEquipmentModal";
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString();
+}
 
 export default function TasksListDrawer({
   open,
   onClose,
-  tasks,
-  onTasksUpdate,
+  tasks: initialTasks,
 }) {
   const [mounted, setMounted] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
+  const [tasks, setTasks] = useState(initialTasks || []);
   const [completedTasks, setCompletedTasks] = useState([]);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const timeoutRef = useRef();
+
+  useEffect(() => {
+    setTasks(initialTasks || []);
+  }, [initialTasks]);
 
   useEffect(() => {
     if (open) {
@@ -42,27 +52,27 @@ export default function TasksListDrawer({
 
   const handleCompleteSelectedTasks = () => {
     const completed = tasks
-      .filter((task) => selectedTaskIds.has(task.id))
-      .map((task)=>({
+      .filter((task) => selectedTaskIds.has(task.id_Tarea))
+      .map((task) => ({
         ...task,
         completedAt: new Date().toISOString(),
       }));
-    const remainingTasks = tasks.filter((task) => !selectedTaskIds.has(task.id));
+    const remainingTasks = tasks.filter((task) => !selectedTaskIds.has(task.id_Tarea));
     setCompletedTasks((prevCompleted) => [...prevCompleted, ...completed]);
-    onTasksUpdate(remainingTasks);
+    setTasks(remainingTasks);
     setSelectedTaskIds(new Set());
   };
 
   const handleRestoreTask = (taskId) => {
-    const restoredTask = completedTasks.find((task) => task.id === taskId);
+    const restoredTask = completedTasks.find((task) => task.id_Tarea === taskId);
     setCompletedTasks((prevCompleted) =>
-      prevCompleted.filter((task) => task.id !== taskId)
+      prevCompleted.filter((task) => task.id_Tarea !== taskId)
     );
-    onTasksUpdate((prevTasks) => [...prevTasks, restoredTask]);
+    setTasks((prevTasks) => [...prevTasks, restoredTask]);
   };
 
   const handleDeleteAllCompletedTasks = () => {
-    setShowDeleteModal(true); 
+    setShowDeleteModal(true);
   };
 
   const confirmDeleteAllCompletedTasks = () => {
@@ -123,33 +133,45 @@ export default function TasksListDrawer({
         <hr className="border-gray-700 mb-6" />
 
         <div className="flex flex-col overflow-y-auto flex-grow">
-          {tasks && tasks.length > 0 ? (
-            tasks.map((task) => (
-              <DrawerTaskItem
-                key={task.id}
-                task={task}
-                onToggleSelect={handleToggleSelectTask}
-                isSelected={selectedTaskIds.has(task.id)}
-              />
-            ))
+          {tasks.length > 0 ? (
+            tasks.map((task) => {
+              const taskWithCreatedAt = {
+                ...task,
+                taskTitle: task.nombreTarea,
+                createdAt: task.fechaCreacion && task.fechaLimite
+                  ? `${task.fechaCreacion}T${task.fechaLimite}`
+                  : task.fechaCreacion,
+              };
+              return (
+                <div key={task.id_Tarea} className="flex flex-col">
+                  <DrawerTaskItem
+                    task={taskWithCreatedAt}
+                    onToggleSelect={handleToggleSelectTask}
+                    isSelected={selectedTaskIds.has(task.id_Tarea)}
+                  />
+                  {/* <span className="text-[#813dff] text-xs font-medium ml-4">
+                    {formatTimeAgo(taskWithCreatedAt.createdAt)}
+                  </span> */}
+                </div>
+              );
+            })
           ) : (
             <p className="text-gray-500">No hay tareas disponibles.</p>
           )}
         </div>
-        <hr className="border-gray-700 my-4" /> 
+        <hr className="border-gray-700 my-4" />
         <div className="mt-4">
           <h3 className="text-xs font-bold text-gray-400">
             Tareas Completadas ({completedTasks.length})
           </h3>
-         
           <div className={`flex flex-col ${completedTasks.length > 0 ? "gap-3 mt-3" : ""}`}>
             {completedTasks.length > 0 ? (
               completedTasks.map((task) => (
-                <div key={task.id} className="flex flex-col">
+                <div key={task.id_Tarea} className="flex flex-col">
                   <div className="bg-[#2A273A] rounded-2xl px-6 py-4 flex items-center justify-between">
-                    <span className="text-white font-semibold">{task.taskTitle}</span>
+                    <span className="text-white font-semibold">{task.nombreTarea}</span>
                     <button
-                      onClick={() => handleRestoreTask(task.id)}
+                      onClick={() => handleRestoreTask(task.id_Tarea)}
                       className="text-gray-400 hover:text-purple-600 transition-colors duration-200"
                       aria-label="Restaurar tarea"
                     >
@@ -158,7 +180,7 @@ export default function TasksListDrawer({
                   </div>
                   {task.completedAt && (
                     <span className="text-[#813dff] text-xs font-medium ml-4">
-                      Completado: {new Date(task.completedAt).toLocaleDateString()}
+                      Completado: {formatDate(task.completedAt)}
                     </span>
                   )}
                 </div>
@@ -187,7 +209,6 @@ export default function TasksListDrawer({
             </button>
           )}
         </div>
-        
       </aside>
 
       {showDeleteModal && (

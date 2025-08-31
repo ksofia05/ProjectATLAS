@@ -4,7 +4,7 @@ import { client } from '../supabase/client';
 import { getUserProfile } from '../services/userService';
 import useUserStore from '../stores/useUserStore';
 
-const AuthContext = createContext({});
+export const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

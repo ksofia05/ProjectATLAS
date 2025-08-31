@@ -144,7 +144,6 @@ const EquipmentClientModal = ({
           Estado: nuevoEstado,
           fechaSalida: fechaSalida,
           comentarioSalida: comentarioSalida,
-          comentarioSalida: comentarioSalida,
         })
         .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
 
