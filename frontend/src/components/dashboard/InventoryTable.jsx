@@ -3,69 +3,51 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import axios from "axios";
 
 import DataTable from "../common/DataTable";
 import ButtonGrey from "../common/ButtonGrey";
 import RegisterClientDrawer from "./RegisterClientDrawer";
 import { useAuth } from "../../context/AuthProvider";
+import useClientsStore from "../../stores/useClientsStore";
 
 export default function InventoryTable({ onEmojiClick }) {
   const { user, userProfile, isLoading } = useAuth();
-  const [clientes, setClientes] = useState([]);
+  // Estados del store
+  const {
+    clientes,
+    loading,
+    error,
+    usuarioIdActual,
+    idProyecto,
+    initialized,
+    fetchClientes,
+    getClientesFiltrados,
+    refreshClientes,
+    shouldRefresh,
+  } = useClientsStore();
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
-  const [usuarioIdActual, setUsuarioIdActual] = useState(null);
-  const [idProyecto, setIdProyecto] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     if (isLoading || !user) return;
 
-    const fetchClientes = async () => {
-      setLoading(true);
-      const email = user?.email || user?.user_metadata?.email;
-      try {
-        const usuarioRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
-        );
-        const usuarioId = usuarioRes.data[0].idusuario;
-        setUsuarioIdActual(usuarioId);
+    const email = user?.email || user?.user_metadata?.email;
+    if (!email) return;
 
-        const proyectosRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
-        );
-        const proyectos = proyectosRes.data;
+    // Si no está inicializado o necesita refresh, cargar datos
+    if (!initialized || shouldRefresh()) {
+      console.log('Cargando clientes...');
+      fetchClientes(email);
+    }
+  }, [user, isLoading, initialized, fetchClientes, shouldRefresh]);
 
-        if (proyectos.length === 0) {
-          setClientes([]);
-          setIdProyecto(null);
-          setLoading(false);
-          return;
-        }
-
-        const idProyecto = proyectos[0].id_proyecto;
-        setIdProyecto(idProyecto);
-
-        const clientesRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/clientes_por_proyecto/?id_proyecto=${idProyecto}`
-        );
-
-        setClientes(clientesRes.data.clientes);
-      } catch (error) {
-        console.error("Error al obtener los clientes:", error);
-        setClientes([]);
-        setIdProyecto(null);
-        setUsuarioIdActual(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClientes();
-  }, [user, isLoading]);
+  // Función para manejar cuando se agrega un nuevo cliente
+  const handleClienteAdded = () => {
+    console.log('Cliente agregado, cerrando drawer');
+    setShowDrawer(false);
+  };
 
   // Exportar a Excel
   const exportToExcel = (data) => {
@@ -105,16 +87,8 @@ export default function InventoryTable({ onEmojiClick }) {
     doc.save("clientes.pdf");
   };
 
-  // Filtrado de datos
-  const clientesFiltrados = clientes.filter(
-    (item) =>
-      (estadoSeleccionado === "todos" || item.estado === estadoSeleccionado) &&
-      ((item.nombre?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (item.apellido?.toLowerCase() || "").includes(
-          searchTerm.toLowerCase()
-        ) ||
-        (item.correo?.toLowerCase() || "").includes(searchTerm.toLowerCase()))
-  );
+  //  Obtener clientes filtrados usando el selector del store
+  const clientesFiltrados = getClientesFiltrados(estadoSeleccionado, searchTerm);
 
   // Configuración de columnas
   const columns = [
@@ -214,6 +188,15 @@ export default function InventoryTable({ onEmojiClick }) {
     if (value === "pdf") exportToPDF(clientesFiltrados);
   };
 
+  //  Función para reintentar carga de datos
+  const handleRetry = () => {
+    const email = user?.email || user?.user_metadata?.email;
+    if (email) {
+      console.log('Reintentando cargar clientes...');
+      refreshClientes(email);
+    }
+  };
+
   // Botón de agregar cliente
   const extraActions = (
     <ButtonGrey
@@ -223,6 +206,22 @@ export default function InventoryTable({ onEmojiClick }) {
       + Agregar nuevo equipo
     </ButtonGrey>
   );
+
+  //  Manejo de errores mejorado
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-red-500">
+        <p className="text-lg font-semibold mb-2">Error al cargar clientes</p>
+        <p className="text-sm mb-4">{error}</p>
+        <button
+          className="bg-purple-800 hover:bg-purple-900 text-white px-4 py-2 rounded-lg transition-colors"
+          onClick={handleRetry}
+        >
+          Reintentar carga
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -243,12 +242,13 @@ export default function InventoryTable({ onEmojiClick }) {
         onRowsPerPageChange={setRowsPerPage}
         rowsPerPageOptions={[10, 20, 30, 40, 50]}
         extraActions={extraActions}
-        loadingText="Cargando clientes..."
+        loadingText="Actualizando clientes..."
         emptyMessage="No hay clientes disponibles"
       />
       <RegisterClientDrawer
         open={showDrawer}
         onClose={() => setShowDrawer(false)}
+        onClienteAdded={handleClienteAdded}
         idproyecto={idProyecto}
         usuarioIdActual={usuarioIdActual}
       />

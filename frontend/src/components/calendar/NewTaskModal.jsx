@@ -14,46 +14,50 @@ const DateInput = styled.input`
     -moz-appearance: textfield;
 `;
 
-export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTimeFields = false }) {
+export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateAndTimeFields = false,onlyTimeField = false }) {
     const [form, setForm] = useState({
         taskTitle: "",
         taskDescription: "",
-        startDate: startDate || "",
+        // startDate: /*startDate ||*/ "",
         endDate: "",
         taskTime: "",
     });
 
-    const startDateInputRef = useRef(null);
+    // const startDateInputRef = useRef(null);
     const endDateInputRef = useRef(null);
     const taskTimeInputRef = useRef(null);
 
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
-        const { taskTitle, taskDescription, startDate, endDate, taskTime } = form;
+        const { taskTitle, taskDescription, endDate, taskTime } = form;
 
-        // Lógica de validación corregida
         if (hideDateAndTimeFields) {
             setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+        } else if (onlyTimeField) {
+            setIsFormValid(
+                taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "" &&
+                taskTime.trim() !== ""
+            );
         } else {
             setIsFormValid(
                 taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
-                startDate.trim() !== "" &&
                 endDate.trim() !== "" &&
                 taskTime.trim() !== ""
             );
         }
-    }, [form, hideDateAndTimeFields]);
+    }, [form, hideDateAndTimeFields, onlyTimeField]);
 
-    useEffect(() => {
-        if (startDate && !form.startDate) {
-            setForm((prevForm) => ({
-                ...prevForm,
-                startDate: startDate,
-            }));
-        }
-    }, [form, startDate]);
+    // useEffect(() => {
+    //     if (startDate && !form.startDate) {
+    //         setForm((prevForm) => ({
+    //             ...prevForm,
+    //             startDate: startDate,
+    //         }));
+    //     }
+    // }, [form, startDate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -109,57 +113,35 @@ export default function NewTaskModal({ onClose, onSave, startDate, hideDateAndTi
                 
                 {!hideDateAndTimeFields && (
                     <div className="flex flex-col gap-2">
-                        <label className="text-gray-300 font-semibold mt-6 mb-2">Fecha y Hora:</label>
+                        <label className="text-gray-300 font-semibold mt-6 mb-2">
+                            {onlyTimeField ? "Hora:" : "Fecha y Hora:"}
+                        </label>
                         <div className="grid grid-cols-3 gap-4 items-center">
-                            {/* Desde */}
-                            <div className="relative">
-                                <span className="block text-gray-400 mb-1">Desde</span>
-                                <div className="relative w-full">
-                                    <DateInput
-                                        ref={startDateInputRef}
-                                        type="date"
-                                        name="startDate"
-                                        value={form.startDate}
-                                        onChange={handleChange}
-                                        className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
-                                        style={{ backgroundColor: '#2b2b3a', color: 'white' }}
-                                    />
-                                    <span
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                                        onClick={() => startDateInputRef.current && startDateInputRef.current.showPicker()}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label="Abrir calendario"
-                                    >
-                                        <i className="bi bi-calendar text-gray-500" />
-                                    </span>
+                            {!onlyTimeField && (
+                                <div className="relative">
+                                    <span className="block text-gray-400 mb-1">Fecha</span>
+                                    <div className="relative w-full text-sm">
+                                        <DateInput
+                                            ref={endDateInputRef}
+                                            type="date"
+                                            name="endDate"
+                                            value={form.endDate}
+                                            onChange={handleChange}
+                                            className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
+                                            style={{ backgroundColor: '#2b2b3a', color: 'white' }}
+                                        />
+                                        <span
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                                            onClick={() => endDateInputRef.current && endDateInputRef.current.showPicker()}
+                                            tabIndex={0}
+                                            role="button"
+                                            aria-label="Abrir calendario"
+                                        >
+                                            <i className="bi bi-calendar text-gray-500" />
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                            {/* Hasta */}
-                            <div className="relative">
-                                <span className="block text-gray-400 mb-1">Hasta</span>
-                                <div className="relative w-full text-sm">
-                                    <DateInput
-                                        ref={endDateInputRef}
-                                        type="date"
-                                        name="endDate"
-                                        value={form.endDate}
-                                        onChange={handleChange}
-                                        className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
-                                        style={{ backgroundColor: '#2b2b3a', color: 'white' }}
-                                    />
-                                    <span
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                                        onClick={() => endDateInputRef.current && endDateInputRef.current.showPicker()}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label="Abrir calendario"
-                                    >
-                                        <i className="bi bi-calendar text-gray-500" />
-                                    </span>
-                                </div>
-                            </div>
-                            {/* Hora */}
+                            )}
                             <div className="relative">
                                 <span className="block text-gray-400 mb-1">Hora</span>
                                 <div className="relative w-full">

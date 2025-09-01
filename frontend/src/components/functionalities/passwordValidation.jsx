@@ -12,7 +12,7 @@ const PasswordValidator = ({ password }) => {
     if (condition) return 'text-green-600';
     return 'text-red-500';
   };
-
+z
   return (
     <div className="text-sm text-gray-600 mt-2 space-y-1">
       <p className={getClass(lengthValid)}>• Al menos 8 caracteres</p>
