@@ -96,7 +96,7 @@ export default function MyTasksCard() {
                 onClose={handleCloseDrawer}
                 tasks={tasks}
                 onTasksUpdate={updateTasksInCard}
-            />
+                />
         </>
     );
 }
