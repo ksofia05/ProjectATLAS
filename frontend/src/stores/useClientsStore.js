@@ -93,7 +93,7 @@ const useClientsStore = create(
       }
     },
 
-    // ✅ Función mejorada para agregar un nuevo cliente (optimistic update)
+    //  Función mejorada para agregar un nuevo cliente (optimistic update)
     addCliente: (nuevoCliente) => {
       const state = get();
       
@@ -147,7 +147,7 @@ const useClientsStore = create(
       });
     },
 
-    // ✅ Función mejorada para refrescar datos
+    //  Función mejorada para refrescar datos
     refreshClientes: async (email) => {
       // Opcionalmente, puedes mantener los datos actuales mientras cargas los nuevos
       const state = get();
@@ -185,7 +185,7 @@ const useClientsStore = create(
       );
     },
 
-    // ✅ Nueva función para verificar si necesita refrescar datos
+    //  Nueva función para verificar si necesita refrescar datos
     shouldRefresh: () => {
       const state = get();
       const now = new Date().getTime();
