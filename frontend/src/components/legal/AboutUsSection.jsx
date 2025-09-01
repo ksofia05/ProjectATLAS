@@ -8,7 +8,7 @@ const AboutUsSection = () => (
           <span className="text-gray-500 text-lg">Plantilla para imagen :3</span>
         </div>
       </div>
-      <div className="w-full md:w-1/2 text-left text-white mt-30">
+      <div className="w-full md:w-1/2 text-left text-white mt-20">
         <h2 className="font-['Figtree'] text-4xl md:text-6xl lg:text-8xl font-bold mb-3 text-white">
           Quienes Somos
         </h2>
