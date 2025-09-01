@@ -59,14 +59,42 @@ export default function RegisterClientForm({
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setErrors((prevErrors) => {
-      const newForm = { ...form, [name]: value };
-      return validateClientForm(newForm);
-    });
+    if (name === "identificacion" && value.trim() === "") {
+      setForm((prev) => ({
+        ...prev,
+        identificacion: "",
+        nombre: "",
+        apellido: "",
+        email: "",
+        telefono: "",
+        serie: "",
+        comentario: "",
+        imagen: null,
+      }));
+      setErrors((prevErrors) => {
+        const newForm = {
+          ...form,
+          identificacion: "",
+          nombre: "",
+          apellido: "",
+          email: "",
+          telefono: "",
+          serie: "",
+          comentario: "",
+          imagen: null,
+        };
+        return validateClientForm(newForm);
+      });
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+      setErrors((prevErrors) => {
+        const newForm = { ...form, [name]: value };
+        return validateClientForm(newForm);
+      });
+    }
   }
 
   // Al seleccionar sugerencia
