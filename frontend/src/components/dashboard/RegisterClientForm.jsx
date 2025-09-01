@@ -71,6 +71,9 @@ export default function RegisterClientForm({
         comentario: "",
         imagen: null,
       }));
+      setSearchResults([]); // Limpia sugerencias de clientes
+      setSeriesSugeridas([]); // Limpia sugerencias de series
+      setShowSuggestions(false); // Oculta el dropdown de sugerencias
       setErrors((prevErrors) => {
         const newForm = {
           ...form,
