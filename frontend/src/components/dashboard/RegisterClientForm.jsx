@@ -9,11 +9,12 @@ import { client as supabase } from "../../supabase/client";
 import { validateClientForm } from "../../utils/validateClientForm";
 import { useClientAutocomplete } from "../../hooks/useClientAutocomplete";
 import { dateUtils } from "../../utils/dateUtils";
-
+import useClientsStore from "../../stores/useClientsStore";
 export default function RegisterClientForm({
   onClose,
   idproyecto,
   usuarioIdActual,
+  onClienteAdded,
 }) {
   const [form, setForm] = useState({
     identificacion: "",
@@ -37,7 +38,9 @@ export default function RegisterClientForm({
   const [touched, setTouched] = useState({});
   const [triedSubmit, setTriedSubmit] = useState(false);
 
-  // Con esto se maneja la búsqueda de clientes
+  //  Obtener función para agregar cliente al store
+  const { addCliente } = useClientsStore();
+
   const {
     searchResults,
     showSuggestions,
@@ -131,61 +134,60 @@ export default function RegisterClientForm({
   };
 
   const handleSubmit = async (e) => {
-e.preventDefault();
-  setTriedSubmit(true);
-  const validationErrors = validateClientForm(form);
-  setErrors(validationErrors);
-  if (Object.keys(validationErrors).length > 0) return;
+    e.preventDefault();
+    setTriedSubmit(true);
+    const validationErrors = validateClientForm(form);
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
-  setIsSubmitting(true);
-  try {
-    // 1. Buscar si el cliente ya existe
-    const { data: existingCliente } = await supabase
-      .from("Cliente")
-      .select("*")
-      .eq("dni", form.identificacion)
-      .single();
-
-    let clienteData;
-    let clienteError;
-
-    if (existingCliente) {
-      // 2. Si existe, ACTUALIZA los datos
-      const { data, error } = await supabase
+    setIsSubmitting(true);
+    try {
+      // 1. Buscar si el cliente ya existe
+      const { data: existingCliente } = await supabase
         .from("Cliente")
-        .update({
-          nombre: form.nombre,
-          apellido: form.apellido,
-          correo: form.email,
-          telefono: form.telefono,
-          // ...otros campos si tienes
-        })
+        .select("*")
         .eq("dni", form.identificacion)
-        .select()
         .single();
-      clienteData = data;
-      clienteError = error;
-    } else {
-      // 3. Si no existe, lo insertas (como ya tienes)
-      const insertResult = await supabase
-        .from("Cliente")
-        .insert([
-          {
-            dni: Number(form.identificacion),
+
+      let clienteData;
+      let clienteError;
+
+      if (existingCliente) {
+        // 2. Si existe, ACTUALIZA los datos
+        const { data, error } = await supabase
+          .from("Cliente")
+          .update({
             nombre: form.nombre,
             apellido: form.apellido,
             correo: form.email,
             telefono: form.telefono,
-            proyecto: Number(idproyecto),
-          },
-        ])
-        .select()
-        .single();
-      clienteData = insertResult.data;
-      clienteError = insertResult.error;
-    }
+          })
+          .eq("dni", form.identificacion)
+          .select()
+          .single();
+        clienteData = data;
+        clienteError = error;
+      } else {
+        // 3. Si no existe, lo insertas
+        const insertResult = await supabase
+          .from("Cliente")
+          .insert([
+            {
+              dni: Number(form.identificacion),
+              nombre: form.nombre,
+              apellido: form.apellido,
+              correo: form.email,
+              telefono: form.telefono,
+              proyecto: Number(idproyecto),
+            },
+          ])
+          .select()
+          .single();
+        clienteData = insertResult.data;
+        clienteError = insertResult.error;
+      }
 
-    if (clienteError) throw clienteError;
+      if (clienteError) throw clienteError;
 
       // 2. Insertar equipo (si no existe)
       let equipoData;
@@ -263,13 +265,33 @@ e.preventDefault();
             equipo_numeroSerie: equipoData.numeroSerie,
             agendamiento_idAgendamiento: agendamientoData.idAgendamiento,
             fotoEquipo: form.imagen,
-            comentarioSalida: "", // Si tienes un campo para comentario de salida
+            comentarioSalida: "",
           },
         ]);
 
       if (equipoAgendamientoError) throw equipoAgendamientoError;
 
+      const nuevoClienteParaTabla = {
+        // Estructura según lo que espera tu tabla
+        id: clienteData.dni,
+        dni: clienteData.dni,
+        nombre: clienteData.nombre,
+        apellido: clienteData.apellido,
+        correo: clienteData.correo,
+        telefono: clienteData.telefono,
+        estado: "Activo",
+      };
+
+      // Agregar al store (update optimista)
+      addCliente(nuevoClienteParaTabla);
+
       showSuccessToast("Cliente registrado");
+      
+      //  Llamar al callback si existe (para compatibilidad)
+      if (onClienteAdded) {
+        onClienteAdded();
+      }
+      
       onClose();
     } catch (err) {
       console.error("Error al registrar cliente/equipo:", err);
