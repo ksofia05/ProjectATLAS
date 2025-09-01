@@ -14,6 +14,7 @@ export default function RegisterClientForm({
   onClose,
   idproyecto,
   usuarioIdActual,
+  onRegisterSuccess,
 }) {
   const [form, setForm] = useState({
     identificacion: "",
@@ -270,6 +271,9 @@ e.preventDefault();
       if (equipoAgendamientoError) throw equipoAgendamientoError;
 
       showSuccessToast("Cliente registrado");
+      if (typeof onRegisterSuccess === "function") {
+        onRegisterSuccess();
+      }
       onClose();
     } catch (err) {
       console.error("Error al registrar cliente/equipo:", err);

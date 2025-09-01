@@ -4,6 +4,7 @@ import RegisterClientForm from "./RegisterClientForm";
 export default function RegisterClientDrawer({
   open,
   onClose,
+  onRegisterSuccess,
   idproyecto,
   usuarioIdActual,
 }) {
@@ -65,6 +66,7 @@ export default function RegisterClientDrawer({
         <RegisterClientForm
           onClose={onClose}
           idproyecto={idproyecto}
+          onRegisterSuccess={onRegisterSuccess} 
           usuarioIdActual={usuarioIdActual}
         />
       </aside>

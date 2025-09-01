@@ -20,6 +20,7 @@ export default function InventoryTable({ onEmojiClick }) {
   const [idProyecto, setIdProyecto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [refreshFlag, setRefreshFlag] = useState(0); // Nuevo estado
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -65,7 +66,7 @@ export default function InventoryTable({ onEmojiClick }) {
     };
 
     fetchClientes();
-  }, [user, isLoading]);
+  }, [user, isLoading, refreshFlag]); // Agrega refreshFlag como dependencia
 
   // Exportar a Excel
   const exportToExcel = (data) => {
@@ -224,6 +225,17 @@ export default function InventoryTable({ onEmojiClick }) {
     </ButtonGrey>
   );
 
+  // Nuevo handler para cerrar el drawer y refrescar la tabla
+  const handleCloseDrawer = () => {
+    setShowDrawer(false);
+    setRefreshFlag((prev) => prev + 1);
+  };
+
+  const handleRegisterSuccess = () => {
+    setRefreshFlag((prev) => prev + 1);
+    setShowDrawer(false);
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <DataTable
@@ -249,6 +261,7 @@ export default function InventoryTable({ onEmojiClick }) {
       <RegisterClientDrawer
         open={showDrawer}
         onClose={() => setShowDrawer(false)}
+        onRegisterSuccess={handleRegisterSuccess} // Nuevo prop
         idproyecto={idProyecto}
         usuarioIdActual={usuarioIdActual}
       />
