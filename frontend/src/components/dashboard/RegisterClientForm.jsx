@@ -33,6 +33,7 @@ export default function RegisterClientForm({
   const [loadingSerie, setLoadingSerie] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [seriesSugeridas, setSeriesSugeridas] = useState([]);
+  const [clienteAutocompletado, setClienteAutocompletado] = useState(false);
 
   // (tengo unos problemas con los errores, no se marcan bien :b)
   const [touched, setTouched] = useState({});
@@ -57,6 +58,7 @@ export default function RegisterClientForm({
     console.log("ID Proyecto en RegisterClientForm:", idproyecto);
   }, [idproyecto]);
 
+
   function handleChange(e) {
     const { name, value } = e.target;
     if (name === "identificacion" && value.trim() === "") {
@@ -71,6 +73,7 @@ export default function RegisterClientForm({
         comentario: "",
         imagen: null,
       }));
+      setClienteAutocompletado(false);
       setSearchResults([]); // Limpia sugerencias de clientes
       setSeriesSugeridas([]); // Limpia sugerencias de series
       setShowSuggestions(false); // Oculta el dropdown de sugerencias
@@ -89,10 +92,11 @@ export default function RegisterClientForm({
         return validateClientForm(newForm);
       });
     } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (name === "identificacion") setClienteAutocompletado(false); // <-- Reinicia si escribe manualmente
       setErrors((prevErrors) => {
         const newForm = { ...form, [name]: value };
         return validateClientForm(newForm);
@@ -111,8 +115,8 @@ export default function RegisterClientForm({
       telefono: cliente.telefono || "",
       // serie: "", // No autocompletes aquí
     }));
+    setClienteAutocompletado(true); // <-- Marca como autocompletado
     setShowSuggestions(false);
-
     setLoadingSerie(true);
 
     // Buscar todos los agendamientos del cliente
@@ -345,6 +349,7 @@ e.preventDefault();
         triedSubmit={triedSubmit}
         setTouched={setTouched}
         seriesSugeridas={seriesSugeridas}
+        clienteAutocompletado={clienteAutocompletado}
       />
 
       <ImageUploader

@@ -1,5 +1,5 @@
 import Input from "../common/Input";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 export default function ClientEquipmentFields({
@@ -11,10 +11,16 @@ export default function ClientEquipmentFields({
   triedSubmit,
   setTouched,
   seriesSugeridas = [],
+  clienteAutocompletado,
 }) {
   const [showSugerencias, setShowSugerencias] = useState(false);
   const [serieAutocompletada, setSerieAutocompletada] = useState(false);
+    useEffect(() => {
+    setSerieAutocompletada(false);
+  }, [form.identificacion, clienteAutocompletado]);
+
   const filteredSeries = showSugerencias ? seriesSugeridas : [];
+  const serieBloqueada = clienteAutocompletado && seriesSugeridas.length > 0 && serieAutocompletada;
 
   // Filtra sugerencias según lo que escribe el usuario
   // const filteredSeries = form.serie
@@ -22,7 +28,6 @@ export default function ClientEquipmentFields({
   //       s.toLowerCase().includes(form.serie.toLowerCase())
   //     )
   //   : seriesSugeridas;
- 
 
   return (
     <>
@@ -39,7 +44,7 @@ export default function ClientEquipmentFields({
         <span className="text-red-400 text-xs">{errors.entrada}</span>
       )}
 
- <div className="relative mb-6">
+      <div className="relative mb-6">
         <label className="text-white block mb-2">No. Serie</label>
         <input
           type="text"
@@ -52,7 +57,7 @@ export default function ClientEquipmentFields({
           placeholder="Número de serie"
           className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errors.serie ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
           disabled={loadingSerie}
-          readOnly={serieAutocompletada} // Solo bloquea si fue autocompletado
+          readOnly={serieBloqueada}
           onFocus={() => setShowSugerencias(true)}
           onBlur={() => setTimeout(() => setShowSugerencias(false), 100)}
         />
