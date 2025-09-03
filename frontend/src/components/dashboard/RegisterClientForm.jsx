@@ -33,6 +33,7 @@ export default function RegisterClientForm({
   const [loadingSerie, setLoadingSerie] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [seriesSugeridas, setSeriesSugeridas] = useState([]);
+  const [clienteAutocompletado, setClienteAutocompletado] = useState(false);
 
   // (tengo unos problemas con los errores, no se marcan bien :b)
   const [touched, setTouched] = useState({});
@@ -59,16 +60,50 @@ export default function RegisterClientForm({
     console.log("ID Proyecto en RegisterClientForm:", idproyecto);
   }, [idproyecto]);
 
+
   function handleChange(e) {
     const { name, value } = e.target;
+    if (name === "identificacion" && value.trim() === "") {
+      setForm((prev) => ({
+        ...prev,
+        identificacion: "",
+        nombre: "",
+        apellido: "",
+        email: "",
+        telefono: "",
+        serie: "",
+        comentario: "",
+        imagen: null,
+      }));
+      setClienteAutocompletado(false);
+      setSearchResults([]); // Limpia sugerencias de clientes
+      setSeriesSugeridas([]); // Limpia sugerencias de series
+      setShowSuggestions(false); // Oculta el dropdown de sugerencias
+      setErrors((prevErrors) => {
+        const newForm = {
+          ...form,
+          identificacion: "",
+          nombre: "",
+          apellido: "",
+          email: "",
+          telefono: "",
+          serie: "",
+          comentario: "",
+          imagen: null,
+        };
+        return validateClientForm(newForm);
+      });
+    } else {
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-    setErrors((prevErrors) => {
-      const newForm = { ...form, [name]: value };
-      return validateClientForm(newForm);
-    });
+    if (name === "identificacion") setClienteAutocompletado(false); // <-- Reinicia si escribe manualmente
+      setErrors((prevErrors) => {
+        const newForm = { ...form, [name]: value };
+        return validateClientForm(newForm);
+      });
+    }
   }
 
   // Al seleccionar sugerencia
@@ -82,8 +117,8 @@ export default function RegisterClientForm({
       telefono: cliente.telefono || "",
       // serie: "", // No autocompletes aquí
     }));
+    setClienteAutocompletado(true); // <-- Marca como autocompletado
     setShowSuggestions(false);
-
     setLoadingSerie(true);
 
     // Buscar todos los agendamientos del cliente
@@ -332,6 +367,7 @@ export default function RegisterClientForm({
         triedSubmit={triedSubmit}
         setTouched={setTouched}
         seriesSugeridas={seriesSugeridas}
+        clienteAutocompletado={clienteAutocompletado}
       />
 
       <ImageUploader

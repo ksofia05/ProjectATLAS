@@ -1,5 +1,5 @@
 import Input from "../common/Input";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 export default function ClientEquipmentFields({
@@ -11,15 +11,23 @@ export default function ClientEquipmentFields({
   triedSubmit,
   setTouched,
   seriesSugeridas = [],
+  clienteAutocompletado,
 }) {
   const [showSugerencias, setShowSugerencias] = useState(false);
+  const [serieAutocompletada, setSerieAutocompletada] = useState(false);
+    useEffect(() => {
+    setSerieAutocompletada(false);
+  }, [form.identificacion, clienteAutocompletado]);
+
+  const filteredSeries = showSugerencias ? seriesSugeridas : [];
+  const serieBloqueada = clienteAutocompletado && seriesSugeridas.length > 0 && serieAutocompletada;
 
   // Filtra sugerencias según lo que escribe el usuario
-  const filteredSeries = form.serie
-    ? seriesSugeridas.filter(s =>
-        s.toLowerCase().includes(form.serie.toLowerCase())
-      )
-    : seriesSugeridas;
+  // const filteredSeries = form.serie
+  //   ? seriesSugeridas.filter(s =>
+  //       s.toLowerCase().includes(form.serie.toLowerCase())
+  //     )
+  //   : seriesSugeridas;
 
   return (
     <>
@@ -42,10 +50,14 @@ export default function ClientEquipmentFields({
           type="text"
           name="serie"
           value={loadingSerie ? "Cargando..." : form.serie}
-          onChange={handleChange}
+          onChange={e => {
+            handleChange(e);
+            setSerieAutocompletada(false); // Si el usuario escribe, desbloquea
+          }}
           placeholder="Número de serie"
           className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errors.serie ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
           disabled={loadingSerie}
+          readOnly={serieBloqueada}
           onFocus={() => setShowSugerencias(true)}
           onBlur={() => setTimeout(() => setShowSugerencias(false), 100)}
         />
@@ -57,6 +69,7 @@ export default function ClientEquipmentFields({
                 className="px-4 py-2 hover:bg-[#2d2d44] cursor-pointer text-white"
                 onMouseDown={() => {
                   handleChange({ target: { name: "serie", value: serie } });
+                  setSerieAutocompletada(true); // Bloquea después de seleccionar
                   setShowSugerencias(false);
                 }}
               >

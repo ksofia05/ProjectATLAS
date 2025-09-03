@@ -1,27 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import ButtonBG from "../common/ButtonBG";
+import dayjs from "dayjs";
 
 export function formatTimeAgo(dateString) {
     if (!dateString) return "";
-    const now = new Date();
-    const createdDate = new Date(dateString);
+    const now = dayjs();
+    const createdDate = dayjs(dateString);
 
-    // Log para depuración
-    console.log("Comparando días:", now.getDate(), createdDate.getDate());
-    console.log("Comparando meses:", now.getMonth(), createdDate.getMonth());
-    console.log("Comparando años:", now.getFullYear(), createdDate.getFullYear());
+    let diffInSeconds = now.diff(createdDate, "second");
+    if (diffInSeconds < 0) diffInSeconds = 0;
 
-    // Si es el mismo día, mes y año, muestra "Hoy"
-    if (
-        now.getDate() === createdDate.getDate() &&
-        now.getMonth() === createdDate.getMonth() &&
-        now.getFullYear() === createdDate.getFullYear()
-    ) {
-        console.log("Es hoy!");
-        return "Hoy";
+    if (now.isSame(createdDate, "day")) {
+        if (diffInSeconds < 60) return `recientemente`;
+        if (diffInSeconds < 3600) return `Hoy, hace ${Math.floor(diffInSeconds / 60)} min(s)`;
+        return `Hoy, hace ${Math.floor(diffInSeconds / 3600)} h(s)`;
     }
-
-    const diffInSeconds = Math.floor((now - createdDate) / 1000);
 
     if (diffInSeconds < 60) return `Hace ${diffInSeconds} seg(s)`;
     if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min(s)`;
@@ -36,12 +29,22 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
     const [isEditingComment, setIsEditingComment] = useState(false);
     const [commentText, setCommentText] = useState(task.comment || "");
     const textareaRef = useRef(null);
+    const [timeAgo, setTimeAgo] = useState(formatTimeAgo(task.createdAt));
 
     // console.log("createdAt:", task.createdAt);
     // console.log("Date parsed:", new Date(task.createdAt));
     // console.log("Now:", new Date());
+    console.log("createdAt:", task.createdAt, "Parsed:", new Date(task.createdAt), "Now:", new Date());
 
-    const timeAgo = formatTimeAgo(task.createdAt);
+    // const timeAgo = formatTimeAgo(task.createdAt);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeAgo(formatTimeAgo(task.createdAt));
+        }, 1000); // Actualiza cada segundo
+
+        return () => clearInterval(interval);
+    }, [task.createdAt])
 
     useEffect(() => {
         setIsSelected(initialSelected);
