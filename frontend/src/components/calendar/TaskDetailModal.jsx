@@ -1,11 +1,12 @@
 import React, { useState,useEffect } from "react";
 
-const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComplete }) => {
+const TaskDetailModal = ({ task, onClose, onDelete,onDeleteFromDB, onUpdateInfo, onToggleComplete }) => {
+  if (!task) return null;
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.nombreTarea || "");
   const [editDescription, setEditDescription] = useState(task.descripcion || "");
 
-  if (!task) return null;
+  
 
   const handleSave = () => {
     if (onUpdateInfo) {
@@ -29,7 +30,7 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/10">
       <div className="bg-gradient-to-br from-[#181825] to-[#232335] rounded-2xl shadow-xl p-6 w-[400px] relative border border-gray-800">
         {/* Botones cerrar, editar y borrar */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
           <button
             className="text-gray-400 hover:text-blue-400"
             title="Editar tarea"
@@ -40,7 +41,10 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
           <button
             className="text-gray-400 hover:text-red-400"
             title="Eliminar tarea"
-            onClick={() => onDelete && onDelete(task)}
+            onClick={() => {
+              if (onDeleteFromDB) onDeleteFromDB(task);
+              if (onDelete) onDelete(task);
+            }}
           >
             <i className="bi bi-trash3 text-xl" />
           </button>
@@ -118,15 +122,15 @@ const TaskDetailModal = ({ task, onClose, onDelete, onUpdateInfo, onToggleComple
         {!isEditing && (
           <div className="flex justify-end mt-6">
             <button
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                completed
-                  ? "bg-gray-700 text-purple-300 hover:bg-gray-600"
-                  : "bg-purple-600 text-white hover:bg-purple-700"
-              }`}
-              onClick={() => onToggleComplete && onToggleComplete(task.id_Tarea)}
-            >
-              {completed ? "No completado" : "Completar"}
-            </button>
+  className={`mt-4 px-6 py-2 rounded-lg font-semibold transition ${
+    task.filtro === "completado"
+      ? "bg-purple-600 text-white hover:bg-purple-700"
+      : "bg-purple-600 text-white hover:bg-purple-700"
+  }`}
+  onClick={() => onToggleComplete && onToggleComplete(task.id_Tarea)}
+>
+  {task.filtro === "completado" ? "No completada" : "Completar"}
+</button>
           </div>
         )}
       </div>

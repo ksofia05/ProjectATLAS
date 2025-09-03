@@ -23,6 +23,7 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
         endDate: "",
         taskTime: "",
     });
+    
 
     // const startDateInputRef = useRef(null);
     const endDateInputRef = useRef(null);
