@@ -104,9 +104,10 @@ const CreateProjectPanel = ({ disableCreate }) => {
     try {
       await openDashboardIfActive(project.id_proyecto, user, toastId);
     } finally {
-      toast.dismiss(toastId);
+      toastId.dismiss(toastId);
     }
   };
+  console.log("userRole:", user?.rol_idrol);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] py-10 px-4">
@@ -164,8 +165,13 @@ const CreateProjectPanel = ({ disableCreate }) => {
           <CardProjects
             projects={filteredProjects}
             projectStates={projectStates}
-            isColaborador={user?.rol_idrol === 2}
+            userRole={user?.rol_idrol}
             onProjectClick={handleProjectClick}
+            onProjectsUpdate={()=>{
+              if (onProjectsUpdate) {
+                setTimeout(()=>onProjectsUpdate(),500)
+              };
+            }}
           />
         ) : (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">

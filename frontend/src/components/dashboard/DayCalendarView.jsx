@@ -48,6 +48,7 @@ const handleAddTask = async (taskData) => {
                 descripcion: taskData.taskDescription,
                 fechaCreacion: fechaCreacion, // <-- la fecha del calendario
                 fechaLimite: taskData.taskTime, // la hora seleccionada
+                fechaActual:new Date().toLocaleString("sv-SE"),
                 id_usuario: userProfile.idUsuario,
                 filtro: "por completar"
             },
@@ -94,7 +95,7 @@ const handleUpdateInfo = async (id_Tarea, newTitle, newDescription) => {
     )
   );
   setDetailTaskData(prev => {
-    const updated = tasks.find(t => t.id_Tarea === id);
+    const updated = tasks.find(t => t.id_Tarea === id_Tarea);
     return updated ? { ...updated, nombreTarea: newTitle, descripcion: newDescription } : prev;
   });
 };

@@ -4,7 +4,7 @@ from rest_framework import routers
 from tasks import views as task_views
 from proyectos import views as proyectos_views
 from inventario import views as inventario_views
-from tasks.views import login_usuario, registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador, verificar_correo_existente
+from tasks.views import login_usuario, registe_usuario, recuperacion_contra, password_reset, invitacion_colaborador, verificar_correo_existente, quitar_colaborador_de_proyecto
 from proyectos.views import save_proyect, ProyectoUUIDViewSet, get_user_projects, info_proyecto_colaboradores, filtro_colaborador, actualizar_estado_usuario, asociar_colaborador, proyectos_colaboradores, estado_colaborador_proyecto
 from inventario.views import clientes_por_proyecto
 
@@ -38,6 +38,8 @@ urlpatterns = [
     path('api/v1/clientes_por_proyecto/', clientes_por_proyecto),
     path('api/v1/proyectos_colaboradores/', proyectos_colaboradores, name='proyectos_colaboradores'),
     path('api/v1/verificar-correo/', verificar_correo_existente, name='verificar_correo_existente'),
+    path('api/v1/quitar_colaborador_de_proyecto/', quitar_colaborador_de_proyecto, name='quitar_colaborador_de_proyecto'),
+
 
      #este es un endpoint que verifica el estado de un colaborador
     path('api/v1/estado_colaborador_proyecto/', estado_colaborador_proyecto, name='estado_colaborador_proyecto'),

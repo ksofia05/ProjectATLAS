@@ -14,13 +14,13 @@ const Navbar = () => {
         </div>
 
         {/* Links de navegación en el centro */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-24">
           <Link to="/" className="hover:text-gray-300">
             Inicio
           </Link>
-          {/* <Link to="/sobre-nosotros" className="hover:text-gray-300">
-            Sobre Nosotros
-          </Link> */}
+          <Link to="/sobre-nosotros" className="hover:text-gray-300">
+            Sobre Nosotros    
+          </Link>
         </div>
 
         {/* Botones a la derecha */}

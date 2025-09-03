@@ -33,7 +33,8 @@ const Login = () => {
   const idProyecto = params.get("id_proyecto");
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    const fromPasswordReset = localStorage.getItem("fromPasswordReset");
+    if (isAuthenticated && !isLoading && !fromPasswordReset) {
       console.log('Usuario autenticado detectado, redirigiendo...');
       setTimeout(() => {
         navigate(next);
@@ -74,7 +75,9 @@ const Login = () => {
         
         // Guardar token para compatibilidad
         localStorage.setItem("token", data.session.access_token);
-        
+
+        localStorage.removeItem("fromPasswordReset");
+
         // MANTENER compatibilidad con useUserStore temporalmente
         try {
           const userProfile = await getUserProfile(data.user.id);

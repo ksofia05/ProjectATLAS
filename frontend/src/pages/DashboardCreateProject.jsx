@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthProvider";
 
 const DashboardCreateProject = () => {
     const { user, userProfile, isLoading, isAuthenticated } = useAuth();
+    const [refreshProjects, setRefreshProjects] = React.useState(0);
     console.log("Estado en DashboardCreateProject:", {
       user,
       userProfile, 
@@ -22,7 +23,7 @@ const DashboardCreateProject = () => {
     projectsBlock = (
       <div className="mb-8">
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
-        <ProjectList isColaborador={false} />
+        <ProjectList isColaborador={false} refreshProjects={refreshProjects} />
         <ul className="text-sm text-gray-300 list-decimal list-inside pl-2 mt-2">
           <li className="cursor-pointer hover:text-[#7c2ae8]">
             Haz clic en "Nuevo Proyecto"
@@ -73,7 +74,9 @@ const DashboardCreateProject = () => {
           />
         </div>
         <div className="flex-1 px-8 pb-8 pt-2">
-          <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2} />
+          <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2}
+          onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
+          />
         </div>
       </div>
     </div>

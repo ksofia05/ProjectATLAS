@@ -3,6 +3,7 @@ import MdFloatingModal from "../common/popUp/MdFloatingModal";
 import ButtonBG from "../common/ButtonBG";
 import Input from "../common/Input";
 import styled from "styled-components";
+import { showErrorToast } from "../common/popUp/Loading"; 
 
 const DateInput = styled.input`
     &::-webkit-calendar-picker-indicator {
@@ -74,6 +75,49 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
             onSave(form);
         }
     };
+    const isValidTime = (value) => {
+        if (!value) return false;
+        const [hour, minute] = value.split(":").map(Number);
+        if (hour < 6 || hour > 18) return false;
+        if (minute % 15 !== 0) return false;
+        return true;
+    };
+
+    const handleTimeChange = (e) => {
+        const value = e.target.value;
+        setForm((prevForm) => ({
+            ...prevForm,
+            taskTime: value,
+        }));
+        if (!isValidTime(value)) {
+            showErrorToast("Solo puedes seleccionar horas entre 6:00 y 18:00 y minutos en intervalos de 15.");
+        }
+    };
+
+    useEffect(() => {
+        const { taskTitle, taskDescription, endDate, taskTime } = form;
+        const validTime = isValidTime(taskTime);
+
+        if (hideDateAndTimeFields) {
+            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+        } else if (onlyTimeField) {
+            setIsFormValid(
+                taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "" &&
+                taskTime.trim() !== "" &&
+                validTime
+            );
+        } else {
+            setIsFormValid(
+                taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "" &&
+                endDate.trim() !== "" &&
+                taskTime.trim() !== "" &&
+                validTime
+            );
+        }
+    }, [form, hideDateAndTimeFields, onlyTimeField]);
+
 
     return (
         <MdFloatingModal
@@ -128,6 +172,7 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
                                             name="endDate"
                                             value={form.endDate}
                                             onChange={handleChange}
+                                            min={new Date().toISOString().split("T")[0]} // <-- Bloquea fechas anteriores a hoy
                                             className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
                                             style={{ backgroundColor: '#2b2b3a', color: 'white' }}
                                         />
@@ -151,7 +196,10 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
                                         type="time"
                                         name="taskTime"
                                         value={form.taskTime}
-                                        onChange={handleChange}
+                                        onChange={handleTimeChange}
+                                        min="06:00"
+                                        max="18:00"
+                                        step={900} // 900 segundos = 15 minutos
                                         className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
                                         style={{ backgroundColor: '#2b2b3a', color: 'white' }}
                                     />

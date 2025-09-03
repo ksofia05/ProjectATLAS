@@ -233,3 +233,29 @@ def verificar_correo_existente(request):
         return Response({'exists': True}, status=200)
     else:
         return Response({'exists': False}, status=404)
+    
+
+@api_view(['POST'])
+def quitar_colaborador_de_proyecto(request):
+    id_usuario = request.data.get('id_usuario')
+    id_proyecto = request.data.get('id_proyecto')
+    if not id_usuario or not id_proyecto:
+        return Response({'error': 'Faltan datos'}, status=400)
+    try:
+        usuario = Usuario.objects.get(idusuario=id_usuario)
+        proyecto = Proyecto.objects.get(id_proyecto=id_proyecto)
+        # Eliminar relación de colaborador
+        ColaboradorProyecto.objects.filter(usuario=usuario, proyecto=proyecto).delete()
+        # Cambiar rol a null
+        usuario.rol_idrol = None
+        # Cambiar estado a Activo
+        usuario.estado = "Activo"
+        usuario.save()
+        return Response({'success': True})
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    except Proyecto.DoesNotExist:
+        return Response({'error': 'Proyecto no encontrado'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+    
