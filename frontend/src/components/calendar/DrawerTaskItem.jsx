@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ButtonBG from "../common/ButtonBG";
+import { client as supabase } from "../../supabase/client";
 
 export function formatTimeAgo(dateString) {
     if (!dateString) return "";
@@ -34,7 +35,7 @@ export function formatTimeAgo(dateString) {
 export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, isSelected: initialSelected }) {
     const [isSelected, setIsSelected] = useState(initialSelected);
     const [isEditingComment, setIsEditingComment] = useState(false);
-    const [commentText, setCommentText] = useState(task.comment || "");
+    const [commentText, setCommentText] = useState(task.descripcion || "");
     const textareaRef = useRef(null);
 
     // console.log("createdAt:", task.createdAt);
@@ -57,11 +58,20 @@ export default function DrawerTaskItem({ task, onToggleSelect, onUpdateComment, 
     const handleEditClick = (e) => {
         e.stopPropagation();
         setIsEditingComment(true);
-        setCommentText(task.comment || "");
+        setCommentText(task.descripcion || "");
     };
 
-    const handleSaveComment = () => {
-        if (onUpdateComment) onUpdateComment(task.id_Tarea, commentText);
+    const handleSaveComment = async () => {
+        const { error }= await supabase
+            .from('Tareas')
+            .update({ descripcion: commentText })
+            .eq("id_Tarea", task.id_Tarea);
+
+        if (error){
+            alert("Error al guardar la descripcion: " + error.message);
+            return;
+        }
+        if(onUpdateComment) onUpdateComment(task.id_Tarea,commentText);
         setIsEditingComment(false);
     };
 

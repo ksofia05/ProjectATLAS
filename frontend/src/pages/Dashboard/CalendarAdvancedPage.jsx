@@ -18,7 +18,9 @@ export default function CalendarAdvancedPage() {
     setViewMode("month");
   };
 
-  const handleDaySelect = (day) => {
+  const handleDaySelect = (year, month, day) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
     setCurrentDay(day);
     setViewMode("day");
   };
@@ -73,12 +75,11 @@ export default function CalendarAdvancedPage() {
         setCurrentMonth(dateUtils.getCurrentMonth()); 
       }
     } else if (value === "day") {
-      if (currentDay === null) {
-        const today = dayjs();
+      const today = dayjs();
+      if (currentDay === null || currentMonth === null || currentYear === null) {
         setCurrentDay(today.date());
-        if (currentMonth === null) {
-          setCurrentMonth(today.month());
-        }
+        setCurrentMonth(today.month());
+        setCurrentYear(today.year());
       }
     }
   };
@@ -101,10 +102,7 @@ export default function CalendarAdvancedPage() {
       setCurrentYear(prevMonth.year());
     } else if (viewMode === "day") {
       // Navegar día anterior
-      const prevDay = dayjs()
-        .year(currentYear)
-        .month(currentMonth)
-        .date(currentDay)
+      const prevDay = dayjs(`${currentYear}-${(currentMonth+1).toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}`)
         .subtract(1, "day");
       setCurrentDay(prevDay.date());
       setCurrentMonth(prevDay.month());
@@ -122,10 +120,7 @@ export default function CalendarAdvancedPage() {
       setCurrentYear(nextMonth.year());
     } else if (viewMode === "day") {
       // Navegar día siguiente
-      const nextDay = dayjs()
-        .year(currentYear)
-        .month(currentMonth)
-        .date(currentDay)
+      const nextDay = dayjs(`${currentYear}-${(currentMonth+1).toString().padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}`)
         .add(1, "day");
       setCurrentDay(nextDay.date());
       setCurrentMonth(nextDay.month());

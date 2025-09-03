@@ -1,15 +1,21 @@
 import React from 'react'
 import { Users, Edit, Plus } from 'lucide-react';
-import { showErrorToast } from '../common/popUp/Loading';
+import { showErrorToast, showSuccessToast, showLoadingToast } from '../common/popUp/Loading';
 import useUserStore from "../../stores/useUserStore";
+import WarningModal from '../dashboard/WarningModal';
+import toast from 'react-hot-toast';
 
 const InventoryCard = ({
   project,
   isColaborador = false,
   estado = "Activo",
-  onProjectClick 
+  onProjectClick,
+  onProjectUpdate
 }) => {
   const user = useUserStore((state) => state.user);
+
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const handleCardClick = async (e) => {
     e.preventDefault();
@@ -19,10 +25,36 @@ const InventoryCard = ({
       showErrorToast("No se ha definido acción para este proyecto.");
     }
   };
+  
+  const handleRemoveAsCollaborator = async () => {
+    setLoading(true);
+    const toastId=showLoadingToast("Eliminando proyecto...");
+    try {
+      await fetch("http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_usuario: user.idUsuario,
+          id_proyecto: project.id_proyecto,
+        })
+      });
+      toast.dismiss(toastId);
+      showSuccessToast("Has salido del proyecto.");
+      setShowDeleteModal(false);
+      if (onProjectUpdate) onProjectUpdate();
+    } catch (error){
+      toast.dismiss(toastId);
+      showErrorToast("Error al eliminar proyecto.")
+    } finally {
+      setLoading(false);
+      
+    }
+  }
 
   if (!project) return null;
   return (
-    <button
+    <>
+    <div
       type="button"
       className={`rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm transition-colors duration-200 block text-left
         ${isColaborador && estado === "Inactivo" ? "opacity-50 cursor-not-allowed" : "hover:border-white/70 cursor-pointer"}`}
@@ -44,15 +76,43 @@ const InventoryCard = ({
         </div>
       </div>
       <hr className="border-gray-700 border-t mb-3" />
-      <div className="text-gray-400 text-sm">
-        <span className="text-white font-medium">Última Actividad:</span> Ayer, 4:24 PM
+      <div className="text-gray-400 text-sm flex items-center ">
+          <span>
+            <span className="text-white font-medium">Última Actividad:</span> Ayer, 4:24 PM
+          </span>
+          {isColaborador &&(
+            <button
+              type="button"
+              className='ml-2  rounded-full hover:bg-red-100/10 transition text-gray-400 hover:text-red-500'
+              onClick={e=> {
+                e.stopPropagation();
+                setShowDeleteModal(true);
+              }}
+              title='Eliminar todo'
+            >
+              <i className='bi bi-trash text-base'></i>
+            </button>
+          )}
       </div>
+      
       {isColaborador && estado === "Inactivo" && (
         <div className="mt-4 text-red-400 font-semibold">
           Estado: Inactivo
         </div>
       )}
-    </button>
+    </div>
+  {showDeleteModal && (
+    <WarningModal
+      visible={showDeleteModal}
+      onClose={() => setShowDeleteModal(false)}
+      title='¿Estas seguro que quieres salir del proyecto?'
+      message='Esta accion es irreversible. Si sales, perderas el acceso al proyecto.'
+      confirmText='Cancelar'
+      showConfirm={true}
+      onConfirm={handleRemoveAsCollaborator}
+    />
+    )}
+    </>
   );
 };
 
@@ -76,7 +136,8 @@ const CreateProjectCard = () => {
   );
 };
 
-const CardProjects = ({ projects = [], projectStates = {}, isColaborador = false, onProjectClick }) => {
+const CardProjects = ({ projects = [], projectStates = {}, userRole, onProjectClick, onProjectsUpdate }) => {
+  console.log("userRole:", userRole);
   return (
     <div className="p-0">
       <div className="flex flex-col sm:flex-row gap-10 items-start">
@@ -84,9 +145,10 @@ const CardProjects = ({ projects = [], projectStates = {}, isColaborador = false
           <InventoryCard
             key={project.id || project.id_proyecto}
             project={project}
-            isColaborador={isColaborador}
+            isColaborador={userRole === 2}
             estado={projectStates[project.id_proyecto] || "Activo"}
             onProjectClick={onProjectClick} 
+            onProjectUpdate={onProjectsUpdate}
           />
         ))}
         <CreateProjectCard />

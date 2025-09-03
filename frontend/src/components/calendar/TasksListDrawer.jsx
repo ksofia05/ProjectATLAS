@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import DrawerTaskItem, { formatTimeAgo } from "./DrawerTaskItem";
 import ButtonBG from "../common/ButtonBG";
 import EstateAdEquipmentModal from "../dashboard/EstateAdEquipmentModal";
+import { client as supabase } from "../../supabase/client";
 
 function formatDate(dateString) {
   if (!dateString) return "";
@@ -13,6 +14,7 @@ export default function TasksListDrawer({
   open,
   onClose,
   tasks: initialTasks,
+  onTasksUpdate,
 }) {
   const [mounted, setMounted] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -49,35 +51,86 @@ export default function TasksListDrawer({
       return newSelected;
     });
   };
+  
+  const handleUpdateComment = (id_Tarea, newDescription) => {
+    //deja observar la descripcion 
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id_Tarea === id_Tarea ? { ...task, descripcion: newDescription } : task
+      )
+    );
+  };
 
-  const handleCompleteSelectedTasks = () => {
-    const completed = tasks
-      .filter((task) => selectedTaskIds.has(task.id_Tarea))
-      .map((task) => ({
-        ...task,
-        completedAt: new Date().toISOString(),
-      }));
-    const remainingTasks = tasks.filter((task) => !selectedTaskIds.has(task.id_Tarea));
-    setCompletedTasks((prevCompleted) => [...prevCompleted, ...completed]);
-    setTasks(remainingTasks);
+  const handleCompleteSelectedTasks = async () => {
+    //se busca con el filtro las tareas que estan como "completada"
+    const toComplete = tasks.filter(
+      (task) => selectedTaskIds.has(task.id_Tarea) && task.filtro !== "completado"
+      
+    );
+    //se actualizan las tareas en la base de datos
+    for (const task of toComplete) {
+      console.log("Actualizando tarea", task.id_Tarea, "a filtro:", "completado");
+      await supabase
+        .from("Tareas")
+        .update({ 
+          filtro: "completado",
+          fechaActual: new Date().toISOString() 
+        })
+        .eq("id_Tarea", task.id_Tarea);
+    }
+    if (onTasksUpdate) onTasksUpdate();
+    //se vuelve a consultar la BD para  reflejar cambios
+    const { data, error } = await supabase
+      .from("Tareas")
+      .select("*")
+      .eq("id_usuario", tasks[0]?.id_usuario);
+
+    if (!error) setTasks(data || []);
     setSelectedTaskIds(new Set());
   };
 
-  const handleRestoreTask = (taskId) => {
-    const restoredTask = completedTasks.find((task) => task.id_Tarea === taskId);
-    setCompletedTasks((prevCompleted) =>
-      prevCompleted.filter((task) => task.id_Tarea !== taskId)
-    );
-    setTasks((prevTasks) => [...prevTasks, restoredTask]);
+  const handleRestoreTask = async(taskId) => {
+    // actualiza el filtro a "por completar"
+    await supabase
+      .from("Tareas")
+      .update({ filtro: "por completar", fechaActual: new Date().toISOString() })
+      .eq("id_Tarea", taskId);
+    if (onTasksUpdate) onTasksUpdate();
+    // vuelve a consultar la BD para  reflejar cambios
+    const { data, error } = await supabase
+      .from("Tareas")
+      .select("*")
+      .eq("id_usuario", tasks[0]?.id_usuario);
+    if (!error) setTasks(data.map(task=>({
+      ...task,
+      fechaOriginal: task.fechaActual
+    })) || []);
   };
 
   const handleDeleteAllCompletedTasks = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteAllCompletedTasks = () => {
-    setCompletedTasks([]);
+  const confirmDeleteAllCompletedTasks = async () => {
+    const idUsuario = tasks[0]?.id_usuario;
+    if (!idUsuario) return;
+    // busca en la BD y elimina la tarea
+    await supabase
+      .from("Tareas")
+      .delete()
+      .eq("id_usuario", idUsuario)
+      .eq("filtro", "completado");
+    // se vuelve a consultar la BD para  reflejar cambios
+    const {data, error } = await supabase
+      .from("Tareas")
+      .select("*")
+      .eq("id_usuario", idUsuario);
+
+    if(onTasksUpdate) onTasksUpdate();
+    
+    if(!error) setTasks(data || []);
     setShowDeleteModal(false);
+      
   };
 
   const isCompleteButtonDisabled = selectedTaskIds.size === 0;
@@ -133,14 +186,17 @@ export default function TasksListDrawer({
         <hr className="border-gray-700 mb-6" />
 
         <div className="flex flex-col overflow-y-auto flex-grow">
-          {tasks.length > 0 ? (
-            tasks.map((task) => {
+          {tasks.filter(t=>t.filtro !== "completado").length > 0 ? (
+            tasks
+            .filter(t => t.filtro !== "completado")
+            .map((task) => {
               const taskWithCreatedAt = {
                 ...task,
                 taskTitle: task.nombreTarea,
                 createdAt: task.fechaCreacion && task.fechaLimite
                   ? `${task.fechaCreacion}T${task.fechaLimite}`
                   : task.fechaCreacion,
+                descripcion: task.descripcion,
               };
               return (
                 <div key={task.id_Tarea} className="flex flex-col">
@@ -148,6 +204,7 @@ export default function TasksListDrawer({
                     task={taskWithCreatedAt}
                     onToggleSelect={handleToggleSelectTask}
                     isSelected={selectedTaskIds.has(task.id_Tarea)}
+                    onUpdateComment={handleUpdateComment}
                   />
                   {/* <span className="text-[#813dff] text-xs font-medium ml-4">
                     {formatTimeAgo(taskWithCreatedAt.createdAt)}
@@ -162,27 +219,34 @@ export default function TasksListDrawer({
         <hr className="border-gray-700 my-4" />
         <div className="mt-4">
           <h3 className="text-xs font-bold text-gray-400">
-            Tareas Completadas ({completedTasks.length})
+            Tareas Completadas ({tasks.filter(t => t.filtro ==="completado").length})
           </h3>
-          <div className={`flex flex-col ${completedTasks.length > 0 ? "gap-3 mt-3" : ""}`}>
-            {completedTasks.length > 0 ? (
-              completedTasks.map((task) => (
-                <div key={task.id_Tarea} className="flex flex-col">
-                  <div className="bg-[#2A273A] rounded-2xl px-6 py-4 flex items-center justify-between">
-                    <span className="text-white font-semibold">{task.nombreTarea}</span>
-                    <button
-                      onClick={() => handleRestoreTask(task.id_Tarea)}
-                      className="text-gray-400 hover:text-purple-600 transition-colors duration-200"
-                      aria-label="Restaurar tarea"
-                    >
-                      <i className="bi bi-x-lg"></i>
-                    </button>
-                  </div>
-                  {task.completedAt && (
-                    <span className="text-[#813dff] text-xs font-medium ml-4">
-                      Completado: {formatDate(task.completedAt)}
+          <div className={`flex flex-col ${tasks.filter(t => t.filtro ==="completado").length > 0 ? "gap-3 mt-3" : ""}`}>
+            {tasks.filter(t=> t.filtro === "completado").length > 0 ? (
+              tasks
+                .filter(t=> t.filtro === "completado")
+                .map((task) => (
+                  <div key={task.id_Tarea} className="flex flex-col">
+                    <div className="bg-[#2A273A] rounded-2xl px-6 py-4 flex items-center justify-between">
+                      <span className="text-white font-semibold">{task.nombreTarea}</span>
+                      <button
+                        onClick={() => handleRestoreTask(task.id_Tarea)}
+                        className="text-gray-400 hover:text-purple-600 transition-colors duration-200"
+                        aria-label="Restaurar tarea"
+                      >
+                        <i className="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                    {task.fechaActual && (
+                      <span className="text-[#813dff] text-xs font-medium ml-4">
+                      Completado: {new Date(task.fechaActual).toLocaleString("es-CO",{
+                        timeZone: "America/Bogota",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
                     </span>
-                  )}
+                    )}
                 </div>
               ))
             ) : null}
@@ -200,7 +264,7 @@ export default function TasksListDrawer({
               Completar
             </ButtonBG>
           )}
-          {completedTasks.length > 0 && (
+          {tasks.filter(t => t.filtro === "completado").length > 0 && (
             <button
               onClick={handleDeleteAllCompletedTasks}
               className="flex items-end gap-2 text-purple-500 hover:text-purple-700 transition-colors duration-200 text-xs"
