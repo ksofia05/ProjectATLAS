@@ -54,6 +54,7 @@ export default function MyTasksCard() {
                     descripcion: taskDescription,
                     fechaCreacion: endDate,
                     fechaLimite: taskTime,
+                    fechaActual:new Date().toLocaleString("sv-SE"), // <-- Aquí agregas la fecha actual
                     id_usuario: userProfile.idUsuario, // Guarda el id del usuario
                     filtro: "por completar", //filtro inicial
                 },
@@ -100,9 +101,7 @@ export default function MyTasksCard() {
                                     key={task.id_Tarea}
                                     task={{
                                         taskTitle: task.nombreTarea,
-                                        createdAt: task.fechaLimite
-                                            ? `${task.fechaCreacion}T${task.fechaLimite}`
-                                            : task.fechaCreacion,
+                                        createdAt: task.fechaActual,
                                         // otros campos si los necesitas
                                     }}
                                 />

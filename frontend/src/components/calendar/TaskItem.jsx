@@ -1,19 +1,17 @@
 import React from "react";
+import dayjs from "dayjs";
+import { useState, useEffect } from "react";
 
 export function formatTimeAgo(dateString) {
     if (!dateString) return "";
-    const now = new Date();
-    const createdDate = new Date(dateString);
+    const now = dayjs();
+    const createdDate = dayjs(dateString);
 
-    const diffInSeconds = Math.floor((now - createdDate) / 1000);
+    let diffInSeconds = now.diff(createdDate, "second");
+    if (diffInSeconds < 0) diffInSeconds = 0;
 
-    // Si es el mismo día, muestra "Hoy, hace X"
-    if (
-        now.getDate() === createdDate.getDate() &&
-        now.getMonth() === createdDate.getMonth() &&
-        now.getFullYear() === createdDate.getFullYear()
-    ) {
-        if (diffInSeconds < 60) return "Hoy, hace unos segundos";
+    if (now.isSame(createdDate, "day")) {
+        if (diffInSeconds < 60) return `recientemente`;
         if (diffInSeconds < 3600) return `Hoy, hace ${Math.floor(diffInSeconds / 60)} min(s)`;
         return `Hoy, hace ${Math.floor(diffInSeconds / 3600)} h(s)`;
     }
@@ -28,7 +26,15 @@ export function formatTimeAgo(dateString) {
 }
 
 export default function TaskItem({ task }) {
-    const timeAgo = formatTimeAgo(task.createdAt);
+    const [timeAgo, setTimeAgo] = useState(formatTimeAgo(task.createdAt));
+
+    useEffect(() => {
+            const interval = setInterval(() => {
+                setTimeAgo(formatTimeAgo(task.createdAt));
+            }, 1000); // Actualiza cada segundo
+    
+            return () => clearInterval(interval);
+        }, [task.createdAt])
 
     return (
         <div className="bg-[#2A273A] hover:bg-[#3c3853] transition-colors duration-300 rounded-2xl px-6 py-4 flex justify-between items-center w-full min-h-[58px] max-h-[58px] overflow-hidden">

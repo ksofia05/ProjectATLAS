@@ -169,7 +169,7 @@ export default function TasksListDrawer({
             <h2 className="text-xl font-bold text-gray-400">Tareas</h2>
             <div>
               <h3 className="text-3xl font-bold text-white mt-2">
-                Lista de Usuario
+                Lista de Tareas
               </h3>
             </div>
           </div>
@@ -193,9 +193,7 @@ export default function TasksListDrawer({
               const taskWithCreatedAt = {
                 ...task,
                 taskTitle: task.nombreTarea,
-                createdAt: task.fechaCreacion && task.fechaLimite
-                  ? `${task.fechaCreacion}T${task.fechaLimite}`
-                  : task.fechaCreacion,
+                createdAt: task.fechaActual,
                 descripcion: task.descripcion,
               };
               return (
