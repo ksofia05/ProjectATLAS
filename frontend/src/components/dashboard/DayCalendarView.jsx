@@ -48,7 +48,8 @@ const handleAddTask = async (taskData) => {
                 descripcion: taskData.taskDescription,
                 fechaCreacion: fechaCreacion, // <-- la fecha del calendario
                 fechaLimite: taskData.taskTime, // la hora seleccionada
-                id_usuario: userProfile.idUsuario
+                id_usuario: userProfile.idUsuario,
+                filtro: "por completar"
             },
         ]);
     if (error) {
@@ -72,10 +73,22 @@ const fetchTasksForDay = async () => {
     if (!error) setTasks(data || []);
 };
 // Actualizar tarea (título y descripción)
-const handleUpdateInfo = (id, newTitle, newDescription) => {
+const handleUpdateInfo = async (id_Tarea, newTitle, newDescription) => {
+
+  const { error } = await supabase
+  .from ("Tareas")
+  .update ({
+    nombreTarea: newTitle,
+    descripcion: newDescription
+  })
+  .eq("id_Tarea", id_Tarea)
+  if (error) {
+    alert("Error al actualizar la tarea: " + error.message);
+  }
+
   setTasks(prev =>
     prev.map(t =>
-      t.id_Tarea === id
+      t.id_Tarea === id_Tarea
         ? { ...t, nombreTarea: newTitle, descripcion: newDescription }
         : t
     )
@@ -86,19 +99,56 @@ const handleUpdateInfo = (id, newTitle, newDescription) => {
   });
 };
 
+
+//eliminar tarea
+const handleDeleteTask = async (task) =>{
+  const {error} = await supabase
+  .from ("Tareas")
+  .delete()
+  .eq("id_Tarea", task.id_Tarea);
+  if (error) {
+    alert ("error al borrar tarea: " + error.message);
+    return;
+  }
+
+//eliminar estado
+setTasks(prev => prev.filter(t => t.id_Tarea !== task.id_Tarea));
+setShowDetailModal(false);
+};
+
+
+
 // Completar/no completado
-const handleToggleComplete = (id_Tarea) => {
+const handleToggleComplete = async (id_Tarea) => {
+  const tarea = tasks.find(t => t.id_Tarea === id_Tarea);
+  if (!tarea) return;
+
+  const nuevoFiltro = tarea.filtro === "completado" ? "por completar" : "completado";
+
+  const {error} = await supabase
+  .from("Tareas")
+  .update({filtro: nuevoFiltro })
+  .eq("id_Tarea", id_Tarea);
+
+  if (error) {
+    alert("error al actualizar estado")
+    return;
+  }
+
+
   setTasks(prev =>
     prev.map(t =>
       t.id_Tarea === id_Tarea
-        ? { ...t, completed: !t.completed }
+        ? { ...t, filtro:nuevoFiltro }
         : t
     )
   );
-  setDetailTaskData(prev => {
-    const updated = tasks.find(t => t.id_Tarea === id_Tarea);
-    return updated ? { ...updated, completed: !prev.completed } : prev;
-  });
+  setDetailTaskData( prev =>
+    prev && prev.id_Tarea === id_Tarea
+    ? {...prev, filtro: nuevoFiltro}
+    : prev
+     
+  );
 };
 
   // Cerrar modal de nueva tarea
@@ -186,6 +236,7 @@ const handleToggleComplete = (id_Tarea) => {
             setShowDetailModal(false);
             setDetailTaskData(null);
           }}
+          onDeleteFromDB={handleDeleteTask}
           onUpdateInfo={handleUpdateInfo}
           onToggleComplete={handleToggleComplete}
         />

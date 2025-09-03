@@ -329,10 +329,21 @@ const EquipmentClientModal = ({
                       ? equipoActual.comentarioSalida
                       : comentarioSalida || equipoActual.comentarioSalida
                   }
-                  onChange={(e) => setComentarioSalida(e.target.value)}
-                  readOnly={equipoActual.estado === "Inactivo"}
+                   onChange={(e) => {
+    if (e.target.value.length <= 120) setComentarioSalida(e.target.value);
+  }}
                   className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
+                 {equipoActual.estado !== "Inactivo" && (
+      <div
+        className="text-right text-xs mt-1"
+        style={{
+          color: comentarioSalida.length === 120 ? "#f87171" : "#a78bfa",
+        }}
+      >
+        {comentarioSalida.length}/120 caracteres
+      </div>
+    )}
               </div>
             </div>
             {/* Switch, estado y navegación juntos y alineads a la derecha (jodido boton de mrd) */}

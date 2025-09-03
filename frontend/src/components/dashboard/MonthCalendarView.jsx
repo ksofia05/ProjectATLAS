@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { dateUtils } from "../../utils/dateUtils";
 import dayjs from "dayjs";
+import { client as supabase } from "../../supabase/client";
+import useUserStore from "../../stores/useUserStore"; // Asegúrate de tener el usuario
 
 const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const monthNames = [
@@ -31,6 +33,37 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const getDaysInMonth = (year, month) => dateUtils.getDaysInMonth(year, month);
   const getFirstDayOfMonth = (year, month) =>
     dateUtils.getFirstDayOfMonth(year, month);
+
+  // --- NUEVO: Estado para las tareas agrupadas por día ---
+  const [tasksByDay, setTasksByDay] = useState({});
+  const user = useUserStore((state) => state.user);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+      const startDate = dayjs().year(year).month(month).startOf("month").format("YYYY-MM-DD");
+      const endDate = dayjs().year(year).month(month).endOf("month").format("YYYY-MM-DD");
+      // Ajusta el filtro por usuario si es necesario
+      const { data, error } = await supabase
+        .from("Tareas")
+        .select("*")
+        .gte("fechaCreacion", startDate)
+        .lte("fechaCreacion", endDate);
+        // Si quieres filtrar por usuario: .eq("id_usuario", user.idUsuario);
+
+      if (!error && data) {
+        const grouped = {};
+        data.forEach((task) => {
+          const day = dayjs(task.fechaCreacion).date();
+          if (!grouped[day]) grouped[day] = [];
+          grouped[day].push(task);
+        });
+        setTasksByDay(grouped);
+      }
+    };
+    fetchTasks();
+  }, [year, month, user]);
+  // --- FIN NUEVO ---
 
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(year, month);
@@ -137,17 +170,21 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 </div>
 
                 <div className="flex-1 space-y-1">
-                  {/* Ejemplo de un pc por reparar xd */}
-                  {dayObj.isCurrentMonth && dayObj.day === 16 && (
-                    <div className="bg-purple-600/80 text-white text-xs px-2 py-1 rounded">
-                      Limpieza teclado de PC
+                  {/* --- NUEVO: Renderiza una línea por cada tarea de ese día --- */}
+                  {dayObj.isCurrentMonth && tasksByDay[dayObj.day] && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      {tasksByDay[dayObj.day].map((task, idx) => (
+                        <div
+                          key={task.id_Tarea || idx}
+                          className="h-1 rounded-full bg-purple-400 w-3/4 mx-auto"
+                          title={task.nombreTarea}
+                        />
+                      ))}
                     </div>
                   )}
-                  {dayObj.isCurrentMonth && dayObj.day === 25 && (
-                    <div className="bg-blue-600/80 text-white text-xs px-2 py-1 rounded">
-                      Entrega del pc de Juan
-                    </div>
-                  )}
+                  {/* --- FIN NUEVO --- */}
+
+                  
                 </div>
               </div>
             </div>
