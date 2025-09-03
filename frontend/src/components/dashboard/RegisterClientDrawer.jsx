@@ -4,7 +4,7 @@ import RegisterClientForm from "./RegisterClientForm";
 export default function RegisterClientDrawer({
   open,
   onClose,
-  onRegisterSuccess,
+  onClienteAdded,
   idproyecto,
   usuarioIdActual,
 }) {
@@ -65,8 +65,8 @@ export default function RegisterClientDrawer({
         {console.log("ID Proyecto en Drawer:", idproyecto)}
         <RegisterClientForm
           onClose={onClose}
+          onClienteAdded={onClienteAdded}
           idproyecto={idproyecto}
-          onRegisterSuccess={onRegisterSuccess} 
           usuarioIdActual={usuarioIdActual}
         />
       </aside>
