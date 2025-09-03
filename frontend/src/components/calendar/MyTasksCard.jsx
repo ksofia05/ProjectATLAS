@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect, useCallback } from "react";
 import NewTaskModal from "./NewTaskModal";
 import TaskItem from "./TaskItem";
 import TasksListDrawer from "./TasksListDrawer";
@@ -12,17 +12,20 @@ export default function MyTasksCard() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [tasks, setTasks] = useState([]);
 
-        useEffect(() => {
-        const fetchTasks = async () => {
-            const { data, error } = await supabase
-                .from("Tareas")
-                .select("*")
-                .eq("id_usuario", userProfile.idUsuario); // Filtra por el id del usuario
+ 
+    const fetchTasks = useCallback(async () => {
+        if(!userProfile)return;
+        const { data, error } = await supabase
+            .from("Tareas")
+            .select("*")
+            .eq("id_usuario", userProfile.idUsuario); // Filtra por el id del usuario
 
-            if (!error) setTasks(data || []);
-        };
+        if (!error) setTasks(data || []);
+    }, [userProfile]);
+    useEffect(()=>{
         fetchTasks();
-    }, [userProfile]); // Se actualiza cuando cambia el usuario
+    }, [fetchTasks]);
+     // Se actualiza cuando cambia el usuario
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -43,7 +46,7 @@ export default function MyTasksCard() {
     const handleSaveTask = async (newTaskData) => {
         if (!userProfile) return;
         const { taskTitle, taskDescription, endDate, taskTime } = newTaskData;
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('Tareas')
             .insert([
                 {
@@ -52,29 +55,21 @@ export default function MyTasksCard() {
                     fechaCreacion: endDate,
                     fechaLimite: taskTime,
                     fechaActual:new Date().toLocaleString("sv-SE"), // <-- Aquí agregas la fecha actual
-                    id_usuario: userProfile.idUsuario // Guarda el id del usuario
+                    id_usuario: userProfile.idUsuario, // Guarda el id del usuario
+                    filtro: "por completar", //filtro inicial
                 },
-            ])
-            .select()
-            .single();
-
+            ]);
         if (error) {
             alert('Error al guardar la tarea: ' + error.message);
             return;
         }
-
-        // Vuelve a consultar las tareas del usuario actual
-        const { data: tareasActualizadas, error: errorFetch } = await supabase
-            .from("Tareas")
-            .select("*")
-            .eq("id_usuario", userProfile.idUsuario);
-
-        if (!errorFetch) setTasks(tareasActualizadas || []);
+        await fetchTasks();
         handleCloseModal();
+    
     };
-    const updateTasksInCard = (updatedTasks) => {
-        setTasks(updatedTasks);
-    };
+    const handleTasksUpdate= () => {
+        fetchTasks();
+    }
     return (
         <>
             <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[520px] shadow-lg flex flex-col dashboard-hover-shadow min-h-[calc(100vh-200px)]">
@@ -134,8 +129,8 @@ export default function MyTasksCard() {
                 open={isDrawerOpen}
                 onClose={handleCloseDrawer}
                 tasks={tasks}
-                onTasksUpdate={updateTasksInCard}
-                />
+                onTasksUpdate={handleTasksUpdate}
+            />
         </>
     );
 }
