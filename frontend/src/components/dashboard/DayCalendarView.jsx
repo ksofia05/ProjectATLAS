@@ -48,7 +48,7 @@ const handleAddTask = async (taskData) => {
                 descripcion: taskData.taskDescription,
                 fechaCreacion: fechaCreacion, // <-- la fecha del calendario
                 fechaLimite: taskData.taskTime, // la hora seleccionada
-                id_usuario: userProfile.idUsuario
+                id_usuario: userProfile.idUsuario,
             },
         ]);
     if (error) {
