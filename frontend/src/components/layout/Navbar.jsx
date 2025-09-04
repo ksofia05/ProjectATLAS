@@ -6,8 +6,9 @@ import ButtonGrey from "../common/ButtonGrey";
 import { useParams } from "react-router-dom";
 import userAtlas from "../../assets/atlasUser.png";
 import { useNavbarTitle } from "../../context/NavbarTitleContext";
+import ButtonSidebar from "../buttonSidebar";
 
-const Navbar = (props) => {
+const Navbar = ({ onSidebarToggle, isSidebarOpen, ...props }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
@@ -54,22 +55,31 @@ const Navbar = (props) => {
     <>
       <nav className="bg-gradient-to-l from-[#181825]/80 via-[#181825]/80 to-[#14141e]/80 backdrop-blur-md py-4 relative border border-slate-700/50 rounded-2xl shadow-lg">
         <div className="flex items-center justify-between px-8 lg:px-8">
-          {/* Título y subtítulo */}
-          <div className="min-w-0 flex-1 mr-4">
-            <h1 className="text-xl lg:text-2xl font-bold text-white truncate">
-              {title || props.title}
-            </h1>
-            {subtitle && (
-              <p className="text-gray-400 text-sm lg:text-base truncate">
-                {subtitle}
-              </p>
-            )}
+          {/* Botón sidebar y Título */}
+          <div className="min-w-0 flex-1 mr-4 flex items-center gap-4">
+            {/* ButtonSidebar solo visible en pantallas pequeñas */}
+            <div className="lg:hidden">
+              <ButtonSidebar 
+                onClick={onSidebarToggle}
+                isOpen={isSidebarOpen}
+                className="bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:from-purple-700 hover:to-purple-900 relative"
+              />
+            </div>
+            
+            <div className="min-w-0">
+              <h1 className="text-xl lg:text-2xl font-bold text-white truncate">
+                {title || props.title}
+              </h1>
+              {subtitle && (
+                <p className="text-gray-400 text-sm lg:text-base truncate">
+                  {subtitle}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Botones y perfil */}
           <div className="flex items-center gap-4 md:gap-8">
-            {" "}
-            {/* Responsive gap */}
             {/* Botón Compartir */}
             {props.showShareButton && (
               <>
