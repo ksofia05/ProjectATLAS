@@ -4,6 +4,7 @@ import ButtonBG from "../common/ButtonBG";
 import Input from "../common/Input";
 import styled from "styled-components";
 import { showErrorToast } from "../common/popUp/Loading"; 
+import { isBlockedDay } from "../../utils/holidayUtils.js";
 
 const DateInput = styled.input`
     &::-webkit-calendar-picker-indicator {
@@ -32,13 +33,13 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
     const [isFormValid, setIsFormValid] = useState(false);
 
     const isPastDay = (selectedDate) => {
-    if (!selectedDate) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const date = new Date(selectedDate);
-    date.setHours(0, 0, 0, 0);
-    return date < today;
-};
+        if (!selectedDate) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const date = new Date(selectedDate);
+        date.setHours(0, 0, 0, 0);
+        return date < today;
+    };
     const isValidTime = (value, selectedDate) => {
         if (!value) return false;
         if (isPastDay(selectedDate)) return false; // Bloquea todas las horas si el día es pasado
@@ -47,31 +48,6 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
         if (minute % 15 !== 0) return false;
         return true;
     };
-
-
-useEffect(() => {
-    const { taskTitle, taskDescription, endDate, taskTime } = form;
-    const validTime = isValidTime(taskTime, endDate);
-
-    if (hideDateAndTimeFields) {
-        setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
-    } else if (onlyTimeField) {
-        setIsFormValid(
-            taskTitle.trim() !== "" &&
-            taskDescription.trim() !== "" &&
-            taskTime.trim() !== "" &&
-            validTime
-        );
-    } else {
-        setIsFormValid(
-            taskTitle.trim() !== "" &&
-            taskDescription.trim() !== "" &&
-            endDate.trim() !== "" &&
-            taskTime.trim() !== "" &&
-            validTime
-        );
-    }
-}, [form, hideDateAndTimeFields, onlyTimeField]);
 
     // useEffect(() => {
     //     if (startDate && !form.startDate) {
@@ -82,14 +58,43 @@ useEffect(() => {
     //     }
     // }, [form, startDate]);
 
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setForm((prevForm) => ({
+    //         ...prevForm,
+    //         [name]: value,
+    //     }));
+    // };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === "endDate") {
+            // Crear fecha local correctamente
+            const [year, month, day] = value.split('-').map(Number);
+            const selectedDate = new Date(year, month - 1, day, 12, 0, 0);
+
+            console.log('Fecha seleccionada:', {
+                date: selectedDate.toISOString(),
+                dayOfWeek: selectedDate.getDay(),
+                value: value
+            });
+
+            if (isBlockedDay(selectedDate)) {
+                showErrorToast("No puedes seleccionar domingos ni festivos.");
+                setForm((prevForm) => ({
+                    ...prevForm,
+                    [name]: "",
+                }));
+                return;
+            }
+        }
+
         setForm((prevForm) => ({
             ...prevForm,
             [name]: value,
         }));
     };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isFormValid) {
@@ -108,30 +113,42 @@ useEffect(() => {
         }
     };
 
-
-
     useEffect(() => {
         const { taskTitle, taskDescription, endDate, taskTime } = form;
-        const validTime = isValidTime(taskTime);
 
+        let isValid = false;
+
+        // Validación según el tipo de formulario
         if (hideDateAndTimeFields) {
-            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+            // Solo título y descripción
+            isValid = taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "";
         } else if (onlyTimeField) {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
+            // Título, descripción y hora
+            isValid = taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
                 taskTime.trim() !== "" &&
-                validTime
-            );
+                isValidTime(taskTime, endDate);
         } else {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
+            // Todos los campos
+            const dateObj = endDate ? new Date(endDate + "T12:00:00") : null;
+
+            isValid = taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
-                endDate.trim() !== "" &&
-                taskTime.trim() !== "" &&
-                validTime
-            );
+                endDate && endDate.trim() !== "" &&
+                taskTime && taskTime.trim() !== "" &&
+                isValidTime(taskTime, endDate) &&
+                !isBlockedDay(dateObj);
         }
+
+        console.log("Form validation:", {
+            isValid,
+            fields: { taskTitle, taskDescription, endDate, taskTime },
+            validTime: taskTime ? isValidTime(taskTime, endDate) : false,
+            blockedDay: endDate ? isBlockedDay(new Date(endDate + "T12:00:00")) : null
+        });
+
+        setIsFormValid(isValid);
     }, [form, hideDateAndTimeFields, onlyTimeField]);
 
 
