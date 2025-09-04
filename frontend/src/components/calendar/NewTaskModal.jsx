@@ -31,26 +31,47 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
 
     const [isFormValid, setIsFormValid] = useState(false);
 
-    useEffect(() => {
-        const { taskTitle, taskDescription, endDate, taskTime } = form;
+    const isPastDay = (selectedDate) => {
+    if (!selectedDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = new Date(selectedDate);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+};
+    const isValidTime = (value, selectedDate) => {
+        if (!value) return false;
+        if (isPastDay(selectedDate)) return false; // Bloquea todas las horas si el día es pasado
+        const [hour, minute] = value.split(":").map(Number);
+        if (hour < 6 || hour > 18) return false;
+        if (minute % 15 !== 0) return false;
+        return true;
+    };
 
-        if (hideDateAndTimeFields) {
-            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
-        } else if (onlyTimeField) {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
-                taskDescription.trim() !== "" &&
-                taskTime.trim() !== ""
-            );
-        } else {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
-                taskDescription.trim() !== "" &&
-                endDate.trim() !== "" &&
-                taskTime.trim() !== ""
-            );
-        }
-    }, [form, hideDateAndTimeFields, onlyTimeField]);
+
+useEffect(() => {
+    const { taskTitle, taskDescription, endDate, taskTime } = form;
+    const validTime = isValidTime(taskTime, endDate);
+
+    if (hideDateAndTimeFields) {
+        setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+    } else if (onlyTimeField) {
+        setIsFormValid(
+            taskTitle.trim() !== "" &&
+            taskDescription.trim() !== "" &&
+            taskTime.trim() !== "" &&
+            validTime
+        );
+    } else {
+        setIsFormValid(
+            taskTitle.trim() !== "" &&
+            taskDescription.trim() !== "" &&
+            endDate.trim() !== "" &&
+            taskTime.trim() !== "" &&
+            validTime
+        );
+    }
+}, [form, hideDateAndTimeFields, onlyTimeField]);
 
     // useEffect(() => {
     //     if (startDate && !form.startDate) {
@@ -75,13 +96,6 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
             onSave(form);
         }
     };
-    const isValidTime = (value) => {
-        if (!value) return false;
-        const [hour, minute] = value.split(":").map(Number);
-        if (hour < 6 || hour > 18) return false;
-        if (minute % 15 !== 0) return false;
-        return true;
-    };
 
     const handleTimeChange = (e) => {
         const value = e.target.value;
@@ -93,6 +107,8 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
             showErrorToast("Solo puedes seleccionar horas entre 6:00 y 18:00 y minutos en intervalos de 15.");
         }
     };
+
+
 
     useEffect(() => {
         const { taskTitle, taskDescription, endDate, taskTime } = form;
@@ -200,6 +216,7 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
                                         min="06:00"
                                         max="18:00"
                                         step={900} // 900 segundos = 15 minutos
+                                        disabled={isPastDay(form.endDate)} // <-- Deshabilita si el día es pasado
                                         className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
                                         style={{ backgroundColor: '#2b2b3a', color: 'white' }}
                                     />

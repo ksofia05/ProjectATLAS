@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { client as supabase } from "../../supabase/client";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthProvider";
+import { showErrorToast } from "../common/popUp/Loading";
 
 const DayCalendarView = ({ year, month, day }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -18,14 +19,26 @@ const DayCalendarView = ({ year, month, day }) => {
   const [detailTaskData, setDetailTaskData] = React.useState(null);
 
   // Abrir modal para añadir tarea
-  const handleHourClick = (hour) => {
-    setSelectedHour(hour);
-    setShowTaskModal(true);
-    setModalTaskData({
-      startDate: dayjs().year(year).month(month).date(day).format('YYYY-MM-DD'),
-      taskTime: `${hour.toString().padStart(2, '0')}:00`,
-    });
+  const isPastDay = (year, month, day) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(year, month, day);
+    selected.setHours(0, 0, 0, 0);
+    return selected < today;
   };
+
+const handleHourClick = (hour) => {
+  if (isPastDay(year, month, day)) {
+    showErrorToast("No puedes crear tareas en días anteriores a hoy.");
+    return; // No abrir modal si el día es pasado
+  }
+  setSelectedHour(hour);
+  setShowTaskModal(true);
+  setModalTaskData({
+    startDate: dayjs().year(year).month(month).date(day).format('YYYY-MM-DD'),
+    taskTime: `${hour.toString().padStart(2, '0')}:00`,
+  });
+};
 
   // Abrir modal de detalle de tarea (siempre sincroniza con tasks)
   const handleTaskClick = (task) => {
