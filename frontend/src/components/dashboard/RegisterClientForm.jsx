@@ -3,7 +3,7 @@ import ClientPersonalInfoFields from "./ClientPersonalInfoFields";
 import ClientEquipmentFields from "./ClientEquipmentFields";
 import ImageUploader from "./ImageUploader";
 import Button from "../common/Button";
-import UploadImageModal from "../layout/uploadImageModal";
+import UploadImageModal from "../layout/UploadImageModal";
 import { showSuccessToast, showErrorToast } from "../common/popUp/Loading";
 import { client as supabase } from "../../supabase/client";
 import { validateClientForm } from "../../utils/validateClientForm";

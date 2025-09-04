@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState  } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
@@ -16,6 +16,15 @@ const DashboardCreateProject = () => {
     });
   
   let projectsBlock = null;
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+const toggleSidebar = () => {
+  setIsSidebarOpen(!isSidebarOpen);
+};
+
+const closeSidebar = () => {
+  setIsSidebarOpen(false);
+};
 
   if (!userProfile) {
     projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
@@ -56,13 +65,15 @@ const DashboardCreateProject = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-950">
+    <div className="min-h-screen flex bg-black">
       <Sidebar
         showLogo={true}
         showProjectsBlock={true}
         projectsBlock={projectsBlock}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
       />
-      <div className="ml-72 flex-1 flex flex-col">
+      <div className="sm:ml-0 md:ml-0 lg:ml-72 flex-1 flex flex-col">
         {" "}
         {/* Agregué ml-72 aquí */}
         <div className="pt-4 px-6">
@@ -71,6 +82,8 @@ const DashboardCreateProject = () => {
             showUpgradeButton={true}
             title="Proyectos"
             subtitle="Organiza tus espacios de trabajo."
+            onSidebarToggle={toggleSidebar}
+            isSidebarOpen={isSidebarOpen}
           />
         </div>
         <div className="flex-1 px-8 pb-8 pt-2">
