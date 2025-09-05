@@ -38,15 +38,17 @@ const clientes = [
 
 export default function ClientHistoryTable() {
   return (
-    <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-8 w-full text-white shadow-lg border border-gray-700 mt-4 dashboard-hover-shadow">
+    <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl p-8 w-full text-white shadow-lg mt-4 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.01]">
       <div className="flex flex-wrap items-center justify-between mb-2">
         <h3 className="text-2xl font-bold">HISTORIAL DE CLIENTES</h3>
         <div className="flex flex-col md:flex-row md:items-center gap-4 text-gray-400 text-sm font-normal">
           <span>
-            Equipos en Reparación: <span className="font-semibold text-white">8</span>
+            Equipos en Reparación:{" "}
+            <span className="font-semibold text-white">8</span>
           </span>
           <span>
-            Clientes Registrados: <span className="font-semibold text-white">32</span>
+            Clientes Registrados:{" "}
+            <span className="font-semibold text-white">32</span>
           </span>
           <ButtonGrey className="px-5 py-2 font-semibold text-base">
             Registrar Ingreso
@@ -99,7 +101,9 @@ export default function ClientHistoryTable() {
                   </span>
                   <span
                     className={`inline-block w-3 h-3 rounded-full ${
-                      c.estado === "Activo" ? "ml-7 bg-green-500" : "ml-4 bg-red-500"
+                      c.estado === "Activo"
+                        ? "ml-7 bg-green-500"
+                        : "ml-4 bg-red-500"
                     }`}
                   ></span>
                 </td>

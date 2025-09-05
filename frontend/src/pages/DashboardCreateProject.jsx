@@ -65,7 +65,7 @@ const closeSidebar = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-black">
+    <div className="min-h-screen bg-[#0a0a12]">
       <Sidebar
         showLogo={true}
         showProjectsBlock={true}
