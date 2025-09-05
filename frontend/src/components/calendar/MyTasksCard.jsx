@@ -72,7 +72,7 @@ export default function MyTasksCard() {
     }
     return (
         <>
-            <div className="bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[520px] shadow-lg flex flex-col dashboard-hover-shadow min-h-[calc(100vh-200px)]">
+            <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border-slate-700/50 rounded-3xl px-9 py-8 w-[520px] shadow-lg flex flex-col dashboard-hover-shadow min-h-[calc(100vh-200px)]">
                 <div className="flex items-center justify-between mb-3">
                     <div>
                         <h3 className="text-2xl font-bold text-white leading-tight">

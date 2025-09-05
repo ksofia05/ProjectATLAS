@@ -80,7 +80,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
         return (
           <div
             key={monthIndex}
-            className="bg-[#232336] rounded-xl p-4 border border-gray-600/50 hover:border-purple-500/50 hover:bg-[#2a2a40] transition-all duration-300 cursor-pointer group"
+            className="bg-[#1a1a2e] rounded-xl p-4 border border-gray-600/30 hover:border-purple-500/50 hover:bg-[#232340] transition-all duration-300 cursor-pointer group"
             onClick={() => onMonthSelect(monthIndex)}
           >
             <h3 className="text-white text-lg font-semibold mb-3 text-center group-hover:text-purple-300 transition-colors">

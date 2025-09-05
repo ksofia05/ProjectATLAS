@@ -30,8 +30,8 @@ const DataTable = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col flex-1 min-h-0`}
-      style={{ maxHeight: "calc(100vh - 180px)" }} 
+      className={`bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl p-6 w-full text-white shadow-lg mt-0 flex flex-col flex-1 min-h-0`}
+      style={{ maxHeight: "calc(100vh - 180px)" }}
     >
       {/* Controles fijos en la parte superior */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4 flex-shrink-0">
