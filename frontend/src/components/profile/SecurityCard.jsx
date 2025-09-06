@@ -13,7 +13,7 @@ const SecurityCard = ({
   onDisabledClick,
 }) => {
   return (
-    <div className="bg-gradient-to-br from-[#181825] via-[#1e1e2e] to-[#232335] border border-gray-700/50 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+    <div className="bg-gradient-to-br from-[#14141e] via-[#181825] to-[#14141e] border border-slate-700/50 rounded-2xl px-9 py-8 shadow-2xl backdrop-blur-sm w-full">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
           <i className="bi bi-shield-lock-fill text-red-400 text-xl"></i>
