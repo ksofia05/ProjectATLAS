@@ -17,7 +17,132 @@ const CreateProjectPanel = ({ disableCreate }) => {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [projectStates, setProjectStates] = useState({});
+  const [projectsData, setProjectsData] = useState({});
 
+
+
+
+
+
+// Porfavor nadie cambie esto, aun lo estoy revisando
+
+  // Función para obtener datos dinámicos de cada proyecto
+  const fetchProjectsData = async (projectsList) => {
+    const projectsDataTemp = {};
+
+    for (const project of projectsList) {
+      try {
+        console.log(`Obteniendo datos para proyecto: ${project.id_proyecto}`);
+
+        // Obtener número de colaboradores usando filtro_colaborador
+        const collaboratorsResponse = await axios.get(
+          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${project.id_proyecto}`
+        );
+
+        console.log(`Colaboradores response:`, collaboratorsResponse.data);
+
+        // Contar colaboradores incluyendo el admin
+        let collaboratorsCount =
+          collaboratorsResponse.data.colaboradores?.length || 0;
+
+        // Agregar el admin al conteo si no está incluido en colaboradores
+        const adminExists = collaboratorsResponse.data.colaboradores?.some(
+          (colab) =>
+            colab.rol === "administrador" || colab.rol === "Administrador"
+        );
+
+        if (!adminExists && project.id_usuario) {
+          collaboratorsCount += 1; // Sumar el admin
+        }
+
+        // Obtener número de tareas pendientes del usuario actual
+        const email =
+          user?.correoElectronico || user?.user_metadata?.correoElectronico;
+        let pendingTasksCount = 0;
+
+        if (email) {
+          // Obtener el usuario por correo electrónico
+          const usuarioResponse = await axios.get(
+            `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+          );
+          const usuarioDb = usuarioResponse.data[0];
+          console.log(`Usuario DB:`, usuarioDb);
+
+          if (usuarioDb) {
+            // Usar el nuevo endpoint para obtener tareas pendientes
+            console.log(
+              `Llamando endpoint tareas: id_usuario=${usuarioDb.idusuario}, id_proyecto=${project.id_proyecto}`
+            );
+
+            try {
+              const tasksResponse = await axios.get(
+                `http://localhost:8000/tasks/api/v1/tareas_por_proyecto_usuario/?id_usuario=${usuarioDb.idusuario}&id_proyecto=${project.id_proyecto}&filtro=por completar`
+              );
+              console.log(`Tareas response:`, tasksResponse.data);
+              pendingTasksCount = tasksResponse.data?.length || 0;
+            } catch (taskError) {
+              console.error(
+                `Error obteniendo tareas para proyecto ${project.id_proyecto}:`,
+                taskError
+              );
+              // Intentar obtener todas las tareas del usuario
+              try {
+                const allTasksResponse = await axios.get(
+                  `http://localhost:8000/tasks/api/v1/Tareas/?id_usuario=${usuarioDb.idusuario}`
+                );
+                // Filtrar manualmente por proyecto
+                const projectTasks = allTasksResponse.data.filter(
+                  (task) =>
+                    task.id_proyecto === project.id_proyecto &&
+                    task.filtro === "por completar"
+                );
+                pendingTasksCount = projectTasks.length;
+                console.log(`Tareas filtradas manualmente:`, projectTasks);
+              } catch (fallbackError) {
+                console.error(`Error en fallback:`, fallbackError);
+                pendingTasksCount = 0;
+              }
+            }
+          }
+        }
+
+        projectsDataTemp[project.id_proyecto] = {
+          collaboratorsCount,
+          pendingTasksCount,
+        };
+
+        console.log(
+          `Datos finales para proyecto ${project.id_proyecto}:`,
+          projectsDataTemp[project.id_proyecto]
+        );
+      } catch (error) {
+        console.error(
+          `Error fetching data for project ${project.id_proyecto}:`,
+          error
+        );
+        projectsDataTemp[project.id_proyecto] = {
+          collaboratorsCount: 0,
+          pendingTasksCount: 0,
+        };
+      }
+    }
+
+    console.log("Datos completos de proyectos:", projectsDataTemp);
+    setProjectsData(projectsDataTemp);
+  };
+
+
+  // Fin de lo que esta en revision (no lo toquen)
+
+
+
+
+
+
+
+
+
+  
   useEffect(() => {
     const fetchUserProjects = async () => {
       setLoadingProjects(true);
@@ -29,7 +154,8 @@ const CreateProjectPanel = ({ disableCreate }) => {
           setLoadingProjects(false);
           return;
         }
-        // 1. Obtener el usuario por correo electrónico
+
+        // Obtener el usuario por correo electrónico
         const usuarioResponse = await axios.get(
           `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
@@ -39,24 +165,26 @@ const CreateProjectPanel = ({ disableCreate }) => {
           setLoadingProjects(false);
           return;
         }
+
         const usuarioId = usuarioDb.idusuario;
+        let projectsList = [];
+
         if (usuarioDb.rol_idrol === 1) {
           // Admin
           const proyectosResponse = await axios.get(
             `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
           );
-          setProjects(proyectosResponse.data);
+          projectsList = proyectosResponse.data;
         } else if (usuarioDb.rol_idrol === 2) {
           // Colaborador
           const colaboradorResponse = await axios.get(
             `http://localhost:8000/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
           );
-          const proyectos = colaboradorResponse.data.proyectos || [];
-          setProjects(proyectos);
+          projectsList = colaboradorResponse.data.proyectos || [];
 
           // Consultar el estado de cada proyecto
           const estados = {};
-          for (const proyecto of proyectos) {
+          for (const proyecto of projectsList) {
             try {
               const res = await axios.get(
                 `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
@@ -72,6 +200,13 @@ const CreateProjectPanel = ({ disableCreate }) => {
             }
           }
           setProjectStates(estados);
+        }
+
+        setProjects(projectsList);
+
+        // Obtener datos dinámicos de los proyectos
+        if (projectsList.length > 0) {
+          await fetchProjectsData(projectsList);
         }
       } catch (error) {
         setProjects([]);
@@ -120,7 +255,6 @@ const CreateProjectPanel = ({ disableCreate }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -136,7 +270,7 @@ const CreateProjectPanel = ({ disableCreate }) => {
         {/* Search Bar */}
         <div className="max-w-md">
           <Searchbar
-            placeholder="🔍 Buscar proyectos..."
+            placeholder="Buscar proyectos..."
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             filteredProjects={filteredProjects}
@@ -183,6 +317,7 @@ const CreateProjectPanel = ({ disableCreate }) => {
             onProjectClick={handleProjectClick}
             onCreateClick={handleCreateNewProject}
             disableCreate={disableCreate}
+            projectsData={projectsData}
             onProjectsUpdate={() => {
               if (onProjectsUpdate) {
                 setTimeout(() => onProjectsUpdate(), 500);

@@ -15,6 +15,8 @@ const InventoryCard = ({
   estado = "Activo",
   onProjectClick,
   onProjectUpdate,
+  collaboratorsCount = 0, // ---------
+  pendingTasksCount = 0, // ----------
 }) => {
   const user = useUserStore((state) => state.user);
 
@@ -89,13 +91,13 @@ const InventoryCard = ({
             <div className="w-6 h-6 bg-blue-500/20 rounded-md flex items-center justify-center">
               <Users size={12} className="text-blue-400" />
             </div>
-            <span>3</span>
+            <span>{collaboratorsCount}</span>
           </div>
           <div className="flex items-center gap-1.5 text-gray-300">
             <div className="w-6 h-6 bg-orange-500/20 rounded-md flex items-center justify-center">
               <Edit size={12} className="text-orange-400" />
             </div>
-            <span>12</span>
+            <span>{pendingTasksCount}</span>
           </div>
         </div>
 
@@ -169,6 +171,7 @@ const CardProjects = ({
   onProjectsUpdate,
   onCreateClick,
   disableCreate,
+  projectsData = {}, // Nuevo prop para datos dinámicos
 }) => {
   return (
     <>
@@ -181,6 +184,12 @@ const CardProjects = ({
           estado={projectStates[project.id_proyecto] || "Activo"}
           onProjectClick={onProjectClick}
           onProjectUpdate={onProjectsUpdate}
+          collaboratorsCount={
+            projectsData[project.id_proyecto]?.collaboratorsCount || 0
+          }
+          pendingTasksCount={
+            projectsData[project.id_proyecto]?.pendingTasksCount || 0
+          }
         />
       ))}
 

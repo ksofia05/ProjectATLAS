@@ -10,8 +10,9 @@ from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-from .serializer import TaskSerializer, UsuarioSerializer, RolSerializer
 from rest_framework.response import Response
+from .models import Tarea
+from .serializer import TaskSerializer, UsuarioSerializer, RolSerializer
 from tasks.models import Task, Usuario, Rol
 from proyectos.models import Proyecto
 from rest_framework.authtoken.models import Token
@@ -258,4 +259,86 @@ def quitar_colaborador_de_proyecto(request):
         return Response({'error': 'Proyecto no encontrado'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def tareas_por_proyecto_usuario(request):
+    # Obtener tareas de cada proyecto por usuario
+    id_usuario = request.query_params.get('id_usuario')
+    id_proyecto = request.query_params.get('id_proyecto')
+    filtro = request.query_params.get('filtro', 'por completar')
     
+    print(f"Parámetros recibidos - Usuario: {id_usuario}, Proyecto: {id_proyecto}, Filtro: {filtro}")
+    
+    if not id_usuario:
+        return Response({'error': 'ID de usuario no proporcionado'}, status=400)
+        
+    if not id_proyecto:
+        return Response({'error': 'ID de proyecto no proporcionado'}, status=400)
+    
+    try:
+        # Verificar que el usuario existe
+        try:
+            usuario = Usuario.objects.get(idusuario=id_usuario)
+            print(f"Usuario encontrado: {usuario.nombre}")
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=404)
+        
+        # Filtrar tareas por usuario, proyecto y estado
+        tareas = Tarea.objects.filter(
+            id_usuario=id_usuario,
+            id_proyecto=id_proyecto,
+            filtro=filtro
+        )
+        
+        print(f"Tareas encontradas: {tareas.count()}")
+        
+        # Tarea
+        tareas_data = []
+        for tarea in tareas:
+            tareas_data.append({
+                'id_Tarea': tarea.id_Tarea,
+                'nombreTarea': tarea.nombreTarea,
+                'descripcion': tarea.descripcion,
+                'fechaCreacion': tarea.fechaCreacion,
+                'fechaLimite': tarea.fechaLimite,
+                'fechaActual': tarea.fechaActual,
+                'filtro': tarea.filtro,
+                'tipoTarea': tarea.tipoTarea,
+                'id_usuario': tarea.id_usuario.idusuario if tarea.id_usuario else None,
+                'id_proyecto': tarea.id_proyecto
+            })
+        
+        print(f"Datos de tareas serializadas: {tareas_data}")
+        return Response(tareas_data, status=200)
+        
+    except Exception as e:
+        print(f"Error en tareas_por_proyecto_usuario: {str(e)}")
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def debug_tareas(request):
+    """
+    Endpoint temporal para debuggear las tareas
+    """
+    try:
+        # Es para traerse las tareas (aun hay errores)
+        todas_tareas = Tarea.objects.all()
+        tareas_info = []
+        
+        for tarea in todas_tareas:
+            tareas_info.append({
+                'id_Tarea': tarea.id_Tarea,
+                'nombreTarea': tarea.nombreTarea,
+                'id_usuario': tarea.id_usuario.idusuario if tarea.id_usuario else None,
+                'id_proyecto': tarea.id_proyecto,
+                'filtro': tarea.filtro
+            })
+        
+        return Response({
+            'total_tareas': todas_tareas.count(),
+            'tareas': tareas_info
+        }, status=200)
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
