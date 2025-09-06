@@ -42,8 +42,10 @@ const TaskDetailModal = ({ task, onClose, onDelete,onDeleteFromDB, onUpdateInfo,
             className="text-gray-400 hover:text-red-400"
             title="Eliminar tarea"
             onClick={() => {
-              if (onDeleteFromDB) onDeleteFromDB(task);
-              if (onDelete) onDelete(task);
+              // if (onDeleteFromDB) onDeleteFromDB(task);
+              // if (onDelete) onDelete(task);
+              onDelete(task)
+              
             }}
           >
             <i className="bi bi-trash3 text-xl" />

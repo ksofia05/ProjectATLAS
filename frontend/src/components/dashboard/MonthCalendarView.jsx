@@ -114,18 +114,18 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const today = dayjs().toDate();
 
   const handleDayClick = (dayObj) => {
-    if (!canClickDay(dayObj.date, dayObj.isCurrentMonth)) {
-      return;
-    }
-
-    if (onDaySelect) {
-      onDaySelect(
-        dayObj.date.getFullYear(),
-        dayObj.date.getMonth(),
-        dayObj.date.getDate()
-      );
-    }
-  };
+  // Solo bloquea domingos y festivos
+  if (isDayBlocked(dayObj.date)) {
+    return;
+  }
+  if (onDaySelect) {
+    onDaySelect(
+      dayObj.date.getFullYear(),
+      dayObj.date.getMonth(),
+      dayObj.date.getDate()
+    );
+  }
+};
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-600">
