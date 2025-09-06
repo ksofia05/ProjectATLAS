@@ -10,47 +10,60 @@ const collaborators = [
 
 export default function PendingTasksCard({ className }) {
   return (
-    <div
-      className={`bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-2xl px-9 py-8 w-[400px] shadow-lg flex flex-col justify-between min-h-[260px] dashboard-hover-shadow ${className}`}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="text-xl font-bold text-white leading-tight">
-            Trabajos Pendientes
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-base text-gray-300 font-semibold">(Colaboradores)</span>
-            <i className="bi bi-tools text-gray-300 text-lg"></i>
+    <>
+      <style>
+        {`
+          .no-backdrop-filter {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            filter: none !important;
+          }
+        `}
+      </style>
+      <div
+        className={`bg-[#14141e] rounded-3xl px-9 py-8 w-[400px] no-backdrop-filter shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <h3 className="text-xl font-bold text-white leading-tight">
+              Trabajos Pendientes
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-base text-gray-300 font-semibold">
+                (Colaboradores)
+              </span>
+              <i className="bi bi-tools text-gray-300 text-lg"></i>
+            </div>
+          </div>
+          <ButtonGrey className="px-5 py-2 font-semibold text-base">
+            Ver detalles
+          </ButtonGrey>
+        </div>
+        <div className="flex flex-col gap-3 mb-3">
+          {collaborators.map((col) => (
+            <UserTaskRow
+              key={col.name}
+              initials={col.initials}
+              name={col.name}
+              rightContent={`${col.pending} Pendiente(s)`}
+              rightContentClass="text-red-300"
+            />
+          ))}
+          <div className="flex items-center gap-2 pl-2">
+            <span className="text-xl text-gray-400">•••</span>
           </div>
         </div>
-        <ButtonGrey className="px-5 py-2 font-semibold text-base">
-          Ver detalles
-        </ButtonGrey>
-      </div>
-      <div className="flex flex-col gap-3 mb-3">
-        {collaborators.map((col) => (
-          <UserTaskRow
-            key={col.name}
-            initials={col.initials}
-            name={col.name}
-            rightContent={`${col.pending} Pendiente(s)`}
-            rightContentClass="text-red-300"
-          />
-        ))}
-        <div className="flex items-center gap-2 pl-2">
-          <span className="text-xl text-gray-400">•••</span>
+        <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
+          <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
+            <i className="bi bi-people-fill text-lg"></i>
+            <span className="text-gray-300 font-bold">12</span> Colaboradores
+          </div>
+          <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
+            <i className="bi bi-tools text-lg"></i>
+            <span className="text-gray-300 font-bold">18</span> Trabajos
+          </div>
         </div>
       </div>
-      <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
-        <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
-          <i className="bi bi-people-fill text-lg"></i>
-          <span className="text-gray-300 font-bold">12</span> Colaboradores
-        </div>
-        <div className="flex items-center gap-2 text-gray-400 text-base font-normal">
-          <i className="bi bi-tools text-lg"></i>
-          <span className="text-gray-300 font-bold">18</span> Trabajos
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

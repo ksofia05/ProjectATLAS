@@ -3,7 +3,7 @@ import { dateUtils, isDayBlocked, canClickDay } from "../../utils/dateUtils.js";
 import { isSunday, getHolidayInfo } from "../../utils/holidayUtils.js";
 import dayjs from "dayjs";
 import { client as supabase } from "../../supabase/client";
-import useUserStore from "../../stores/useUserStore"; // Asegúrate de tener el usuario
+import useUserStore from "../../stores/useUserStore"; 
 
 const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const dayNames = [
@@ -20,22 +20,29 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const getFirstDayOfMonth = (year, month) =>
     dateUtils.getFirstDayOfMonth(year, month);
 
-  // --- NUEVO: Estado para las tareas agrupadas por día ---
+  
   const [tasksByDay, setTasksByDay] = useState({});
   const user = useUserStore((state) => state.user);
 
   useEffect(() => {
     const fetchTasks = async () => {
       if (!user) return;
-      const startDate = dayjs().year(year).month(month).startOf("month").format("YYYY-MM-DD");
-      const endDate = dayjs().year(year).month(month).endOf("month").format("YYYY-MM-DD");
-      // Ajusta el filtro por usuario si es necesario
+      const startDate = dayjs()
+        .year(year)
+        .month(month)
+        .startOf("month")
+        .format("YYYY-MM-DD");
+      const endDate = dayjs()
+        .year(year)
+        .month(month)
+        .endOf("month")
+        .format("YYYY-MM-DD");
+
       const { data, error } = await supabase
         .from("Tareas")
         .select("*")
         .gte("fechaCreacion", startDate)
         .lte("fechaCreacion", endDate);
-        // Si quieres filtrar por usuario: .eq("id_usuario", user.idUsuario);
 
       if (!error && data) {
         const grouped = {};
@@ -49,7 +56,7 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
     };
     fetchTasks();
   }, [year, month, user]);
-  // --- FIN NUEVO ---
+
 
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(year, month);
@@ -82,9 +89,13 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
       });
     }
 
-    // Días del mes siguiente
-    const totalCells = 42;
-    const remainingCells = totalCells - days.length;
+    // Es para saber cuantas secciones mostrar
+    const totalDays = days.length;
+    const weeksNeeded = Math.ceil(totalDays / 7);
+    const totalCells = weeksNeeded * 7;
+    const remainingCells = totalCells - totalDays;
+
+    // Días del mes siguiente (solo los necesarios para completar la última semana)
     const nextMonth = month === 11 ? 0 : month + 1;
     const nextYear = month === 11 ? year + 1 : year;
 
@@ -189,7 +200,6 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 )}
 
                 <div className="flex-1 space-y-1">
-                  {/* --- NUEVO: Renderiza una línea por cada tarea de ese día --- */}
                   {dayObj.isCurrentMonth && tasksByDay[dayObj.day] && (
                     <div className="flex flex-col gap-1 mt-1">
                       {tasksByDay[dayObj.day].map((task, idx) => (
@@ -201,9 +211,6 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                       ))}
                     </div>
                   )}
-                  {/* --- FIN NUEVO --- */}
-
-                  
                 </div>
 
                 {holidayInfo && dayObj.isCurrentMonth && (

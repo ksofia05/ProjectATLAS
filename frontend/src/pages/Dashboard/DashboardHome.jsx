@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { Outlet, useParams } from "react-router-dom";
@@ -11,10 +11,10 @@ import Loader from "../../components/common/Loader";
 const DashboardLayout = () => {
   const user = useUserStore((state) => state.user);
   const { isValidating, hasAccess } = useProjectAccess();
-  const { id: projectId } = useParams(); // Renombrar para claridad
+  const { id: projectId } = useParams();
 
   // Pre-cargar (zustand) datos del proyecto y colaboradores
-  const { fetchProjectInfo } = useProjectStore();
+  const { fetchProjectInfo, projectInfo } = useProjectStore();
   const { fetchCollaborators } = useCollaboratorsStore();
 
   // Pre-cargar datos cuando ingresa al dashboard
@@ -23,17 +23,32 @@ const DashboardLayout = () => {
       console.log("Pre-cargando datos del proyecto:", projectId);
 
       // Cargar en paralelo
-      Promise.all([
-        fetchProjectInfo(projectId),
-        fetchCollaborators(projectId)
-      ]).then(() => {
-        console.log("Datos pre-cargados exitosamente");
-      }).catch(error => {
-        console.error("Error pre-cargando datos:", error);
-      });
+      Promise.all([fetchProjectInfo(projectId), fetchCollaborators(projectId)])
+        .then(() => {
+          console.log("Datos pre-cargados exitosamente");
+        })
+        .catch((error) => {
+          console.error("Error pre-cargando datos:", error);
+        });
     }
-  }, [projectId, user, isValidating, hasAccess, fetchProjectInfo, fetchCollaborators]);
+  }, [
+    projectId,
+    user,
+    isValidating,
+    hasAccess,
+    fetchProjectInfo,
+    fetchCollaborators,
+  ]);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
   // Debido a complicaciones, tuve que obtener el nombre del usuario de diferentes maneras xd
   const firstName =
     user?.user_metadata?.nombre?.split(" ")[0] ||
@@ -96,25 +111,47 @@ const DashboardLayout = () => {
     return null;
   }
 
+  // Definir projectsBlock aquí
+  const projectsBlock = (
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-white mb-2">Proyecto Actual</h3>
+      <div className="bg-white/5 rounded-lg p-3 border border-slate-600/30">
+        <p className="text-sm text-gray-300 font-medium">
+          {projectInfo?.nombre || "Cargando proyecto..."}
+        </p>
+        <p className="text-xs text-gray-400 mt-1">ID: {projectId}</p>
+      </div>
+    </div>
+  );
+
   // Determinar si el usuario es colaborador (rol_idRol === 2)
   const isColaborador = user?.rol_idRol === 2 || user?.rol_idrol === 2;
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Sidebar showLogo={true} menuItems={getMenuItems()} footerLinks={true} />
-      <div className="ml-72 flex flex-col min-h-screen">
-        {/* Navbar flotante con margen igual al contenido */}
-        <div className="sticky top-0 z-10 pt-6 bg-slate-950">
+    <div className="min-h-screen bg-[#0a0a12]">
+      <Sidebar
+        showLogo={true}
+        menuItems={getMenuItems()}
+        showProjectsBlock={false}
+        projectsBlock={null}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
+      />
+
+      <div className="sm:ml-0 md:ml-0 lg:ml-72 flex flex-col min-h-screen">
+        <div className="sticky top-0 z-10 pt-6 bg-[#0a0a12]">
           <div className="px-8">
             <Navbar
               showShareButton={!isColaborador}
               showUpgradeButton={false}
               title={`Bienvenido/a${firstName ? " " + firstName : ""}`}
               subtitle="Aquí, Las estadísticas de esta semana!"
+              onSidebarToggle={toggleSidebar}
+              isSidebarOpen={isSidebarOpen}
             />
           </div>
         </div>
-        {/* Unico apartado donde hay scroll de manera general */}
+        {/* Unico lugar donde hay scroll de manera general */}
         <div className="flex-1 px-8 pb-6 pt-4 overflow-y-auto">
           <Outlet />
         </div>
