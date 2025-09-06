@@ -21,7 +21,7 @@ export default function PendingTasksCard({ className }) {
         `}
       </style>
       <div
-        className={`bg-[#14141e] rounded-3xl px-9 py-8 w-[400px] no-backdrop-filter shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
+        className={`bg-[#14141e] rounded-3xl border border-slate-700/50 px-9 py-8 w-[400px] no-backdrop-filter shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
       >
         <div className="flex items-start justify-between mb-3">
           <div>
