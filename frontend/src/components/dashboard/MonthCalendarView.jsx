@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { dateUtils, isDayBlocked, canClickDay } from "../../utils/dateUtils.js";
 import { isSunday, getHolidayInfo } from "../../utils/holidayUtils.js";
 import dayjs from "dayjs";
+import { client as supabase } from "../../supabase/client";
+import useUserStore from "../../stores/useUserStore"; // Asegúrate de tener el usuario
 
 const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const dayNames = [
@@ -17,6 +19,37 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const getDaysInMonth = (year, month) => dateUtils.getDaysInMonth(year, month);
   const getFirstDayOfMonth = (year, month) =>
     dateUtils.getFirstDayOfMonth(year, month);
+
+  // --- NUEVO: Estado para las tareas agrupadas por día ---
+  const [tasksByDay, setTasksByDay] = useState({});
+  const user = useUserStore((state) => state.user);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+      const startDate = dayjs().year(year).month(month).startOf("month").format("YYYY-MM-DD");
+      const endDate = dayjs().year(year).month(month).endOf("month").format("YYYY-MM-DD");
+      // Ajusta el filtro por usuario si es necesario
+      const { data, error } = await supabase
+        .from("Tareas")
+        .select("*")
+        .gte("fechaCreacion", startDate)
+        .lte("fechaCreacion", endDate);
+        // Si quieres filtrar por usuario: .eq("id_usuario", user.idUsuario);
+
+      if (!error && data) {
+        const grouped = {};
+        data.forEach((task) => {
+          const day = dayjs(task.fechaCreacion).date();
+          if (!grouped[day]) grouped[day] = [];
+          grouped[day].push(task);
+        });
+        setTasksByDay(grouped);
+      }
+    };
+    fetchTasks();
+  }, [year, month, user]);
+  // --- FIN NUEVO ---
 
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(year, month);
@@ -70,18 +103,18 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const today = dayjs().toDate();
 
   const handleDayClick = (dayObj) => {
-    if (!canClickDay(dayObj.date, dayObj.isCurrentMonth)) {
-      return;
-    }
-
-    if (onDaySelect) {
-      onDaySelect(
-        dayObj.date.getFullYear(),
-        dayObj.date.getMonth(),
-        dayObj.date.getDate()
-      );
-    }
-  };
+  // Solo bloquea domingos y festivos
+  if (isDayBlocked(dayObj.date)) {
+    return;
+  }
+  if (onDaySelect) {
+    onDaySelect(
+      dayObj.date.getFullYear(),
+      dayObj.date.getMonth(),
+      dayObj.date.getDate()
+    );
+  }
+};
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-600">
@@ -156,22 +189,21 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 )}
 
                 <div className="flex-1 space-y-1">
-                  {/* Solo mostrar contenido si no está bloqueado */}
-                  {dayObj.isCurrentMonth && !blocked && (
-                    <>
-                      {/* Ejemplo de tareas */}
-                      {dayObj.day === 16 && (
-                        <div className="bg-purple-600/80 text-white text-xs px-2 py-1 rounded">
-                          Limpieza teclado de PC
-                        </div>
-                      )}
-                      {dayObj.day === 25 && (
-                        <div className="bg-blue-600/80 text-white text-xs px-2 py-1 rounded">
-                          Entrega del pc de Juan
-                        </div>
-                      )}
-                    </>
+                  {/* --- NUEVO: Renderiza una línea por cada tarea de ese día --- */}
+                  {dayObj.isCurrentMonth && tasksByDay[dayObj.day] && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      {tasksByDay[dayObj.day].map((task, idx) => (
+                        <div
+                          key={task.id_Tarea || idx}
+                          className="h-1 rounded-full bg-purple-400 w-3/4 mx-auto"
+                          title={task.nombreTarea}
+                        />
+                      ))}
+                    </div>
                   )}
+                  {/* --- FIN NUEVO --- */}
+
+                  
                 </div>
 
                 {holidayInfo && dayObj.isCurrentMonth && (

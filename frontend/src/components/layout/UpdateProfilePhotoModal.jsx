@@ -60,6 +60,10 @@ const UpdateProfilePhotoModal = ({ onClose, onSave, user }) => {
 
   const handleSave = async () => {
     if (!selectedImage) return;
+    if (!user) {
+      alert("Debes iniciar sesión para actualizar tu foto de perfil.");
+      return;
+    }
     setUploading(true);
 
     const file = selectedImage;

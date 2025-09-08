@@ -4,6 +4,7 @@ import ButtonBG from "../common/ButtonBG";
 import Input from "../common/Input";
 import styled from "styled-components";
 import { showErrorToast } from "../common/popUp/Loading"; 
+import { isBlockedDay } from "../../utils/holidayUtils.js";
 
 const DateInput = styled.input`
     &::-webkit-calendar-picker-indicator {
@@ -23,6 +24,7 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
         endDate: "",
         taskTime: "",
     });
+    
 
     // const startDateInputRef = useRef(null);
     const endDateInputRef = useRef(null);
@@ -30,26 +32,22 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
 
     const [isFormValid, setIsFormValid] = useState(false);
 
-    useEffect(() => {
-        const { taskTitle, taskDescription, endDate, taskTime } = form;
-
-        if (hideDateAndTimeFields) {
-            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
-        } else if (onlyTimeField) {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
-                taskDescription.trim() !== "" &&
-                taskTime.trim() !== ""
-            );
-        } else {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
-                taskDescription.trim() !== "" &&
-                endDate.trim() !== "" &&
-                taskTime.trim() !== ""
-            );
-        }
-    }, [form, hideDateAndTimeFields, onlyTimeField]);
+    const isPastDay = (selectedDate) => {
+        if (!selectedDate) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const date = new Date(selectedDate);
+        date.setHours(0, 0, 0, 0);
+        return date < today;
+    };
+    const isValidTime = (value, selectedDate) => {
+        if (!value) return false;
+        if (isPastDay(selectedDate)) return false; // Bloquea todas las horas si el día es pasado
+        const [hour, minute] = value.split(":").map(Number);
+        if (hour < 6 || hour > 18) return false;
+        if (minute % 15 !== 0) return false;
+        return true;
+    };
 
     // useEffect(() => {
     //     if (startDate && !form.startDate) {
@@ -60,26 +58,48 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
     //     }
     // }, [form, startDate]);
 
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setForm((prevForm) => ({
+    //         ...prevForm,
+    //         [name]: value,
+    //     }));
+    // };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === "endDate") {
+            // Crear fecha local correctamente
+            const [year, month, day] = value.split('-').map(Number);
+            const selectedDate = new Date(year, month - 1, day, 12, 0, 0);
+
+            console.log('Fecha seleccionada:', {
+                date: selectedDate.toISOString(),
+                dayOfWeek: selectedDate.getDay(),
+                value: value
+            });
+
+            if (isBlockedDay(selectedDate)) {
+                showErrorToast("No puedes seleccionar domingos ni festivos.");
+                setForm((prevForm) => ({
+                    ...prevForm,
+                    [name]: "",
+                }));
+                return;
+            }
+        }
+
         setForm((prevForm) => ({
             ...prevForm,
             [name]: value,
         }));
     };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isFormValid) {
             onSave(form);
         }
-    };
-    const isValidTime = (value) => {
-        if (!value) return false;
-        const [hour, minute] = value.split(":").map(Number);
-        if (hour < 6 || hour > 18) return false;
-        if (minute % 15 !== 0) return false;
-        return true;
     };
 
     const handleTimeChange = (e) => {
@@ -95,26 +115,40 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
 
     useEffect(() => {
         const { taskTitle, taskDescription, endDate, taskTime } = form;
-        const validTime = isValidTime(taskTime);
 
+        let isValid = false;
+
+        // Validación según el tipo de formulario
         if (hideDateAndTimeFields) {
-            setIsFormValid(taskTitle.trim() !== "" && taskDescription.trim() !== "");
+            // Solo título y descripción
+            isValid = taskTitle.trim() !== "" &&
+                taskDescription.trim() !== "";
         } else if (onlyTimeField) {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
+            // Título, descripción y hora
+            isValid = taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
                 taskTime.trim() !== "" &&
-                validTime
-            );
+                isValidTime(taskTime, endDate);
         } else {
-            setIsFormValid(
-                taskTitle.trim() !== "" &&
+            // Todos los campos
+            const dateObj = endDate ? new Date(endDate + "T12:00:00") : null;
+
+            isValid = taskTitle.trim() !== "" &&
                 taskDescription.trim() !== "" &&
-                endDate.trim() !== "" &&
-                taskTime.trim() !== "" &&
-                validTime
-            );
+                endDate && endDate.trim() !== "" &&
+                taskTime && taskTime.trim() !== "" &&
+                isValidTime(taskTime, endDate) &&
+                !isBlockedDay(dateObj);
         }
+
+        console.log("Form validation:", {
+            isValid,
+            fields: { taskTitle, taskDescription, endDate, taskTime },
+            validTime: taskTime ? isValidTime(taskTime, endDate) : false,
+            blockedDay: endDate ? isBlockedDay(new Date(endDate + "T12:00:00")) : null
+        });
+
+        setIsFormValid(isValid);
     }, [form, hideDateAndTimeFields, onlyTimeField]);
 
 
@@ -199,6 +233,7 @@ export default function NewTaskModal({ onClose, onSave, /*startDate,*/ hideDateA
                                         min="06:00"
                                         max="18:00"
                                         step={900} // 900 segundos = 15 minutos
+                                        disabled={isPastDay(form.endDate)} // <-- Deshabilita si el día es pasado
                                         className="w-full p-3 rounded-lg bg-[#2b2b3a] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-8"
                                         style={{ backgroundColor: '#2b2b3a', color: 'white' }}
                                     />
