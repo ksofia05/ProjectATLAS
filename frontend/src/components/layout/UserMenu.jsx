@@ -19,8 +19,8 @@ const UserMenu = ({ visible, onClose, fotoPerfil }) => {
     return user.email || user.user_metadata?.email || "";
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/iniciar-sesion");
     if (onClose) onClose();
   };

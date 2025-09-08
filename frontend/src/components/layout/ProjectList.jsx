@@ -164,9 +164,6 @@ const ProjectList = ({ isColaborador = false, refreshProjects }) => {
               className="hover:text-[#7c2ae8] underline cursor-pointer"
             >
               {project.nombreproyecto}
-              {isColaborador && projectStates[project.id_proyecto]
-                ? `(${projectStates[project.id_proyecto]})`
-                : ""}
             </a>
           </div>
         </li>

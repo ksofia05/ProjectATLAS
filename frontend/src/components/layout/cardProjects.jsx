@@ -30,7 +30,7 @@ const InventoryCard = ({
     setLoading(true);
     const toastId=showLoadingToast("Eliminando proyecto...");
     try {
-      await fetch("http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/", {
+      const response = await fetch("http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -38,16 +38,23 @@ const InventoryCard = ({
           id_proyecto: project.id_proyecto,
         })
       });
+      const data = await response.json();
       toast.dismiss(toastId);
-      showSuccessToast("Has salido del proyecto.");
-      setShowDeleteModal(false);
-      if (onProjectUpdate) onProjectUpdate();
-    } catch (error){
+      if (response.ok && data.success) {
+        showSuccessToast("Has salido del proyecto.");
+        setShowDeleteModal(false);
+        if (window.refreshUserAndProjects) {
+          await window.refreshUserAndProjects();
+        }
+        if (onProjectUpdate) onProjectUpdate();
+      } else {
+        showErrorToast(data.error || "Error al eliminar proyecto.");
+      }
+    } catch (error) {
       toast.dismiss(toastId);
-      showErrorToast("Error al eliminar proyecto.")
+      showErrorToast("Error al eliminar proyecto.");
     } finally {
       setLoading(false);
-      
     }
   }
 
@@ -137,7 +144,6 @@ const CreateProjectCard = () => {
 };
 
 const CardProjects = ({ projects = [], projectStates = {}, userRole, onProjectClick, onProjectsUpdate }) => {
-  console.log("userRole:", userRole);
   return (
     <div className="p-0">
       <div className="flex flex-col sm:flex-row gap-10 items-start">
