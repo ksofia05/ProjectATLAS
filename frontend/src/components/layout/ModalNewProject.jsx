@@ -35,6 +35,9 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
         setNombre('');
         if (onCreate) {
           onCreate(data.proyecto);
+          if (window.refreshUserAndProjects) {
+            window.refreshUserAndProjects();
+          }
         }
       } else {
         const errorData = await response.json();

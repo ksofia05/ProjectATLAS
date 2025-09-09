@@ -9,9 +9,14 @@ const Sidebar = ({
   projectsBlock = null,
   footerLinks = true,
   children,
+  refreshProjects=0,
   isOpen = false,
   onClose,
 }) => {
+  React.useEffect(() => {
+    console.log("Refresh projects:", refreshProjects);
+  }, [refreshProjects]);
+
   const location = useLocation();
 
   return (

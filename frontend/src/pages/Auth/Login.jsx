@@ -106,7 +106,7 @@ const Login = () => {
         // Lógica de asociación de colaborador
         if (idProyecto && formData.email) {
           try {
-            await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+            const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -114,6 +114,18 @@ const Login = () => {
                 email: formData.email,
               }),
             });
+            const data = await response.json();
+            if (!response.ok) {
+              if (
+                data.error === "Un colaborador no puede estar en más de un proyecto." ||
+                data.error === "Un administrador no puede asociarse como colaborador."
+              ) {
+                localStorage.setItem("showProjectLimitModal", "1");
+                localStorage.setItem("projectLimitMessage", data.error);
+              } else {
+                showErrorToast(data.error || "Error al asociar colaborador al proyecto.");
+              }
+            }
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
