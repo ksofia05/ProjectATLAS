@@ -62,7 +62,7 @@ const CalendarCard = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#181825] to-[#232335] border border-gray-700 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg dashboard-hover-shadow cursor-pointer hover:border-purple-500/50 hover:bg-gradient-to-r hover:from-[#1a1a2e] hover:to-[#2a2a45] transition-all duration-300 ${className}`}
+      className={`bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
       onClick={handleCalendarClick}
     >
       <div className="flex items-center justify-between mb-1">

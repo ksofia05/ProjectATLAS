@@ -8,7 +8,7 @@ export default function SidebarProfile() {
   const { user, isLoading } = useAuth();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
-  // Extraer datos del usuario
+  // datos del user
   const nombres = user?.user_metadata?.nombre || "";
   const apellidos = user?.user_metadata?.apellido || "";
   const correo = user?.email || user?.user_metadata?.email || "";
@@ -20,9 +20,8 @@ export default function SidebarProfile() {
       : userAtlas;
 
   return (
-    <aside className="fixed left-0 top-0 bg-gradient-to-b from-[#181825] via-[#1a1a2e] to-[#14141e] text-white w-72 h-screen flex flex-col justify-between py-8 px-6 border-r border-gray-800/50 shadow-lg z-40 overflow-y-auto">
+    <aside className="fixed left-0 top-0 bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40">
       <div>
-        {/* Header mejorado */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative group">
             <img
@@ -50,7 +49,6 @@ export default function SidebarProfile() {
           <p className="text-purple-400 text-sm font-medium">Mi perfil</p>
         </div>
 
-        {/* Cards de información */}
         <div className="space-y-4 mb-8">
           <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
             <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
@@ -86,7 +84,6 @@ export default function SidebarProfile() {
             </div>
           </div>
 
-          {/* Estadísticas o información adicional */}
           <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
             <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
               <i className="bi bi-graph-up text-green-400"></i>
