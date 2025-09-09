@@ -28,7 +28,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
     const firstDay = getFirstDayOfMonth(year, month);
     const days = [];
 
-    // Días del mes anterior
+    // Ya con esto solo aparecen las filas necesarias (no aparece la fila vacía al final)
     const prevMonth = month === 0 ? 11 : month - 1;
     const prevYear = month === 0 ? year - 1 : year;
     const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
@@ -54,10 +54,13 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
       });
     }
 
-    // Días del mes siguiente
-    const totalCells = 42; // 6 semanas × 7 días
-    const remainingCells = totalCells - days.length;
+    // Medicion para saber si necesitamos agregar días del siguiente mes
+    const totalDays = days.length;
+    const weeksNeeded = Math.ceil(totalDays / 7);
+    const totalCells = weeksNeeded * 7;
+    const remainingCells = totalCells - totalDays;
 
+    // Solo agregar días del siguiente mes si es necesario para completar la última semana
     for (let day = 1; day <= remainingCells; day++) {
       days.push({
         day,
@@ -77,7 +80,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
         return (
           <div
             key={monthIndex}
-            className="bg-[#232336] rounded-xl p-4 border border-gray-600/50 hover:border-purple-500/50 hover:bg-[#2a2a40] transition-all duration-300 cursor-pointer group"
+            className="bg-[#1a1a2e] rounded-xl p-4 border border-gray-600/30 hover:border-purple-500/50 hover:bg-[#232340] transition-all duration-300 cursor-pointer group"
             onClick={() => onMonthSelect(monthIndex)}
           >
             <h3 className="text-white text-lg font-semibold mb-3 text-center group-hover:text-purple-300 transition-colors">
@@ -96,7 +99,6 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
               ))}
             </div>
 
-            {/* Días del mes */}
             <div className="grid grid-cols-7 gap-1">
               {days.map((dayObj, dayIndex) => (
                 <div
