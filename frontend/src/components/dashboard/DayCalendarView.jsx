@@ -47,7 +47,7 @@ const DayCalendarView = ({ year, month, day }) => {
 
   // Abrir modal de detalle de tarea (siempre sincroniza con tasks)
   const handleTaskClick = (task) => {
-    const updatedTask = tasks.find(t => t.hour === task.hour);
+    const updatedTask = tasks.find(t => t.id_Tarea === task.id_Tarea);
     setDetailTaskData(updatedTask);
     setShowDetailModal(true);
   };
