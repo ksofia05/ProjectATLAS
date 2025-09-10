@@ -47,7 +47,7 @@ const DayCalendarView = ({ year, month, day }) => {
 
   // Abrir modal de detalle de tarea (siempre sincroniza con tasks)
   const handleTaskClick = (task) => {
-    const updatedTask = tasks.find(t => t.hour === task.hour);
+    const updatedTask = tasks.find(t => t.id_Tarea === task.id_Tarea);
     setDetailTaskData(updatedTask);
     setShowDetailModal(true);
   };
@@ -193,36 +193,62 @@ const DayCalendarView = ({ year, month, day }) => {
     <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700 mt-0 flex flex-col h-[calc(100vh-240px)]">
       <div className="flex-1 overflow-y-auto scrollbar-subtle">
         <div className="grid grid-cols-[80px_1fr] gap-0">
-          {hours.map((hour) => {
-            const tareasHora = tasks.filter(
-              t => t.fechaLimite && parseInt(t.fechaLimite.slice(0, 2), 10) === hour
-            );
-            return (
-              <React.Fragment key={hour}>
-                <div className="text-right pr-4 py-4 text-sm text-gray-400 border-r border-gray-600">
-                  {formatHour(hour)}
-                </div>
-                <div
-                  className={`relative border-b border-gray-600 min-h-[60px] p-2 hover:bg-gray-800/30 transition-colors cursor-pointer`}
-                  onClick={() => tareasHora.length > 0 ? handleTaskClick(tareasHora[0]) : handleHourClick(hour)}
-                >
-                  {tareasHora.map(task => (
-                    <div
-                      key={task.id_Tarea}
-                      className={`absolute left-2 right-2 text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 ${task.completed ? "bg-purple-400/80" : "bg-purple-600/80"}`}
-                      style={{ top: "4px" }}
-                    >
-                      <i className="bi bi-tools text-lg mr-2" />
-                      <span className={`font-medium relative ${task.completed ? "line-through" : ""}`}>
-                        {task.nombreTarea}
-                      </span>
-                      <span className="text-xs text-purple-200 ml-2">({task.fechaLimite.slice(0, 5)})</span>
-                    </div>
-                  ))}
-                </div>
-              </React.Fragment>
-            );
-          })}
+
+          
+{hours.map((hour) => {
+  const tareasHora = tasks.filter(
+    t => t.fechaLimite && parseInt(t.fechaLimite.slice(0, 2), 10) === hour
+  );
+  const minHeight = 60 + tareasHora.length * 48;
+
+  return (
+    <React.Fragment key={hour}>
+      <div className="text-right pr-4 py-4 text-sm text-gray-400 border-r border-gray-600">
+        {formatHour(hour)}
+      </div>
+      <div
+        className={`relative border-b border-gray-600 p-2 hover:bg-gray-800/30 transition-colors cursor-pointer`}
+        style={{ minHeight: `${minHeight}px` }}
+        onClick={e => {
+          // Solo crea nueva tarea si se hace click en el fondo (no sobre una tarea)
+          if (e.target === e.currentTarget) handleHourClick(hour);
+        }}
+      >
+        <div className="flex flex-col gap-2">
+          {tareasHora.sort((a, b) => a.fechaLimite.localeCompare(b.fechaLimite)).map((task) => (
+            <div
+              key={task.id_Tarea}
+              className={`text-white text-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 ${task.completed ? "bg-purple-400/80" : "bg-purple-600/80"}`}
+              onClick={e => {
+                e.stopPropagation(); // Evita que el click en la tarea cree una nueva
+                handleTaskClick(task);
+              }}
+            >
+              <i className="bi bi-tools text-lg mr-2" />
+              <span className={`font-medium relative ${task.completed ? "line-through" : ""}`}>
+                {task.nombreTarea}
+              </span>
+              <span className="text-xs text-purple-200 ml-2">({task.fechaLimite.slice(0, 5)})</span>
+            </div>
+          ))}
+        </div>
+        {/* Espacio extra debajo de las tareas para agregar otra tarea */}
+        <div
+          className="w-full h-8 flex items-center justify-center"
+          onClick={e => {
+            e.stopPropagation();
+            handleHourClick(hour);
+          }}
+        >
+          <button className="text-xs text-purple-300 hover:text-purple-500 transition-colors">
+            + Añadir otra tarea
+          </button>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+})}
+
         </div>
       </div>
       {/* Modal para añadir tarea usando NewTaskModal */}
