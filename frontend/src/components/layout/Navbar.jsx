@@ -19,7 +19,7 @@ const Navbar = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
 
-  const { user, isLoading } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
 
   const params = useParams();
   const projectId = params.id;
@@ -84,8 +84,8 @@ const Navbar = ({
           </div>
           {/* Botones y perfil */}
           <div className="flex items-center gap-4 md:gap-8">
-            {/* Botón Compartir */}
-            {props.showShareButton && (
+            {/* Botón Compartir solo para administradores */}
+            {props.showShareButton && userProfile?.rol_idRol === 1 && (
               <>
                 <ButtonGrey
                   onClick={() => setShowShareModal(true)}
