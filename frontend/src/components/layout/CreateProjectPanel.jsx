@@ -109,17 +109,17 @@ const CreateProjectPanel = ({ disableCreate }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] py-10 px-4">
-      <div className="bg-gradient-to-tr from-[#181825] via-[#181825] to-[#29293f] border border-gray-700 rounded-2xl shadow-2xl px-14 py-10 w-full max-w-6xl">
-        <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-2 text-left">
-          Hola, {getUserDisplayName()} <span className="text-2xl">👋</span>
+    <div className="flex flex-col items-center justify-center min-h-[80vh] py-6 sm:py-8 md:py-10 px-4">
+      <div className="bg-gradient-to-tr from-[#181825] via-[#181825] to-[#29293f] border border-gray-700 rounded-2xl shadow-2xl px-6 sm:px-10 md:px-14 py-6 sm:py-8 md:py-10 w-full max-w-sm sm:max-w-4xl md:max-w-6xl">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2 text-left">
+          Hola, {getUserDisplayName()} <span className="text-lg sm:text-xl md:text-2xl">👋</span>
         </h2>
-        <p className="text-lg text-gray-300 mb-8 text-left">
+        <p className="text-base sm:text-lg text-gray-300 mb-6 sm:mb-7 md:mb-8 text-left">
           Organiza tus espacios de trabajo.
         </p>
 
         {/* Searchbar */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-7 md:mb-8">
           <Searchbar
             placeholder="Busca un proyecto por nombre..."
             searchTerm={searchTerm}
@@ -129,34 +129,34 @@ const CreateProjectPanel = ({ disableCreate }) => {
         </div>
 
         {/* Botón de nuevo proyecto */}
-        <div className="flex mb-10">
+        <div className="flex mb-8 sm:mb-9 md:mb-10">
           <button
-            className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-8 py-4 rounded-xl shadow-lg text-xl transition
+            className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-xl shadow-lg text-base sm:text-lg md:text-xl transition
               ${disableCreate ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={() => !disableCreate && setModalOpen(true)}
             disabled={disableCreate}
           >
-            <i className="bi bi-plus-circle text-2xl"></i>
-            Nuevo Proyecto
+            <i className="bi bi-plus-circle text-lg sm:text-xl md:text-2xl"></i>
+            <span className="hidden sm:inline">Nuevo Proyecto</span>
           </button>
         </div>
 
         {/* Listado de proyectos o loader de carga */}
         {loadingProjects ? (
-          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">
             <Loader text="Cargando tus proyectos..." />
           </div>
         ) : projects.length === 0 ? (
-          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">
             <img
               src={construccionImg}
               alt="Sin proyectos"
-              className="w-32 mb-6"
+              className="w-24 sm:w-28 md:w-32 mb-4 sm:mb-5 md:mb-6"
             />
-            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+            <h3 className="text-xl sm:text-xl md:text-2xl font-bold text-white mb-2 text-center">
               Sin proyectos creados
             </h3>
-            <p className="text-gray-300 text-center text-lg">
+            <p className="text-gray-300 text-center text-base sm:text-lg">
               Crea tu primer proyecto para comenzar a colaborar con tu equipo.
             </p>
           </div>
@@ -168,11 +168,11 @@ const CreateProjectPanel = ({ disableCreate }) => {
             onProjectClick={handleProjectClick}
           />
         ) : (
-          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-12 flex flex-col items-center bg-[#232336]">
-            <h3 className="text-2xl font-bold text-white mb-2 text-center">
+          <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">
+            <h3 className="text-xl sm:text-xl md:text-2xl font-bold text-white mb-2 text-center">
               No se encontraron proyectos
             </h3>
-            <p className="text-gray-300 text-center text-lg">
+            <p className="text-gray-300 text-center text-base sm:text-lg">
               Prueba con otro nombre o revisa tu búsqueda.
             </p>
           </div>
