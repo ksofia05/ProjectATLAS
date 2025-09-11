@@ -29,6 +29,7 @@ export default function InventoryTable({ onEmojiClick }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [refreshFlag, setRefreshFlag] = useState(0); // Nuevo estado
 
   useEffect(() => {
     if (isLoading || !user) return;

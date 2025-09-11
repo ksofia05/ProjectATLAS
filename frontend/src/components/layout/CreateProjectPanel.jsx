@@ -9,7 +9,7 @@ import { showLoadingToast } from "../common/popUp/Loading";
 import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import Loader from "../common/Loader";
 
-const CreateProjectPanel = ({ disableCreate }) => {
+const CreateProjectPanel = ({ disableCreate ,refreshProjects }) => {
   const user = useUserStore((state) => state.user);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -17,15 +17,17 @@ const CreateProjectPanel = ({ disableCreate }) => {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [projectStates, setProjectStates] = useState({});
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchUserProjects = async () => {
       setLoadingProjects(true);
       const email = user?.correoElectronico || user?.user_metadata?.correoElectronico;
       try {
-        if (!email) {
+        if (!user || !email) {
           setProjects([]);
           setLoadingProjects(false);
+          setUserRole(null);
           return;
         }
         // 1. Obtener el usuario por correo electrónico
@@ -36,8 +38,10 @@ const CreateProjectPanel = ({ disableCreate }) => {
         if (!usuarioDb || !usuarioDb.idusuario) {
           setProjects([]);
           setLoadingProjects(false);
+          setUserRole(null);
           return;
         }
+        setUserRole(usuarioDb.rol_idrol);
         const usuarioId = usuarioDb.idusuario;
         if (usuarioDb.rol_idrol === 1) {
           // Admin
@@ -72,13 +76,17 @@ const CreateProjectPanel = ({ disableCreate }) => {
         }
       } catch (error) {
         setProjects([]);
+        setUserRole(null);
       } finally {
         setLoadingProjects(false);
       }
     };
 
     if (user) fetchUserProjects();
-  }, [user]);
+  }, [user, refreshProjects]);
+  const isColaborador = userRole === 2;
+  const hasProjects= projects.length>0;
+  const shouldDisableCreate = isColaborador && hasProjects;
 
   const handleCreate = (nuevoProyecto) => {
     setProjects((prevProjects) => [...prevProjects, nuevoProyecto]);
@@ -104,10 +112,10 @@ const CreateProjectPanel = ({ disableCreate }) => {
     try {
       await openDashboardIfActive(project.id_proyecto, user, toastId);
     } finally {
-      toast.dismiss(toastId);
+      toastId.dismiss(toastId);
     }
   };
-
+  console.log("userRole:", user?.rol_idrol);
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] py-6 sm:py-8 md:py-10 px-4">
       <div className="bg-gradient-to-tr from-[#181825] via-[#181825] to-[#29293f] border border-gray-700 rounded-2xl shadow-2xl px-6 sm:px-10 md:px-14 py-6 sm:py-8 md:py-10 w-full max-w-sm sm:max-w-4xl md:max-w-6xl">
@@ -132,9 +140,9 @@ const CreateProjectPanel = ({ disableCreate }) => {
         <div className="flex mb-8 sm:mb-9 md:mb-10">
           <button
             className={`flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-xl shadow-lg text-base sm:text-lg md:text-xl transition
-              ${disableCreate ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => !disableCreate && setModalOpen(true)}
-            disabled={disableCreate}
+              ${shouldDisableCreate ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={() => !shouldDisableCreate && setModalOpen(true)}
+            disabled={shouldDisableCreate}
           >
             <i className="bi bi-plus-circle text-lg sm:text-xl md:text-2xl"></i>
             <span className="hidden sm:inline">Nuevo Proyecto</span>
@@ -146,7 +154,7 @@ const CreateProjectPanel = ({ disableCreate }) => {
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">
             <Loader text="Cargando tus proyectos..." />
           </div>
-        ) : projects.length === 0 ? (
+        ) : projects.length === 0 || userRole === null? (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">
             <img
               src={construccionImg}
@@ -164,8 +172,13 @@ const CreateProjectPanel = ({ disableCreate }) => {
           <CardProjects
             projects={filteredProjects}
             projectStates={projectStates}
-            isColaborador={user?.rol_idrol === 2}
+            userRole={userRole}
             onProjectClick={handleProjectClick}
+            onProjectsUpdate={()=>{
+              if (onProjectsUpdate) {
+                setTimeout(()=>onProjectsUpdate(),500)
+              };
+            }}
           />
         ) : (
           <div className="border-2 border-dashed border-[#7c2ae8] rounded-2xl p-8 sm:p-10 md:p-12 flex flex-col items-center bg-[#232336]">

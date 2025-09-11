@@ -18,7 +18,9 @@ export default function CalendarAdvancedPage() {
     setViewMode("month");
   };
 
-  const handleDaySelect = (day) => {
+  const handleDaySelect = (year, month, day) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
     setCurrentDay(day);
     setViewMode("day");
   };
@@ -67,28 +69,24 @@ export default function CalendarAdvancedPage() {
   const handleViewSelect = (value) => {
     setViewMode(value);
 
+    const today = dayjs();
+
     if (value === "year") {
+      // Ir al año actual
+      setCurrentYear(today.year());
+      setCurrentMonth(null);
+      setCurrentDay(null);
     } else if (value === "month") {
-      if (currentMonth === null) {
-        setCurrentMonth(dateUtils.getCurrentMonth()); 
-      }
+      // Ir al mes actual del año actual
+      setCurrentYear(today.year());
+      setCurrentMonth(today.month());
+      setCurrentDay(null);
     } else if (value === "day") {
-      if (currentDay === null) {
-        const today = dayjs();
-        setCurrentDay(today.date());
-        if (currentMonth === null) {
-          setCurrentMonth(today.month());
-        }
-      }
+      // Ir al día actual del mes actual del año actual
+      setCurrentYear(today.year());
+      setCurrentMonth(today.month());
+      setCurrentDay(today.date());
     }
-  };
-
-  const getTitle = () => {
-    return "Calendario";
-  };
-
-  const getSubtitle = () => {
-    return "Organiza y gestiona tu tiempo de manera eficiente";
   };
 
   const handlePrevious = () => {
@@ -101,11 +99,11 @@ export default function CalendarAdvancedPage() {
       setCurrentYear(prevMonth.year());
     } else if (viewMode === "day") {
       // Navegar día anterior
-      const prevDay = dayjs()
-        .year(currentYear)
-        .month(currentMonth)
-        .date(currentDay)
-        .subtract(1, "day");
+      const prevDay = dayjs(
+        `${currentYear}-${(currentMonth + 1)
+          .toString()
+          .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}`
+      ).subtract(1, "day");
       setCurrentDay(prevDay.date());
       setCurrentMonth(prevDay.month());
       setCurrentYear(prevDay.year());
@@ -122,11 +120,11 @@ export default function CalendarAdvancedPage() {
       setCurrentYear(nextMonth.year());
     } else if (viewMode === "day") {
       // Navegar día siguiente
-      const nextDay = dayjs()
-        .year(currentYear)
-        .month(currentMonth)
-        .date(currentDay)
-        .add(1, "day");
+      const nextDay = dayjs(
+        `${currentYear}-${(currentMonth + 1)
+          .toString()
+          .padStart(2, "0")}-${currentDay.toString().padStart(2, "0")}`
+      ).add(1, "day");
       setCurrentDay(nextDay.date());
       setCurrentMonth(nextDay.month());
       setCurrentYear(nextDay.year());
@@ -149,7 +147,7 @@ export default function CalendarAdvancedPage() {
         .year(currentYear)
         .month(currentMonth)
         .date(currentDay)
-        .format("dddd"); 
+        .format("dddd");
   };
 
   const BreadcrumbNavigation = () => (
@@ -196,12 +194,7 @@ export default function CalendarAdvancedPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold text-white">{getTitle()}</h1>
-        <p className="text-gray-300 mt-1">{getSubtitle()}</p>
-      </div>
-
-      <div className="bg-gradient-to-r from-[#181825] to-[#232335] rounded-3xl p-6 w-full text-white shadow-lg border border-gray-700">
+      <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] rounded-3xl p-6 w-full text-white shadow-lg border-slate-700/50">
         <BreadcrumbNavigation />
 
         {/* Navegación principal */}
@@ -229,29 +222,38 @@ export default function CalendarAdvancedPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Botones de vista */}
+          <div className="flex gap-2 mb-6">
             <button
-              onClick={handleGoToToday}
-              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors"
+              onClick={() => handleViewSelect("year")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "year"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+              }`}
             >
-              Hoy
+              Año
             </button>
-
-            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-1">
-              {["year", "month", "day"].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => handleViewSelect(mode)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === mode
-                      ? "bg-purple-600 text-white"
-                      : "text-gray-300 hover:text-white hover:bg-gray-700"
-                  }`}
-                >
-                  {mode === "year" ? "Año" : mode === "month" ? "Mes" : "Día"}
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => handleViewSelect("month")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "month"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+              }`}
+            >
+              Mes
+            </button>
+            <button
+              onClick={() => handleViewSelect("day")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "day"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+              }`}
+            >
+              Día
+            </button>
           </div>
         </div>
 

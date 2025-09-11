@@ -3,14 +3,18 @@ import axios from "axios";
 import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import { showLoadingToast } from "../common/popUp/Loading";
 import { useAuth } from "../../context/AuthProvider";
+import toast from "react-hot-toast";
+import useUserStore from "../../stores/useUserStore";
 
-const ProjectList = ({ isColaborador = false }) => {
-  const { user, userProfile, isLoading } = useAuth();
+const ProjectList = ({ isColaborador = false, refreshProjects }) => {
+  const { userProfile, isLoading } = useAuth();
 
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectError, setProjectError] = useState(null);
   const [projectStates, setProjectStates] = useState({});
+
+  const user = useUserStore((state)=>state.user);
 
   useEffect(() => {
     const fetchUserProjects = async () => {
@@ -89,7 +93,7 @@ const ProjectList = ({ isColaborador = false }) => {
     };
 
     fetchUserProjects();
-  }, [user, userProfile]);
+  }, [user, userProfile, refreshProjects]);
 
   if (!user) {
     return (
@@ -127,14 +131,18 @@ const ProjectList = ({ isColaborador = false }) => {
   }
 
   const handleProjectClick = async (project) => {
-    if (userProfile?.rol_idRol === 1) {
+    if (!user || (!user.idUsuario && !user.idusuario)) {
+      toast.error("Usuario no cargado. Intenta de nuevo.");
+      return;
+    }
+    if(userProfile?.rol_idrol===1){
       window.open(`/dashboard/${project.id_proyecto}`, "_blank");
       return;
     }
-    const toastId = showLoadingToast("Verificando acceso...");
-    try {
-      await openDashboardIfActive(project.id_proyecto, user, toastId);
-    } finally {
+    const toastId=showLoadingToast("Verificando acceso...");
+    try{
+      await openDashboardIfActive(project.id_proyecto,user,toastId);
+    } finally{
       toast.dismiss(toastId);
     }
   };
@@ -145,17 +153,17 @@ const ProjectList = ({ isColaborador = false }) => {
         <li key={project.id_proyecto}>
           <div>
             <a
-              onClick={async () => {
+              onClick={async ()=>{
+                if (!user || !userProfile ){
+                  return;
+                }
                 await handleProjectClick(project);
               }}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#7c2ae8] underline cursor-pointer"
             >
-              {project.nombreproyecto}{" "}
-              {isColaborador && projectStates[project.id_proyecto]
-                ? `(${projectStates[project.id_proyecto]})`
-                : ""}
+              {project.nombreproyecto}
             </a>
           </div>
         </li>

@@ -9,16 +9,21 @@ const Sidebar = ({
   projectsBlock = null,
   footerLinks = true,
   children,
+  refreshProjects=0,
   isOpen = false,
-  onClose
+  onClose,
 }) => {
+  React.useEffect(() => {
+    console.log("Refresh projects:", refreshProjects);
+  }, [refreshProjects]);
+
   const location = useLocation();
 
   return (
     <>
       {/* Overlay para móvil y tablet */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={onClose}
         ></div>
@@ -26,7 +31,7 @@ const Sidebar = ({
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 bg-gradient-to-l from-[#181825] via-[#181825] to-[#14141e] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40 transform transition-transform duration-300
+        className={`fixed left-0 top-0 bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40 transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0`}
       >

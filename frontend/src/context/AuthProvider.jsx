@@ -3,18 +3,110 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { client } from '../supabase/client';
 import { getUserProfile } from '../services/userService';
 import useUserStore from '../stores/useUserStore';
+import { showErrorToast } from "../components/common/popUp/Loading"; 
 
 export const AuthContext = createContext({});
+// Mover las constantes que NO son hooks fuera del componente
+const MAX_RECONNECT_ATTEMPTS = 3;
 
 export const AuthProvider = ({ children }) => {
+  // Mover todos los useRef dentro del componente
+  const reconnectAttempts = useRef(0);
+  const reconnectTimer = useRef(null);
+  const heartbeatInterval = useRef(null);
+  
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const initialized = useRef(false);
   const isLoggingOut = useRef(false);
   const lastEventTime = useRef(0);
+
+
+  const setupHeartbeat = () => {
+    // Limpiar heartbeat anterior si existe
+    if (heartbeatInterval.current) {
+      clearInterval(heartbeatInterval.current);
+    }
+
+    // Configurar nuevo heartbeat cada 10 minutos (ajusta según necesidad)
+    heartbeatInterval.current = setInterval(async () => {
+      if (!isAuthenticated || !user) {
+        clearInterval(heartbeatInterval.current);
+        return;
+      }
+
+      console.log('💓 Heartbeat: verificando sesión...');
+      try {
+        // Intentar refrescar el token de forma preventiva
+        const { data, error } = await client.auth.refreshSession();
+
+        if (error) {
+          console.error('Error en heartbeat:', error);
+          if (error.message.includes('Refresh Token Not Found') ||
+            error.message.includes('Invalid Refresh Token')) {
+            console.log('Token de refresco inválido, intentando reconexión...');
+            attemptReconnect();
+          }
+        } else if (data.session) {
+          console.log('Sesión refrescada correctamente');
+        }
+      } catch (error) {
+        console.error('Error en heartbeat:', error);
+        if (navigator.onLine) {
+          attemptReconnect();
+        }
+      }
+    }, 540000); // 9 minutos (menor que el tiempo de expiración típico de 1 hora)
+  };
+
+  // Definir attemptReconnect antes de usarlo en setupHeartbeat
+  const attemptReconnect = async () => {
+    if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+      console.log('Máximo de intentos de reconexión alcanzado');
+      showErrorToast("Se perdió la conexión. Por favor, recarga la página.");
+      return;
+    }
+
+    reconnectAttempts.current += 1;
+    console.log(`Intento de reconexión ${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS}`);
+
+    try {
+      const { data: refreshData, error: refreshError } = await client.auth.refreshSession();
+      if (!refreshError && refreshData.session) {
+        console.log('Sesión refrescada exitosamente en reconexión');
+        await handleUserSession(refreshData.session);
+        reconnectAttempts.current = 0;
+        return;
+      }
+
+      const { data: { session }, error } = await client.auth.getSession();
+
+      if (session) {
+        console.log('Reconexión exitosa, restaurando sesión');
+        await handleUserSession(session);
+        reconnectAttempts.current = 0;
+      } else {
+        // No hay sesión, probablemente expiró
+        setUser(null);
+        setUserProfile(null);
+        setIsAuthenticated(false);
+        useUserStore.getState().clearUser();
+        showErrorToast("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+      }
+    } catch (error) {
+      console.error('Error durante reconexión:', error);
+
+      // Programar otro intento después de un tiempo
+      if (reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS) {
+        reconnectTimer.current = setTimeout(attemptReconnect, 3000);
+      } else {
+        showErrorToast("No se pudo restablecer la conexión. Por favor, recarga la página.");
+      }
+    }
+  };
 
   // maneja sesiones de usuario (mover arriba para reutilizar)
   const handleUserSession = async (session) => {
@@ -54,6 +146,7 @@ export const AuthProvider = ({ children }) => {
           user_metadata: session.user.user_metadata
         });
       }
+      setupHeartbeat();
     } catch (profileError) {
       console.error('Error obteniendo perfil:', profileError);
       setUser(session.user);
@@ -104,6 +197,21 @@ export const AuthProvider = ({ children }) => {
     initialized.current = true;
 
     let subscription = null;
+
+    const handleConnectionChange = () => {
+      if (navigator.onLine) {
+        console.log('🌐 Conexión a internet restaurada');
+        if (user && !userProfile) {
+          console.log('Intentando recuperar sesión después de recuperar conexión');
+          attemptReconnect();
+        }
+      } else {
+        console.log('❌ Conexión a internet perdida');
+      }
+    };
+
+    window.addEventListener('online', handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
 
     const initAuth = async () => {
       try {
@@ -197,6 +305,10 @@ export const AuthProvider = ({ children }) => {
     return () => {
       console.log('🧹 Limpiando listener de auth');
       subscription?.unsubscribe();
+      window.removeEventListener('online', handleConnectionChange);
+      window.removeEventListener('offline', handleConnectionChange);
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+      if (heartbeatInterval.current) clearInterval(heartbeatInterval.current);
     };
   }, []);
 

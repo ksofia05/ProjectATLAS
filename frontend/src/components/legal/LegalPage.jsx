@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../home/navbar";  // Importar correctamente como componente
+import Navbar from "../home/navbar";  
 import AboutUsSection from "./AboutUsSection";
 import MissionVisionSection from "./MissionVisionSection";
 import CorporateValuesSection from "./CorporateValuesSection";
@@ -15,7 +15,7 @@ const LegalPage = () => (
     </div>
     
     <div className="relative z-10">
-      <Navbar />  {/* Usar como componente React con mayúscula */}
+      <Navbar /> 
       <div>
         <AboutUsSection />
         <MissionVisionSection />

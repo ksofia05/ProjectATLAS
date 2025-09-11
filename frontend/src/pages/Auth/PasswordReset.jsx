@@ -186,19 +186,20 @@ const PasswordReset = () => {
         showSuccessToast("Contraseña cambiada exitosamente");
         // Cerrar sesión después de cambiar la contraseña
         await client.auth.signOut();
+        await new Promise(resolve => setTimeout(resolve, 500)); // Esperar medio segundo para asegurar que la sesión se cierre
+        localStorage.setItem("fromPasswordReset", "1");
 
-        setTimeout(() => {
-          let loginURL = `/iniciar-sesion`;
-          if (next || idProyecto){
-            const loginParams = new URLSearchParams();
-            if (next) loginParams.set("next", next);
-            if (idProyecto) loginParams.set("id_proyecto", idProyecto);
-            loginURL += `?${loginParams.toString()}`;
-          }
-          navigate(loginURL);
-        }, 1800);
+        let loginURL = `/iniciar-sesion`;
+        if (next || idProyecto){
+          const loginParams = new URLSearchParams();
+          if (next) loginParams.set("next", next);
+          if (idProyecto) loginParams.set("id_proyecto", idProyecto);
+          loginURL += `?${loginParams.toString()}`;
+        }
+        navigate(loginURL, { replace: true });
+        };
       }
-    } catch (error) {
+    catch (error) {
       console.error('Error in password update:', error); // ← DEBUG
       toast.dismiss(toastId);
       showErrorToast("Error al restablecer la contraseña. Intenta nuevamente.");
