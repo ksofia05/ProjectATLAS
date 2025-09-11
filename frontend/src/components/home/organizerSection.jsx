@@ -3,7 +3,7 @@ import elipses from "../../../public/img/elipsesOrganiza.svg";
 
 const organizerSection = () => {
   return (
-    <div className="relative pb-60 ">
+    <div className="relative lg:pb-30 ">
       {/* Fondo decorativo */}
       {/* <div className="absolute inset-0 z-[-10] bg-black  flex items-end">
         <img
@@ -33,7 +33,7 @@ const organizerSection = () => {
           {/* Recuadro 1 */}
           <div className="w-64 h-64 backdrop-blur-sm bg-white/5 rounded-xl p-6 border   transition-all duration-300 hover:bg-white/10 group">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-lg bg-purple-500/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
+              <div className="w-16 h-16 rounded-lg bg-purple-600/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-8 w-8 text-white"
@@ -62,7 +62,7 @@ const organizerSection = () => {
           {/* Recuadro 2 */}
           <div className="w-64 h-64 backdrop-blur-sm bg-white/5 rounded-xl p-6 border  transition-all duration-300 hover:bg-white/10 group">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-lg bg-blue-500/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
+              <div className="w-16 h-16 rounded-lg bg-purple-600/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-8 w-8 text-white"
@@ -91,7 +91,7 @@ const organizerSection = () => {
           {/* Recuadro 3 */}
           <div className="w-64 h-64 backdrop-blur-sm bg-white/5 rounded-xl p-6 border  transition-all duration-300 hover:bg-white/10 group">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-lg bg-pink-500/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
+              <div className="w-16 h-16 rounded-lg bg-purple-600/30 flex items-center justify-center transform transition-transform group-hover:rotate-6">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-8 w-8 text-white"
