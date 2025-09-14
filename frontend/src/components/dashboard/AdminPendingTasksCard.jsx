@@ -182,7 +182,7 @@ export default function AdminPendingTasksCard({ className }) {
             <span className="text-gray-300 font-bold">
               {totalStats.totalPending}
             </span>{" "}
-            Pendientes
+            Pendientesss
           </div>
         </div>
       </div>
