@@ -32,7 +32,7 @@ const Navbar = () => {
           <Link to="/" className="hover:text-gray-300 whitespace-nowrap">
             Inicio
           </Link>
-          <Link to="/sobre-nosotros" className="hover:text-gray-300 whitespace-nowrap">
+          <Link to="/quienes-somos" className="hover:text-gray-300 whitespace-nowrap">
             Sobre Nosotros    
           </Link>
         </div>
