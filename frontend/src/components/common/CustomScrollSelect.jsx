@@ -25,7 +25,7 @@ export default function CustomScrollSelect({ value, options, onChange }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1 bg-[#232336] text-gray-200 rounded-lg border border-gray-600 hover:border-gray-500 transition text-sm"
       >
-        <span>{value}</span>
+        <span>{value === "Todos" ? "Todos" : value}</span>
         <i
           className={`bi bi-chevron-up text-xs transition-transform duration-200 ${
             isOpen ? "rotate-0" : "rotate-180"
@@ -56,7 +56,7 @@ export default function CustomScrollSelect({ value, options, onChange }) {
               }}
               className="block w-full px-3 py-1 text-left text-sm text-gray-200 hover:bg-gray-700 transition"
             >
-              {option}
+              {option === "Todos" ? "Todos" : option}
             </button>
           ))}
         </div>
