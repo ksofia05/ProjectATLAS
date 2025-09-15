@@ -19,14 +19,17 @@ const DataTable = ({
   onExport,
   rowsPerPage = 10,
   onRowsPerPageChange,
-  rowsPerPageOptions = [10, 20, 30, 40, 50],
+  rowsPerPageOptions = [10, 20, 30, 40, 50, "Todos"],
   onRowClick,
   extraActions = null,
   loadingText = "Cargando datos...",
   emptyMessage = "No hay datos disponibles",
   className = "",
 }) => {
-  const filteredData = data.slice(0, rowsPerPage);
+  const filteredData =
+    rowsPerPage === "Todos"
+      ? data
+      : data.slice(0, rowsPerPage);
 
   return (
     <div
