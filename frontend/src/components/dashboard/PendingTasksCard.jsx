@@ -18,8 +18,13 @@ export default function PendingTasksCard({ className }) {
     );
   }
 
-  // Cambiar tarjeta si es admin
-  if (userProfile.tipoUsuario === "admin") {
+  // Esto posibolemente lo cambie (da errores con la obtencion del rol :b)
+  const isAdmin =
+    userProfile.rol_idRol === 1 ||
+    userProfile.rol_idrol === 1 ||
+    userProfile.tipoUsuario === "admin";
+
+  if (isAdmin) {
     return <AdminPendingTasksCard className={className} />;
   }
 
