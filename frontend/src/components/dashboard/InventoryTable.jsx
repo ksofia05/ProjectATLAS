@@ -241,7 +241,7 @@ export default function InventoryTable({ onEmojiClick }) {
         onExport={handleExport}
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={setRowsPerPage}
-        rowsPerPageOptions={[10, 20, 30, 40, 50]}
+        rowsPerPageOptions={[10, 20, 30, 40, 50, "Todos"]}
         extraActions={extraActions}
         loadingText="Actualizando clientes..."
         emptyMessage="No hay clientes disponibles"
