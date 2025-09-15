@@ -19,19 +19,17 @@ const DashboardCreateProject = () => {
       isLoading, 
       isAuthenticated 
     });
-    useEffect(()=> {
+    React.useEffect(() => {
       const shouldShow = localStorage.getItem("showProjectLimitModal");
       const message = localStorage.getItem("projectLimitMessage");
-      if (shouldShow === "1"){
+      if (shouldShow === "1" && !showProjectLimitModal) {
         setShowProjectLimitModal(true);
         setProjectLimitMessage(
-          message || "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
+          message ||
+            "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
         );
-        localStorage.removeItem("showProjectLimitModal");
-        localStorage.removeItem("projectLimitMessage");
       }
-    }, []);
-
+    });
     
   useEffect(()=>{
     window.refreshUserAndProjects=async()=>{
@@ -91,15 +89,17 @@ const DashboardCreateProject = () => {
         message={projectLimitMessage}
         confirmText="Cerrar"
         onClose={()=>{
-          setShowProjectLimitModal(false)
-          setTimeout(()=> setShowInstructionsModal(true),200);
+          setShowProjectLimitModal(false);
+          localStorage.removeItem("showProjectLimitModal");
+          localStorage.removeItem("projectLimitMessage");
+          setTimeout(() => setShowInstructionsModal(true), 200);
         }}
         showCloseIcon={false}
       />
       <WarningModal
         visible={showInstructionsModal}
         title="¿Qué debes hacer ahora?"
-        message="Debes eliminar el proyecto al que ya perteneces desde la sección de proyectos. Luego, cierra sesión y vuelve a ingresar desde el enlace de invitación que recibiste."
+        message="Debes eliminar el proyecto al que ya perteneces desde la sección de proyectos. Vuelve a ingresar desde el enlace de invitación que recibiste."
         confirmText="Entendido"
         onClose={() => setShowInstructionsModal(false)}
         showCloseIcon={false}
