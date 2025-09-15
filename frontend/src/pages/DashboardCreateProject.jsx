@@ -1,41 +1,40 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
-import Navbar from "../components/layout/Navbar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
 import { useAuth } from "../context/AuthProvider";
 import WarningModal from "../components/dashboard/WarningModal";
 
 const DashboardCreateProject = () => {
-    const { user, userProfile, isLoading, isAuthenticated, recheckAuth } = useAuth();
-    const [refreshProjects, setRefreshProjects] = React.useState(0);
-    const [showProjectLimitModal, setShowProjectLimitModal]=React.useState(false);
-    const [projectLimitMessage, setProjectLimitMessage]=React.useState("");
-    const [showInstructionsModal, setShowInstructionsModal] = React.useState(false);
-    console.log("Estado en DashboardCreateProject:", {
-      user,
-      userProfile, 
-      isLoading, 
-      isAuthenticated 
-    });
-    React.useEffect(() => {
-      const shouldShow = localStorage.getItem("showProjectLimitModal");
-      const message = localStorage.getItem("projectLimitMessage");
-      if (shouldShow === "1" && !showProjectLimitModal) {
-        setShowProjectLimitModal(true);
-        setProjectLimitMessage(
-          message ||
-            "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
-        );
-      }
-    });
-    
-  useEffect(()=>{
-    window.refreshUserAndProjects=async()=>{
+  const { user, userProfile, isLoading, isAuthenticated, recheckAuth } =
+    useAuth();
+  const [refreshProjects, setRefreshProjects] = React.useState(0);
+  const [showProjectLimitModal, setShowProjectLimitModal] =
+    React.useState(false);
+  const [projectLimitMessage, setProjectLimitMessage] = React.useState("");
+  const [showInstructionsModal, setShowInstructionsModal] =
+    React.useState(false);
+
+  React.useEffect(() => {
+    const shouldShow = localStorage.getItem("showProjectLimitModal");
+    const message = localStorage.getItem("projectLimitMessage");
+    if (shouldShow === "1" && !showProjectLimitModal) {
+      setShowProjectLimitModal(true);
+      setProjectLimitMessage(
+        message ||
+          "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
+      );
+    }
+  });
+
+  useEffect(() => {
+    window.refreshUserAndProjects = async () => {
       setRefreshProjects((prev) => prev + 1);
     };
-    return()=> {window.refreshUserAndProjects=null;};
+    return () => {
+      window.refreshUserAndProjects = null;
+    };
   }, []);
 
   let projectsBlock = null;
@@ -62,16 +61,14 @@ const DashboardCreateProject = () => {
         </h3>
         <ProjectList
           isColaborador={userProfile.rol_idRol === 2}
-          refreshProjects={refreshProjects}   
+          refreshProjects={refreshProjects}
         />
       </div>
     );
   } else {
     projectsBlock = (
       <div>
-        <h3 className="font-semibold mb-2 text-white">
-          Mis Proyectos 
-        </h3>
+        <h3 className="font-semibold mb-2 text-white">Mis Proyectos</h3>
         <p className="text-sm text-gray-400">
           Aún no formas parte de ningún proyecto.
           <br />
@@ -82,13 +79,13 @@ const DashboardCreateProject = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-950">
+    <div className="min-h-screen flex bg-[#0a0a12]">
       <WarningModal
         visible={showProjectLimitModal}
         title="No puedes unirte a este proyecto"
         message={projectLimitMessage}
         confirmText="Cerrar"
-        onClose={()=>{
+        onClose={() => {
           setShowProjectLimitModal(false);
           localStorage.removeItem("showProjectLimitModal");
           localStorage.removeItem("projectLimitMessage");
@@ -110,23 +107,12 @@ const DashboardCreateProject = () => {
         projectsBlock={projectsBlock}
         refreshProjects={refreshProjects}
       />
-      <div className="ml-72 flex-1 flex flex-col">
-        {" "}
-        {/* Agregué ml-72 aquí */}
-        <div className="pt-4 px-6">
-          <Navbar
-            showShareButton={false}
-            showUpgradeButton={true}
-            title="Proyectos"
-            subtitle="Organiza tus espacios de trabajo."
-          />
-        </div>
-        <div className="flex-1 px-8 pb-8 pt-2">
-          <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2}
+      <div className="ml-72 flex-1">
+        <CreateProjectPanel
+          disableCreate={userProfile?.rol_idRol === 2}
           onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
           refreshProjects={refreshProjects}
-          />
-        </div>
+        />
       </div>
     </div>
   );
