@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
+import Navbar from "../components/layout/Navbar"; // Import faltante
 import { useAuth } from "../context/AuthProvider";
 import WarningModal from "../components/dashboard/WarningModal";
 
@@ -38,15 +39,15 @@ const DashboardCreateProject = () => {
   }, []);
 
   let projectsBlock = null;
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const toggleSidebar = () => {
-      setIsSidebarOpen(!isSidebarOpen);
-    };
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
-    const closeSidebar = () => {
-      setIsSidebarOpen(false);
-    };
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
 
   if (!userProfile) {
     projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
@@ -119,8 +120,6 @@ const DashboardCreateProject = () => {
         onClose={closeSidebar}
       />
       <div className="sm:ml-0 md:ml-0 lg:ml-72 flex-1 flex flex-col">
-        {" "}
-        {/* Agregué ml-72 aquí */}
         <div className="pt-4 px-6">
           <Navbar
             showShareButton={false}
@@ -132,10 +131,12 @@ const DashboardCreateProject = () => {
           />
         </div>
         <div className="flex-1 sm:p-0 px-8 pb-8 pt-2">
-          <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2}
-          onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
-          refreshProjects={refreshProjects}
-        />
+          <CreateProjectPanel 
+            disableCreate={userProfile?.rol_idRol === 2}
+            onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
+            refreshProjects={refreshProjects}
+          />
+        </div>
       </div>
     </div>
   );
