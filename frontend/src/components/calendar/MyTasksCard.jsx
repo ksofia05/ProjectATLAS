@@ -17,14 +17,14 @@ export default function MyTasksCard() {
     const { data, error } = await supabase
       .from("Tareas")
       .select("*")
-      .eq("id_usuario", userProfile.idUsuario); // Filtra por el id del usuario
+      .eq("id_usuario", userProfile.idUsuario);
 
     if (!error) setTasks(data || []);
   }, [userProfile]);
+
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
-  // Se actualiza cuando cambia el usuario
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -51,9 +51,9 @@ export default function MyTasksCard() {
         descripcion: taskDescription,
         fechaCreacion: endDate,
         fechaLimite: taskTime,
-        fechaActual: new Date().toLocaleString("sv-SE"), // 
-        id_usuario: userProfile.idUsuario, 
-        filtro: "por completar", 
+        fechaActual: new Date().toLocaleString("sv-SE"),
+        id_usuario: userProfile.idUsuario,
+        filtro: "por completar",
       },
     ]);
     if (error) {
@@ -63,35 +63,37 @@ export default function MyTasksCard() {
     await fetchTasks();
     handleCloseModal();
   };
+
   const handleTasksUpdate = () => {
     fetchTasks();
   };
+
   return (
     <>
-      <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl px-9 py-8 w-[520px] shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] flex flex-col min-h-[calc(100vh-200px)]">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl px-4 sm:px-6 md:px-9 py-4 sm:py-6 md:py-8 w-full max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] flex flex-col ">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
           <div>
-            <h3 className="text-2xl font-bold text-white leading-tight">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight">
               Mis Tareas 📅
             </h3>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-base text-gray-400 font-semibold">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-sm sm:text-base text-gray-400 font-semibold hidden sm:inline">
               Ver Lista
             </span>
             <button
-              className="transition-transform duration-200 hover:scale-125 focus:outline-none py-4"
+              className="transition-transform duration-200 hover:scale-125 focus:outline-none py-2 sm:py-4"
               aria-label="Más opciones"
               onClick={handleOpenDrawer}
             >
-              <i className="bi bi-three-dots text-gray-300 hover:text-purple-600 transition-colors text-lg"></i>
+              <i className="bi bi-three-dots text-gray-300 hover:text-purple-600 transition-colors text-base sm:text-lg"></i>
             </button>
           </div>
         </div>
-        <div className="flex flex-col gap-3 mt-3 overflow-y-auto pb-4 flex-grow">
+        <div className="flex flex-col gap-2 sm:gap-3 mt-2 sm:mt-3 overflow-y-auto pb-3 sm:pb-4 flex-grow">
           {tasks.length === 0 ? (
             <div className="flex-grow flex">
-              <p className="text-gray-500">No tienes tareas pendientes.</p>
+              <p className="text-gray-500 text-sm sm:text-base">No tienes tareas pendientes.</p>
             </div>
           ) : (
             tasks.slice(0, 5).map((task) => (
@@ -100,21 +102,21 @@ export default function MyTasksCard() {
                 task={{
                   taskTitle: task.nombreTarea,
                   createdAt: task.fechaActual,
-                  
                 }}
               />
             ))
           )}
         </div>
-        <div className="mt-auto flex justify-center pt-4">
+        <div className="mt-auto flex justify-center pt-3 sm:pt-4">
           <button
-            className="flex items-center gap-3 border-2 border-dashed border-purple-600 bg-[#14141d] text-purple-500 shadow-xl hover:border-purple-700 hover:scale-104 rounded-full px-26 py-4 font-semibold text-mg focus:outline-none"
+            className="flex items-center gap-2 sm:gap-3 border-2 border-dashed border-purple-600 bg-[#14141d] text-purple-500 shadow-xl hover:border-purple-700 hover:scale-104 rounded-full px-4 sm:px-8 md:px-26 py-3 sm:py-4 font-semibold text-sm sm:text-base md:text-lg focus:outline-none"
             onClick={handleOpenModal}
           >
-            <span className="bg-[#0f0f16] border-2 border-purple-600 rounded-lg w-8 h-8 flex items-center justify-center text-lg text-purple-600 font-bold">
+            <span className="bg-[#0f0f16] border-2 border-purple-600 rounded-lg w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-sm sm:text-lg text-purple-600 font-bold">
               +
             </span>
-            Añade una nueva tarea
+            <span className="hidden sm:inline">Añade una nueva tarea</span>
+            <span className="sm:hidden">Nueva tarea</span>
           </button>
         </div>
       </div>

@@ -139,7 +139,7 @@ const DashboardLayout = () => {
       />
 
       <div className="sm:ml-0 md:ml-0 lg:ml-72 flex flex-col min-h-screen">
-        <div className="sticky top-0 z-10 pt-6 bg-[#0a0a12]">
+        <div className="sticky top-0 z-10 pt-6">
           <div className="px-8">
             <Navbar
               showShareButton={!isColaborador}
