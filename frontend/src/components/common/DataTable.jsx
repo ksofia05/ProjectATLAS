@@ -20,7 +20,7 @@ const DataTable = ({
   onExport,
   rowsPerPage = 10,
   onRowsPerPageChange,
-  rowsPerPageOptions = [10, 20, 30, 40, 50],
+  rowsPerPageOptions = [10, 20, 30, 40, 50, "Todos"],
   onRowClick,
   extraActions = null,
   loadingText = "Cargando datos...",
