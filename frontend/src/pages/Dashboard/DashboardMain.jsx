@@ -49,14 +49,26 @@ export default function DashboardMain() {
 
     fetchProjectName();
   }, [id, user, loading, projectName, setTitle, setSubtitle, firstName]);
+  
   const trabajosPendientes = [5, 14, 19, 25, 30];
 
   return (
     <>
-      <div className="flex flex-wrap gap-8 mb-8">
-        <PendingTasksCard className="grow" />
-        <CalendarCard className="grow min-w-[540px]" diasConPendientes={trabajosPendientes} />
+      <div className="w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 items-start justify-items-center xl:justify-items-start mb-8">
+          
+          <div className="w-full flex justify-center xl:justify-start">
+            <PendingTasksCard />
+          </div>
+          
+          <div className="w-full flex justify-center xl:justify-start">
+            <CalendarCard diasConPendientes={trabajosPendientes} />
+          </div>
+          
+        </div>
       </div>
+
+      {/* ClientHistoryTable ocupa todo el ancho */}
       <ClientHistoryTable />
     </>
   );

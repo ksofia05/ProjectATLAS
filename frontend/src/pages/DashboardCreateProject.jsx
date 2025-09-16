@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
@@ -41,6 +41,15 @@ const DashboardCreateProject = () => {
   }, []);
 
   let projectsBlock = null;
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => {
+      setIsSidebarOpen(!isSidebarOpen);
+    };
+
+    const closeSidebar = () => {
+      setIsSidebarOpen(false);
+    };
 
   if (!userProfile) {
     projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
@@ -84,7 +93,7 @@ const DashboardCreateProject = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-950">
+    <div className="min-h-screen flex bg-black">
       <WarningModal
         visible={showProjectLimitModal}
         title="No puedes unirte a este proyecto"
@@ -109,8 +118,10 @@ const DashboardCreateProject = () => {
         showProjectsBlock={true}
         projectsBlock={projectsBlock}
         refreshProjects={refreshProjects}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
       />
-      <div className="ml-72 flex-1 flex flex-col">
+      <div className="sm:ml-0 md:ml-0 lg:ml-72 flex-1 flex flex-col">
         {" "}
         {/* Agregué ml-72 aquí */}
         <div className="pt-4 px-6">
@@ -119,9 +130,11 @@ const DashboardCreateProject = () => {
             showUpgradeButton={true}
             title="Proyectos"
             subtitle="Organiza tus espacios de trabajo."
+            onSidebarToggle={toggleSidebar}
+            isSidebarOpen={isSidebarOpen}
           />
         </div>
-        <div className="flex-1 px-8 pb-8 pt-2">
+        <div className="flex-1 sm:p-0 px-8 pb-8 pt-2">
           <CreateProjectPanel disableCreate={userProfile?.rol_idRol === 2}
           onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
           refreshProjects={refreshProjects}
