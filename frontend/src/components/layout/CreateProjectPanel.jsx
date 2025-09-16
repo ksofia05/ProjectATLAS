@@ -126,7 +126,7 @@ const CreateProjectPanel = ({ disableCreate, refreshProjects }) => {
   };
 
   return (
-    <div className="bg-[#0a0a12] min-h-screen">
+    <div className=" min-h-screen">
       {/* Navbar (necesito arreglar el ancho) */}
       <div className="relative z-50 px-6 py-4">
         <div className="bg-slate-800/60 backdrop-blur-md border border-slate-700/40 rounded-2xl mx-4 shadow-2xl overflow-visible">
@@ -145,20 +145,21 @@ const CreateProjectPanel = ({ disableCreate, refreshProjects }) => {
           <div className="text-center mb-8">
             <style jsx>{`
               @keyframes sparkle {
-                0%, 100% { 
-                  transform: rotate(0deg) scale(1); 
+                0%,
+                100% {
+                  transform: rotate(0deg) scale(1);
                   filter: brightness(1);
                 }
-                25% { 
-                  transform: rotate(90deg) scale(1.1); 
+                25% {
+                  transform: rotate(90deg) scale(1.1);
                   filter: brightness(1.3);
                 }
-                50% { 
-                  transform: rotate(180deg) scale(1.2); 
+                50% {
+                  transform: rotate(180deg) scale(1.2);
                   filter: brightness(1.5);
                 }
-                75% { 
-                  transform: rotate(270deg) scale(1.1); 
+                75% {
+                  transform: rotate(270deg) scale(1.1);
                   filter: brightness(1.3);
                 }
               }

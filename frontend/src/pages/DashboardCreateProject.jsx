@@ -1,9 +1,7 @@
 import React, { useEffect, useState} from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
-import Navbar from "../components/layout/Navbar"; // Import faltante
 import { useAuth } from "../context/AuthProvider";
 import WarningModal from "../components/dashboard/WarningModal";
 
@@ -121,14 +119,7 @@ const DashboardCreateProject = () => {
       />
       <div className="sm:ml-0 md:ml-0 lg:ml-72 flex-1 flex flex-col">
         <div className="pt-4 px-6">
-          <Navbar
-            showShareButton={false}
-            showUpgradeButton={true}
-            title="Proyectos"
-            subtitle="Organiza tus espacios de trabajo."
-            onSidebarToggle={toggleSidebar}
-            isSidebarOpen={isSidebarOpen}
-          />
+          
         </div>
         <div className="flex-1 sm:p-0 px-8 pb-8 pt-2">
           <CreateProjectPanel 
