@@ -14,7 +14,7 @@ export default function InventoryPage() {
   }, [setTitle, setSubtitle]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className=" flex flex-col overflow-hidden">
       {clienteSeleccionado ? (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 overflow-hidden">

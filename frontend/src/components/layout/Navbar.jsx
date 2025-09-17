@@ -19,7 +19,7 @@ const Navbar = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const userRef = useRef(null);
 
-  const { user, isLoading } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
 
   const params = useParams();
   const projectId = params.id;
@@ -35,7 +35,6 @@ const Navbar = ({
   const handleClose = () => setShowShareModal(false);
   const userName = getUserName();
 
-  // Obtener la foto de perfil del usuario (desde Supabase o default Atlas)
   const fotoPerfil =
     user?.user_metadata?.fotosPerfiles &&
     user.user_metadata.fotosPerfiles.trim() !== ""
@@ -61,7 +60,6 @@ const Navbar = ({
     <>
       <nav className="bg-gradient-to-l from-[#181825]/80 via-[#181825]/80 to-[#14141e]/80 backdrop-blur-md py-4 relative border border-slate-700/50 rounded-2xl shadow-lg">
         <div className="flex items-center justify-between px-8 lg:px-8">
-          {/* Botón sidebar, BackButton y Título */}
           <div className="min-w-0 flex-1 mr-4 flex items-center gap-4">
             <div className="lg:hidden">
               <ButtonSidebar
@@ -82,17 +80,31 @@ const Navbar = ({
               )}
             </div>
           </div>
-          {/* Botones y perfil */}
-          <div className="flex items-center gap-4 md:gap-8">
-            {/* Botón Compartir */}
-            {props.showShareButton && (
+
+          <div className="flex items-center sm:gap-2 md:gap-8">
+            {/* Botón Compartir - Texto en md+, ícono en sm- */}
+            {props.showShareButton && userProfile?.rol_idRol === 1 && (
               <>
-                <ButtonGrey
-                  onClick={() => setShowShareModal(true)}
-                  className="px-5 py-2 text-base font-semibold"
-                >
-                  COMPARTIR
-                </ButtonGrey>
+                {/* Versión de escritorio */}
+                <div className="hidden md:block">
+                  <ButtonGrey
+                    onClick={() => setShowShareModal(true)}
+                    className="px-5 py-2 text-base font-semibold"
+                  >
+                    COMPARTIR
+                  </ButtonGrey>
+                </div>
+                
+                {/* Versión móvil/tablet */}
+                <div className="md:hidden">
+                  <ButtonGrey
+                    onClick={() => setShowShareModal(true)}
+                    iconOnly={true}
+                    icon={<i className="bi bi-share text-lg"></i>}
+                    className="hover:bg-[#7c2ae8] transition-colors"
+                  />
+                </div>
+                
                 <SendColaboration
                   open={showShareModal}
                   onClose={handleClose}
@@ -102,6 +114,7 @@ const Navbar = ({
                 <div className="h-6 border-l border-gray-500/30 mx-3"></div>
               </>
             )}
+            
             {/* Botón Actualizar Plan */}
             {props.showUpgradeButton && (
               <ButtonGrey className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 md:px-6 py-2 rounded-xl shadow transition-all text-sm md:text-base">
@@ -109,6 +122,7 @@ const Navbar = ({
                 <span className="sm:hidden">Plan</span>
               </ButtonGrey>
             )}
+            
             {/* Perfil de usuario */}
             {!hideUserMenu && (
               <div
@@ -135,7 +149,6 @@ const Navbar = ({
                     ></i>
                   </div>
                 </div>
-                {/* Menú desplegable */}
                 <UserMenu
                   visible={menuOpen}
                   onClose={() => setMenuOpen(false)}
@@ -143,6 +156,7 @@ const Navbar = ({
                 />
               </div>
             )}
+            
             {/* Notificación */}
             <div className="relative cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors">
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>

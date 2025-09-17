@@ -23,14 +23,25 @@ export default function CalendarPage() {
 
   return (
     <>
-      <div className="flex flex-wrap gap-12 items-start">
-        <div className="flex gap-8 mb-8">
-          <CalendarCard onDayClick={handleDayClick} />
-        </div>
-        <div className="flex mb-2">
-          <MyTasksCard />
+      <div className="w-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 items-start justify-items-center xl:justify-items-start">
+          
+          <div className="w-full flex justify-center xl:justify-start">
+            <CalendarCard onDayClick={handleDayClick} />
+          </div>
+          
+          <div className="w-full flex justify-center xl:justify-start">
+            <MyTasksCard />
+          </div>
+          
         </div>
       </div>
+      {selectedDate && (
+        <DayTemplateModal 
+          selectedDate={selectedDate}
+          onClose={closeModal}
+        />
+      )}
     </>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import HomePage from "./pages/Home/homepage";
+import AboutUsPage from "./pages/Home/AboutUsPage";
 
 // Autenticación
 import Login from "./pages/Auth/Login";
@@ -42,6 +43,7 @@ const App = () => {
 
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/quienes-somos" element={<AboutUsPage />} />
         <Route path="/iniciar-sesion" element={<Login />} />
         <Route path="/registrarse" element={<Register />} />
         <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />

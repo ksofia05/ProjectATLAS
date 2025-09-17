@@ -1,16 +1,20 @@
-import React from 'react'
-import { Users, Edit, Plus } from 'lucide-react';
-import { showErrorToast, showSuccessToast, showLoadingToast } from '../common/popUp/Loading';
+import React from "react";
+import { Users, Edit, Plus } from "lucide-react";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showLoadingToast,
+} from "../common/popUp/Loading";
 import useUserStore from "../../stores/useUserStore";
-import WarningModal from '../dashboard/WarningModal';
-import toast from 'react-hot-toast';
+import WarningModal from "../dashboard/WarningModal";
+import toast from "react-hot-toast";
 
 const InventoryCard = ({
   project,
   isColaborador = false,
   estado = "Activo",
   onProjectClick,
-  onProjectUpdate
+  onProjectUpdate,
 }) => {
   const user = useUserStore((state) => state.user);
 
@@ -25,19 +29,22 @@ const InventoryCard = ({
       showErrorToast("No se ha definido acción para este proyecto.");
     }
   };
-  
+
   const handleRemoveAsCollaborator = async () => {
     setLoading(true);
-    const toastId=showLoadingToast("Eliminando proyecto...");
+    const toastId = showLoadingToast("Eliminando proyecto...");
     try {
-      const response = await fetch("http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_usuario: user.idUsuario,
-          id_proyecto: project.id_proyecto,
-        })
-      });
+      const response = await fetch(
+        "http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_usuario: user.idUsuario,
+            id_proyecto: project.id_proyecto,
+          }),
+        }
+      );
       const data = await response.json();
       toast.dismiss(toastId);
       if (response.ok && data.success) {
@@ -56,110 +63,133 @@ const InventoryCard = ({
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (!project) return null;
+
   return (
     <>
-    <div
-      type="button"
-      className={`rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm transition-colors duration-200 block text-left
-        ${isColaborador && estado === "Inactivo" ? "opacity-50 cursor-not-allowed" : "hover:border-white/70 cursor-pointer"}`}
-      style={{ textDecoration: "none" }}
-      onClick={handleCardClick}
-      tabIndex={0}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-white text-2xl font-bold font-['Nunito']">{project.nombreproyecto}</h2>
-      </div>
-      <div className="flex items-center gap-6 mb-3">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Users size={18} />
-          <span className="text-sm">3 Miembros</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-400">
-          <Edit size={18} />
-          <span className="text-sm">12 Pendientes</span>
-        </div>
-      </div>
-      <hr className="border-gray-700 border-t mb-3" />
-      <div className="text-gray-400 text-sm flex items-center ">
-          <span>
-            <span className="text-white font-medium">Última Actividad:</span> Ayer, 4:24 PM
-          </span>
-          {isColaborador &&(
-            <button
-              type="button"
-              className='ml-2  rounded-full hover:bg-red-100/10 transition text-gray-400 hover:text-red-500'
-              onClick={e=> {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              title='Eliminar todo'
-            >
-              <i className='bi bi-trash text-base'></i>
-            </button>
+      <div
+        onClick={handleCardClick}
+        className={`group relative overflow-hidden bg-gradient-to-br from-[#14141e] to-[#14141e] via-[#181825] border-slate-700/50 border rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-slate-600/70 hover:shadow-2xl hover:shadow-slate-900/50 backdrop-blur-sm ${
+          isColaborador && estado === "Inactivo"
+            ? "opacity-75 cursor-not-allowed"
+            : ""
+        }`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-start justify-between mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <i className="bi bi-folder text-white text-lg"></i>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Estado del colaborador */}
+              {isColaborador && (
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      estado === "Activo" ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  ></div>
+                  <span
+                    className={`text-xs font-medium ${
+                      estado === "Activo" ? "text-green-400" : "text-red-400"
+                    }`}
+                  >
+                    {estado}
+                  </span>
+                </div>
+              )}
+
+              {/* Botón de eliminar para colaboradores */}
+              {isColaborador && (
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full hover:bg-red-500/20 transition-colors duration-200 text-gray-400 hover:text-red-400 flex items-center justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteModal(true);
+                  }}
+                  title="Salir del proyecto"
+                >
+                  <i className="bi bi-trash text-sm"></i>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <h3 className="text-xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors duration-300">
+            {project.nombreproyecto}
+          </h3>
+
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center gap-3 text-gray-400 text-sm">
+              <i className="bi bi-people text-blue-400"></i>
+              <span>3 Miembros</span>
+            </div>
+            <div className="flex items-center gap-3 text-gray-400 text-sm">
+              <i className="bi bi-list-task text-orange-400"></i>
+              <span>12 Pendientes</span>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-700/50">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">Última actividad</span>
+              <span className="text-xs text-gray-400">Ayer, 4:24 PM</span>
+            </div>
+          </div>
+
+          {isColaborador && estado === "Inactivo" && (
+            <div className="mt-4 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <span className="text-red-400 text-sm font-medium">
+                Estado: Inactivo
+              </span>
+            </div>
           )}
-      </div>
-      
-      {isColaborador && estado === "Inactivo" && (
-        <div className="mt-4 text-red-400 font-semibold">
-          Estado: Inactivo
+
+          <div className="mt-4 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
+      </div>
+
+      {showDeleteModal && (
+        <WarningModal
+          visible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          title="¿Estás seguro que quieres salir del proyecto?"
+          message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto."
+          confirmText="Salir del proyecto"
+          showConfirm={true}
+          onConfirm={handleRemoveAsCollaborator}
+        />
       )}
-    </div>
-  {showDeleteModal && (
-    <WarningModal
-      visible={showDeleteModal}
-      onClose={() => setShowDeleteModal(false)}
-      title='¿Estas seguro que quieres salir del proyecto?'
-      message='Esta accion es irreversible. Si sales, perderas el acceso al proyecto.'
-      confirmText='Cancelar'
-      showConfirm={true}
-      onConfirm={handleRemoveAsCollaborator}
-    />
-    )}
     </>
   );
 };
 
-const CreateProjectCard = () => {
-  const handleClick = () => {
-    console.log('Click en "Crear nuevo proyecto"');
-  };
-
+const CardProjects = ({
+  projects = [],
+  projectStates = {},
+  userRole,
+  onProjectClick,
+  onProjectsUpdate,
+}) => {
   return (
-    <div className="rounded-2xl px-22 py-8 border-3 border-dashed border-purple-500/50 hover:border-purple-400/70 transition-colors duration-200  flex flex-col items-center justify-center cursor-pointer group" onClick={handleClick}>
-      <div className="flex items-center justify-between w-full px-6 mb-4">
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-600/30 transition-colors duration-200">
-          <Plus size={24} className="text-purple-400" />
-        </div>
-        <h3 className="text-white text-xl font-semibold mb-2 justify-center">Crear nuevo proyecto</h3>
-        <p className="text-gray-400 text-sm">Haz clic para comenzar</p>
-      </div>
-    </div>
-  );
-};
-
-const CardProjects = ({ projects = [], projectStates = {}, userRole, onProjectClick, onProjectsUpdate }) => {
-  return (
-    <div className="p-0">
-      <div className="flex flex-col sm:flex-row gap-10 items-start">
-        {projects.map((project) => (
-          <InventoryCard
-            key={project.id || project.id_proyecto}
-            project={project}
-            isColaborador={userRole === 2}
-            estado={projectStates[project.id_proyecto] || "Activo"}
-            onProjectClick={onProjectClick} 
-            onProjectUpdate={onProjectsUpdate}
-          />
-        ))}
-        <CreateProjectCard />
-      </div>
-    </div>
+    <>
+      {projects.map((project) => (
+        <InventoryCard
+          key={project.id || project.id_proyecto}
+          project={project}
+          isColaborador={userRole === 2}
+          estado={projectStates[project.id_proyecto] || "Activo"}
+          onProjectClick={onProjectClick}
+          onProjectUpdate={onProjectsUpdate}
+        />
+      ))}
+    </>
   );
 };
 

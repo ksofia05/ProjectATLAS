@@ -10,9 +10,9 @@ const FormContainer = ({ children }) => {
           background: "radial-gradient(circle at 50% 80%, rgba(107, 70, 193, 0.3), rgba(0, 0, 0, 0.9) 90%)",
         }}
       ></div>
-      <div className="relative z-10 bg-[#1E1B2E] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Logo de la empresa" className="h-16 w-auto" />
+      <div className="relative z-10 bg-[#1E1B2E] p-4 sm:p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-sm md:max-w-md mx-4 sm:mx-0 border border-gray-700">
+        <div className="flex justify-center mb-4 sm:mb-5 md:mb-6">
+          <img src={logo} alt="Logo de la empresa" className="h-12 sm:h-14 md:h-16 w-auto" />
         </div>
         {children}
       </div>
