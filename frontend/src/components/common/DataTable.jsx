@@ -80,54 +80,45 @@ const DataTable = ({
           </div>
         ) : (
           <>
-            {/* Header o titulos fijos para no ser afectados por el scroll */}
-            <div className="bg-[#1a1a2e] border-b-2 border-purple-500/30">
-              <table className="w-full text-center table-fixed">
-                <colgroup>
-                  {columns.map((col, idx) => (
-                    <col key={idx} style={{ width: col.width }} />
-                  ))}
-                </colgroup>
-                <thead>
-                  <tr>
-                    {columns.map((col, idx) => (
-                      <th
-                        key={idx}
-                        className="py-3 px-4 font-bold text-gray-200 text-sm uppercase tracking-wide"
-                      >
-                        {col.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-              </table>
-            </div>
+           
 
             {/* Contenido del panel con scroll independiente */}
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle">
-              <table className="w-full text-center table-fixed">
-                <colgroup>
-                  {columns.map((col, idx) => (
-                    <col key={idx} style={{ width: col.width }} />
-                  ))}
-                </colgroup>
-                <tbody>
-                  {filteredData.map((item, idx) => (
-                    <tr
-                      key={item.id || idx}
-                      className="border-b border-gray-700/50 hover:bg-purple-500/10 transition-all duration-200 cursor-pointer"
-                      onClick={() => onRowClick && onRowClick(item, idx)}
-                    >
-                      {columns.map((col, colIdx) => (
-                        <td key={colIdx} className="py-2 px-4">
-                          {col.render ? col.render(item, idx) : item[col.key]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle z-0">
+             <table className="min-w-full text-center table-fixed z-0">
+             <colgroup>
+             {columns.map((col, idx) => (
+             <col key={idx} style={{ width: col.width }} />
+         ))}
+             </colgroup>
+             <thead>
+            <tr>
+             {columns.map((col, idx) => (
+             <th
+             key={idx}
+             className="py-3 px-4 font-bold text-gray-200 text-sm uppercase tracking-wide bg-[#1a1a2e] sticky top-0 z-10"
+            >
+              {col.label}
+          </th>
+        ))}
+           </tr>
+         </thead>
+             <tbody>
+              {filteredData.map((item, idx) => (
+             <tr
+              key={item.id || idx}
+              className="border-b-2 border-[#232336] hover:bg-purple-500/10 transition-all duration-200 cursor-pointer"
+             onClick={() => onRowClick && onRowClick(item, idx)}
+        >
+               {columns.map((col, colIdx) => (
+             <td key={colIdx} className="py-2 px-4">
+               {col.render ? col.render(item, idx) : item[col.key]}
+            </td>
+          ))}
+        </tr>
+      ))}
+             </tbody>
+       </table>
+  </div>
           </>
         )}
       </div>

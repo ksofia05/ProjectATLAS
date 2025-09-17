@@ -3,14 +3,14 @@ import { useParams } from "react-router-dom";
 import PendingTasksCard from "../../components/dashboard/PendingTasksCard";
 import CalendarCard from "../../components/dashboard/CalendarCard";
 import ClientHistoryTable from "../../components/dashboard/ClientHistoryTable";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import { useNavbarTitle } from "../../context/NavbarTitleContext";
 
 export default function DashboardMain() {
   const { id } = useParams();
   const [projectName, setProjectName] = useState("");
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, userProfile, isAuthenticated } = useAuth();
   const { setTitle, setSubtitle } = useNavbarTitle();
 
   const firstName = user?.user_metadata?.nombre?.split(" ")[0] || "Usuario";
