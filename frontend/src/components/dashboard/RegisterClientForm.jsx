@@ -331,7 +331,12 @@ export default function RegisterClientForm({
     } catch (err) {
       console.error("Error al registrar cliente/equipo:", err);
       if (err && err.message) {
-        showErrorToast(err.message);
+        // Traducción para el toast de error de rango :3
+        if (err.message.includes("is out of range for type integer")) {
+          showErrorToast("El valor de identificación es demasiado grande. Debe tener máximo 10 dígitos.");
+        } else {
+          showErrorToast(err.message);
+        }
       } else {
         showErrorToast("Error al registrar cliente/equipo");
       }
