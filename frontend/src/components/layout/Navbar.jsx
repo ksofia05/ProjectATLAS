@@ -58,7 +58,7 @@ const Navbar = ({
 
   return (
     <>
-      <nav className="bg-gradient-to-l from-[#181825]/80 via-[#181825]/80 to-[#14141e]/80 backdrop-blur-md py-4 relative border border-slate-700/50 rounded-2xl shadow-lg">
+      <nav className="bg-gradient-to-r from-[#08080e]/95 via-[#0a0a12]/95 to-[#0c0c14]/95 backdrop-blur-md py-4 relative border border-slate-800/40 rounded-2xl shadow-2xl">
         <div className="flex items-center justify-between px-8 lg:px-8">
           <div className="min-w-0 flex-1 mr-4 flex items-center gap-4">
             <div className="lg:hidden">
@@ -82,7 +82,6 @@ const Navbar = ({
           </div>
 
           <div className="flex items-center sm:gap-2 md:gap-8">
-            {/* Botón Compartir - Texto en md+, ícono en sm- */}
             {props.showShareButton && userProfile?.rol_idRol === 1 && (
               <>
                 {/* Versión de escritorio */}
@@ -94,7 +93,7 @@ const Navbar = ({
                     COMPARTIR
                   </ButtonGrey>
                 </div>
-                
+
                 {/* Versión móvil/tablet */}
                 <div className="md:hidden">
                   <ButtonGrey
@@ -104,7 +103,7 @@ const Navbar = ({
                     className="hover:bg-[#7c2ae8] transition-colors"
                   />
                 </div>
-                
+
                 <SendColaboration
                   open={showShareModal}
                   onClose={handleClose}
@@ -114,7 +113,7 @@ const Navbar = ({
                 <div className="h-6 border-l border-gray-500/30 mx-3"></div>
               </>
             )}
-            
+
             {/* Botón Actualizar Plan */}
             {props.showUpgradeButton && (
               <ButtonGrey className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold px-4 md:px-6 py-2 rounded-xl shadow transition-all text-sm md:text-base">
@@ -122,7 +121,7 @@ const Navbar = ({
                 <span className="sm:hidden">Plan</span>
               </ButtonGrey>
             )}
-            
+
             {/* Perfil de usuario */}
             {!hideUserMenu && (
               <div
@@ -156,7 +155,7 @@ const Navbar = ({
                 />
               </div>
             )}
-            
+
             {/* Notificación */}
             <div className="relative cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors">
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
