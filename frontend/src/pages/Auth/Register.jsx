@@ -86,7 +86,7 @@ const Register = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_-]/.test(password); 
+    const hasSpecialChar = /[!@#$%^&+*(),.?":{}|<>_-]/.test(password); 
 
     console.log("validatePassword debug:", {
       password,

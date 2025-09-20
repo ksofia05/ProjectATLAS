@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
@@ -117,17 +117,15 @@ const DashboardCreateProject = () => {
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
       />
-      <div className="sm:ml-0 md:ml-0 lg:ml-72 flex-1 flex flex-col">
-        <div className="pt-4 px-6">
-          
-        </div>
-        <div className="flex-1 sm:p-0 px-8 pb-8 pt-2">
-          <CreateProjectPanel 
-            disableCreate={userProfile?.rol_idRol === 2}
-            onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
-            refreshProjects={refreshProjects}
-          />
-        </div>
+
+      <div className="sm:ml-0 md:ml-0 lg:ml-72 flex flex-col min-h-screen w-full">
+        <CreateProjectPanel
+          disableCreate={userProfile?.rol_idRol === 2}
+          onProjectUpdate={() => setRefreshProjects((prev) => prev + 1)}
+          refreshProjects={refreshProjects}
+          onSidebarToggle={toggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+        />
       </div>
     </div>
   );

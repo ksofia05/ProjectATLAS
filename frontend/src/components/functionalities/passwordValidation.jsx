@@ -6,7 +6,7 @@ const PasswordValidator = ({ password }) => {
   const upperCase = /[A-Z]/.test(password);
   const lowerCase = /[a-z]/.test(password);
   const number = /[0-9]/.test(password);
-  const special=/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+  const special=/[!@#$%^&*()_\-=\[\]{};':"\\|,+.<>\/?]/.test(password);
 
   const getClass = (condition) => {
     if (condition) return 'text-green-600';
