@@ -8,6 +8,7 @@ import {
 import useUserStore from "../../stores/useUserStore";
 import WarningModal from "../dashboard/WarningModal";
 import toast from "react-hot-toast";
+import { actualizarHistorialColaborador } from "../common/historialColaboradores";
 
 const InventoryCard = ({
   project,
@@ -49,6 +50,11 @@ const InventoryCard = ({
       toast.dismiss(toastId);
       if (response.ok && data.success) {
         showSuccessToast("Has salido del proyecto.");
+        await actualizarHistorialColaborador(
+          Number(user.idUsuario),
+          Number(project.id_proyecto),
+          "eliminado"
+        );
         setShowDeleteModal(false);
         if (window.refreshUserAndProjects) {
           await window.refreshUserAndProjects();
