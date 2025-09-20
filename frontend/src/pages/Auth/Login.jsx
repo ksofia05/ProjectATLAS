@@ -15,6 +15,7 @@ import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
 import { useAuth } from "../../context/AuthProvider";
+import { actualizarHistorialColaborador } from "../../components/common/historialColaboradores";
 
 const Login = () => {
   const location = useLocation();
@@ -124,6 +125,21 @@ const Login = () => {
                 localStorage.setItem("projectLimitMessage", data.error);
               } else {
                 showErrorToast(data.error || "Error al asociar colaborador al proyecto.");
+              }
+            } else {
+              let idUsuario = null;
+              const userStore = useUserStore.getState().user;
+              if (userStore?.idUsuario){
+                idUsuario = userStore.idUsuario;
+              } else if (userProfile?.idUsuario){
+                idUsuario = userProfile.idUsuario;
+              }
+              if (idUsuario && !isNaN(Number(idUsuario))){
+                await actualizarHistorialColaborador(
+                  Number(idUsuario),
+                  Number(idProyecto),
+                  "activo"
+                );
               }
             }
           } catch (err) {

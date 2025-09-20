@@ -9,6 +9,7 @@ import DataTable from "../common/DataTable";
 import Switch from "../common/Switch";
 import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
 import { showErrorToast, showSuccessToast } from "../common/popUp/Loading";
+import { client as supabase } from "../../supabase/client";
 
 export default function CollaboratorsTable() {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
@@ -25,16 +26,49 @@ export default function CollaboratorsTable() {
     updateCollaboratorState,
   } = useCollaboratorsStore();
 
+  //Estado para historial
+  const [historialColaboradores, setHistorialColaboradores] = useState([]);
+
   // Solo cargar colaboradores si no están en cache
   useEffect(() => {
     if (projectId) {
-      console.log(
-        "📊 CollaboratorsTable: Verificando colaboradores para proyecto",
-        projectId
-      );
+      console.log("📊 CollaboratorsTable: Verificando colaboradores para proyecto", projectId);
       fetchCollaborators(projectId);
+
+      (async () => {
+        // Consulta historial de eliminados con JOIN a Usuario
+        const { data, error } = await supabase
+          .from("historial_colaboradores")
+          .select(`
+            usuario_id,
+            estado,
+            usuario:usuario_id (
+              nombre,
+              apellido,
+              correoElectronico
+            )
+          `)
+          .eq("proyecto_id", projectId)
+          .eq("estado", "eliminado");
+
+        if (error) {
+          console.error("Error consultando historial_colaboradores:", error);
+          setHistorialColaboradores([]);
+          return;
+        }
+
+        const usuarios = (data || []).map((h) => ({
+          id: h.usuario_id,
+          nombre: h.usuario?.nombre ?? "(Sin datos)",
+          apellido: h.usuario?.apellido ?? "(sin datos)",
+          correo: h.usuario?.correoElectronico ?? "(sin datos)",
+          estado: h.estado,
+        }));
+        setHistorialColaboradores(usuarios);
+      })();
     }
   }, [projectId, fetchCollaborators]);
+
 
   // Manejo optimista del switch
   const handleSwitch = async (colaborador, idx) => {
@@ -50,7 +84,10 @@ export default function CollaboratorsTable() {
       showErrorToast("Error al cambiar el estado del colaborador");
     }
   };
-
+  const todosColaboradores = [
+    ...collaborators, // activos/inactivos
+    ...historialColaboradores // eliminados
+  ];
   // Exportar a Excel
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -74,7 +111,7 @@ export default function CollaboratorsTable() {
   };
 
   // Filtrado de datos
-  const colaboradoresFiltrados = collaborators
+  const colaboradoresFiltrados = todosColaboradores
     .filter((c) =>
       estadoSeleccionado === "todos"
         ? true
@@ -111,23 +148,38 @@ export default function CollaboratorsTable() {
       key: "estado",
       label: "Estado",
       width: "25%",
-      render: (colaborador, idx) => (
-        <div className="flex items-center justify-center gap-2">
-          <span
-            className={
-              colaborador.estado === "Activo"
-                ? "text-green-400 font-semibold"
-                : "text-red-400 font-semibold"
-            }
-          >
-            {colaborador.estado}
-          </span>
-          <Switch
-            checked={colaborador.estado === "Activo"}
-            onChange={() => handleSwitch(colaborador, idx)}
-          />
-        </div>
-      ),
+      render: (colaborador, idx) => {
+        if (colaborador.estado === "eliminado") {
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-purple-400 font-semibold">Eliminado</span>
+              <button
+                disabled
+                className="w-5 h-5 rounded-full bg-purple-700 flex items-center justify-center "
+              >
+                <i className="bi bi-x text-gray-300"></i>
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <span
+              className={
+                colaborador.estado === "Activo"
+                  ? "text-green-400 font-semibold"
+                  : "text-red-400 font-semibold"
+              }
+            >
+              {colaborador.estado}
+            </span>
+            <Switch
+              checked={colaborador.estado === "Activo"}
+              onChange={() => handleSwitch(colaborador, idx)}
+            />
+          </div>
+        );
+      },
     },
   ];
 
@@ -148,6 +200,11 @@ export default function CollaboratorsTable() {
       value: "inactivo",
       selected: estadoSeleccionado === "inactivo",
     },
+    {
+      label: "Eliminado",
+      value: "eliminado",
+      selected: estadoSeleccionado === "eliminado",
+    }
   ];
 
   // Configuración de exportación

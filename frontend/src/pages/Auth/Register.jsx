@@ -301,6 +301,13 @@ const Register = () => {
                 }),
               }
             );
+            if (idUsuario && !isNaN(Number(idUsuario))) {
+                await actualizarHistorialColaborador(
+                  Number(idUsuario),
+                  Number(idProyecto),
+                  "activo"
+                );
+              }
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
