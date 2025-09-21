@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Edit, Plus } from "lucide-react";
+import { Users, Edit, Plus, X } from "lucide-react";
 import {
   showErrorToast,
   showSuccessToast,
@@ -23,12 +23,22 @@ const InventoryCard = ({
   const [loading, setLoading] = React.useState(false);
 
   const handleCardClick = async (e) => {
+    // Evitar que el click en el botón de eliminar abra el proyecto
+    if (e.target.closest(".delete-button")) {
+      return;
+    }
+
     e.preventDefault();
     if (onProjectClick) {
       await onProjectClick(project);
     } else {
       showErrorToast("No se ha definido acción para este proyecto.");
     }
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setShowDeleteModal(true);
   };
 
   const handleRemoveAsCollaborator = async () => {
@@ -77,10 +87,21 @@ const InventoryCard = ({
     <>
       <div
         key={project.id_proyecto}
-        onClick={() => onProjectClick(project)}
+        onClick={handleCardClick}
         className="group relative overflow-hidden bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl p-6 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/15 min-h-[280px]"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {/* Botón de eliminar para colaboradores */}
+        {isColaborador && (
+          <button
+            onClick={handleDeleteClick}
+            className="delete-button absolute top-4 right-4 w-8 h-8 bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 hover:border-red-500/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 hover:scale-110"
+            title="Salir del proyecto"
+          >
+            <X size={16} className="text-red-400 hover:text-red-300" />
+          </button>
+        )}
 
         <div className="relative z-10 flex flex-col h-full">
           <div className="w-16 h-16 bg-slate-800/40 border border-purple-500/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-slate-800/50 transition-all duration-300">
@@ -110,7 +131,7 @@ const InventoryCard = ({
             </div>
           </div>
 
-          {/* Footer de la tarjeta (linea)*/}
+          {/* Footer de la tarjeta */}
           <div className="mt-auto">
             <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300">
               <span>Última actividad</span>
@@ -122,8 +143,9 @@ const InventoryCard = ({
               <div className="h-full bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           </div>
-
-          <div className="absolute top-4 right-4 w-6 h-6 border border-purple-500/20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
+          {!isColaborador && (
+            <div className="absolute top-4 right-4 w-6 h-6 border border-purple-500/20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
+          )}
           <div className="absolute bottom-4 left-4 w-4 h-4 border border-purple-400/15 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
         </div>
       </div>
@@ -133,10 +155,11 @@ const InventoryCard = ({
           visible={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           title="¿Estás seguro que quieres salir del proyecto?"
-          message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto."
+          message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto y aparecerás como 'Eliminado' en la lista de colaboradores."
           confirmText="Salir del proyecto"
           showConfirm={true}
           onConfirm={handleRemoveAsCollaborator}
+          loading={loading}
         />
       )}
     </>

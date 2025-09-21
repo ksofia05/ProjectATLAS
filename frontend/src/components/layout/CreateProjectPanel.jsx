@@ -240,12 +240,18 @@ const CreateProjectPanel = ({
                         </h3>
 
                         <p className="text-gray-400 text-sm text-center group-hover:text-gray-300 transition-colors duration-300 mb-4">
-                          Comienza algo increíble
+                          {projects.length === 0
+                            ? "Comienza algo increíble"
+                            : "Expande tu espacio de trabajo"}
                         </p>
 
                         <div className="flex items-center gap-2 text-purple-400/70 text-xs group-hover:text-purple-300 transition-colors duration-300">
                           <i className="bi bi-arrow-right"></i>
-                          <span>Haz clic para empezar</span>
+                          <span>
+                            {projects.length === 0
+                              ? "Haz clic para empezar"
+                              : "Agregar nuevo proyecto"}
+                          </span>
                         </div>
 
                         <div className="mt-6 w-full h-1 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -281,20 +287,6 @@ const CreateProjectPanel = ({
                       </div>
                     )}
                 </div>
-
-                {!loadingProjects && projects.length === 0 && !searchTerm && (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-slate-800/40 border border-purple-500/30 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                      <i className="bi bi-folder-plus text-purple-400 text-3xl"></i>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-4">
-                      ¡Bienvenido a ATLAS!
-                    </h3>
-                    <p className="text-gray-400 text-lg mb-6">
-                      Crea tu primer proyecto y comienza a organizar tu trabajo
-                    </p>
-                  </div>
-                )}
               </>
             )}
           </div>
