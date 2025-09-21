@@ -24,53 +24,92 @@ export default function CollaboratorsTable() {
     isLoading,
     fetchCollaborators,
     updateCollaboratorState,
+    forceRefresh,
   } = useCollaboratorsStore();
 
   //Estado para historial
   const [historialColaboradores, setHistorialColaboradores] = useState([]);
 
-  // Solo cargar colaboradores si no están en cache
+  // Función para cargar historial de eliminados (Lo que dañe de julian :b)
+  const loadHistorialEliminados = async () => {
+    if (!projectId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("historial_colaboradores")
+        .select(
+          `
+          usuario_id,
+          estado,
+          usuario:usuario_id (
+            nombre,
+            apellido,
+            correoElectronico
+          )
+        `
+        )
+        .eq("proyecto_id", projectId)
+        .eq("estado", "eliminado");
+
+      if (error) {
+        console.error("Error consultando historial_colaboradores:", error);
+        setHistorialColaboradores([]);
+        return;
+      }
+
+      const usuarios = (data || []).map((h) => ({
+        id: h.usuario_id,
+        nombre: h.usuario?.nombre ?? "(Sin datos)",
+        apellido: h.usuario?.apellido ?? "(sin datos)",
+        correo: h.usuario?.correoElectronico ?? "(sin datos)",
+        estado: h.estado,
+      }));
+      setHistorialColaboradores(usuarios);
+    } catch (error) {
+      console.error("Error cargando historial:", error);
+      setHistorialColaboradores([]);
+    }
+  };
+
+  // Cargar colaboradores e historial por aparte
   useEffect(() => {
     if (projectId) {
-      console.log("📊 CollaboratorsTable: Verificando colaboradores para proyecto", projectId);
+      console.log(
+        "📊 CollaboratorsTable: Verificando colaboradores para proyecto",
+        projectId
+      );
       fetchCollaborators(projectId);
-
-      (async () => {
-        // Consulta historial de eliminados con JOIN a Usuario
-        const { data, error } = await supabase
-          .from("historial_colaboradores")
-          .select(`
-            usuario_id,
-            estado,
-            usuario:usuario_id (
-              nombre,
-              apellido,
-              correoElectronico
-            )
-          `)
-          .eq("proyecto_id", projectId)
-          .eq("estado", "eliminado");
-
-        if (error) {
-          console.error("Error consultando historial_colaboradores:", error);
-          setHistorialColaboradores([]);
-          return;
-        }
-
-        const usuarios = (data || []).map((h) => ({
-          id: h.usuario_id,
-          nombre: h.usuario?.nombre ?? "(Sin datos)",
-          apellido: h.usuario?.apellido ?? "(sin datos)",
-          correo: h.usuario?.correoElectronico ?? "(sin datos)",
-          estado: h.estado,
-        }));
-        setHistorialColaboradores(usuarios);
-      })();
+      loadHistorialEliminados();
     }
   }, [projectId, fetchCollaborators]);
 
+  // Actualizacion en tiempo real (necesito cambiarlo)
+  useEffect(() => {
+    if (!projectId) return;
 
-  // Manejo optimista del switch
+    const channel = supabase
+      .channel("historial_colaboradores_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "historial_colaboradores",
+          filter: `proyecto_id=eq.${projectId}`,
+        },
+        (payload) => {
+          console.log("Cambio en historial_colaboradores:", payload);
+          loadHistorialEliminados();
+          forceRefresh(projectId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, forceRefresh]);
+
   const handleSwitch = async (colaborador, idx) => {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
@@ -84,10 +123,12 @@ export default function CollaboratorsTable() {
       showErrorToast("Error al cambiar el estado del colaborador");
     }
   };
+
   const todosColaboradores = [
     ...collaborators, // activos/inactivos
-    ...historialColaboradores // eliminados
+    ...historialColaboradores, // eliminados
   ];
+
   // Exportar a Excel
   const exportToExcel = (data) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -204,7 +245,7 @@ export default function CollaboratorsTable() {
       label: "Eliminado",
       value: "eliminado",
       selected: estadoSeleccionado === "eliminado",
-    }
+    },
   ];
 
   // Configuración de exportación
