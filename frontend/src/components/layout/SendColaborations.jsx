@@ -18,18 +18,42 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [activeTab, setActiveTab] = useState("miembros");
 
   const { projectName, fetchProjectInfo } = useProjectStore();
-  const { collaborators, fetchCollaborators, forceRefresh } =
-    useCollaboratorsStore();
-  const { addSentInvitation, getPendingInvitations, filterPendingInvitations } =
-    useInvitationsStore();
+  const { collaborators, fetchCollaborators, forceRefresh } = useCollaboratorsStore();
+  
+  const invitationsStore = useInvitationsStore();
+  const {
+    invitacionesPendientes,
+    invitacionesOptimistas,
+    addOptimisticInvitation,
+    confirmOptimisticInvitation,
+    cancelOptimisticInvitation,
+    filterPendingInvitations
+  } = invitationsStore;
 
   const colaboradoresActivos = useMemo(() => {
-    return collaborators.filter((colab) => colab.estado === "Activo");
+    return collaborators?.filter((colab) => colab.estado === "Activo") || [];
   }, [collaborators]);
 
-  const invitacionesPendientes = useMemo(() => {
-    return getPendingInvitations(projectId, colaboradoresActivos);
-  }, [projectId, colaboradoresActivos, getPendingInvitations]);
+  const getInvitacionesPendientes = () => {
+    if (!projectId) return [];
+    
+    const pendientes = invitacionesPendientes[projectId] || [];
+    const optimistas = invitacionesOptimistas[projectId] || [];
+    
+    // Combinar invitaciones reales + optimistas
+    const todasLasInvitaciones = [...pendientes, ...optimistas];
+    
+    // Filtrar las que ya son colaboradores activos
+    const emailsColaboradores = colaboradoresActivos
+      .map(c => c.correo ? c.correo.toLowerCase() : '')
+      .filter(email => email);
+    
+    return todasLasInvitaciones.filter(inv => 
+      inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+    );
+  };
+
+  const invitacionesList = getInvitacionesPendientes();
 
   useEffect(() => {
     setShowModal(open);
@@ -83,6 +107,33 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       return;
     }
 
+    const emailExiste = colaboradoresActivos.some(colab => 
+      colab.correo && colab.correo.toLowerCase() === email.trim().toLowerCase()
+    );
+    
+    if (emailExiste) {
+      showErrorToast("Este usuario ya es colaborador del proyecto");
+      return;
+    }
+
+    const invitacionExiste = invitacionesList.some(inv => 
+      inv.email && inv.email.toLowerCase() === email.trim().toLowerCase()
+    );
+    
+    if (invitacionExiste) {
+      showErrorToast("Ya hay una invitación pendiente para este correo");
+      return;
+    }
+
+    const emailToSend = email.trim();
+    
+    // Agregar invitación optimista INMEDIATAMENTE
+    addOptimisticInvitation(projectId, emailToSend, userName);
+
+    // Cambiar a tab "enviados" y limpiar input inmediatamente
+    setEmail("");
+    setActiveTab("enviados");
+
     setIsSending(true);
     const toastId = showLoadingToast("Verificando y enviando invitación...");
 
@@ -93,7 +144,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email: email.trim(),
+            email: emailToSend,
             nombre_invitador: userName,
             id_proyecto: projectId,
           }),
@@ -104,19 +155,16 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       toast.dismiss(toastId);
 
       if (data.success) {
+        confirmOptimisticInvitation(projectId, emailToSend);
         showSuccessToast("¡Invitación enviada!");
-
-        addSentInvitation(projectId, email.trim(), userName);
-
-        setEmail("");
-        setActiveTab("enviados");
-        forceRefresh(projectId);
       } else {
+        cancelOptimisticInvitation(projectId, emailToSend);
         showErrorToast(data.message || "Error al enviar invitación");
       }
     } catch (error) {
       toast.dismiss(toastId);
       console.error("Error enviando invitación:", error);
+      cancelOptimisticInvitation(projectId, emailToSend);
       showErrorToast("Error de conexión. Intenta nuevamente.");
     }
 
@@ -181,7 +229,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
                 : "text-gray-400 hover:text-white"
             }`}
           >
-            Enviados ({invitacionesPendientes.length})
+            Enviados ({invitacionesList.length})
           </button>
         </div>
 
@@ -219,30 +267,41 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
                 </div>
               ))
             )
-          ) : invitacionesPendientes.length === 0 ? (
+          ) : invitacionesList.length === 0 ? (
             <div className="text-gray-400 text-center py-4">
               No hay invitaciones pendientes
             </div>
           ) : (
-            invitacionesPendientes.map((invitation, idx) => (
+            invitacionesList.map((invitation, idx) => (
               <div
-                className="flex items-center gap-3"
-                key={invitation.email || idx}
+                className={`flex items-center gap-3 ${
+                  invitation.isOptimistic ? 'opacity-75' : ''
+                }`}
+                key={invitation.id || invitation.email || idx}
               >
                 <div className="flex items-center justify-center rounded-full w-10 h-10 text-lg font-bold bg-orange-500 text-white">
-                  ?
+                  {invitation.isOptimistic ? "⏳" : "?"}
                 </div>
                 <div className="flex-1">
                   <div className="text-white font-medium">
                     {invitation.email}
                   </div>
                   <div className="text-gray-400 text-xs">
-                    Enviado{" "}
-                    {new Date(invitation.fecha_invitacion).toLocaleDateString()}
+                    {invitation.isOptimistic ? (
+                      "Enviando..."
+                    ) : (
+                      `Enviado ${new Date(invitation.fecha_invitacion).toLocaleDateString()}`
+                    )}
                   </div>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-600 text-orange-100">
-                  Pendiente
+                <span 
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    invitation.isOptimistic 
+                      ? "bg-yellow-600 text-yellow-100"
+                      : "bg-orange-600 text-orange-100"
+                  }`}
+                >
+                  {invitation.isOptimistic ? "Enviando..." : "Pendiente"}
                 </span>
               </div>
             ))
