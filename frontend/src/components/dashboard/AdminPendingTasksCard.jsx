@@ -53,7 +53,6 @@ export default function AdminPendingTasksCard({ className }) {
     try {
       console.log("Fetching collaborators for project:", projectId);
 
-      
       const response = await axios.get(
         `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
       );
@@ -224,171 +223,138 @@ export default function AdminPendingTasksCard({ className }) {
   };
 
   return (
-    <>
-      <style>
-        {`
-          .no-backdrop-filter {
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            filter: none !important;
-          }
-          .collaborators-scroll {
-            max-height: 180px;
-            overflow-y: auto;
-          }
-          .collaborators-scroll::-webkit-scrollbar {
-            width: 4px;
-          }
-          .collaborators-scroll::-webkit-scrollbar-track {
-            background: #1a1a2e;
-            border-radius: 2px;
-          }
-          .collaborators-scroll::-webkit-scrollbar-thumb {
-            background: #6366f1;
-            border-radius: 2px;
-          }
-          .collaborators-scroll::-webkit-scrollbar-thumb:hover {
-            background: #8b5cf6;
-          }
-        `}
-      </style>
-      <div
-        className={`bg-[#14141e] rounded-3xl border border-slate-700/50 px-9 py-8 w-[400px] no-backdrop-filter shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-white leading-tight">
-              Trabajos Pendientes
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-purple-400 font-semibold">
-                (Vista Admin)
-              </span>
-              <i className="bi bi-shield-check text-purple-400 text-sm"></i>
-            </div>
-          </div>
-          <ButtonGrey
-            className="px-4 py-2 text-sm font-semibold hover:bg-gray-600/50 transition-colors"
-            onClick={handleNavigateToCalendar}
-          >
-            <i className="bi bi-calendar-check text-sm mr-2"></i>
-            Mis Tareas
-          </ButtonGrey>
-        </div>
-
-        <div className="mb-4 p-3 bg-[#1a1a2e] rounded-lg border border-slate-700/30">
-          <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-            <i className="bi bi-person-workspace text-purple-400 text-sm"></i>
-            Mis Tareas
-          </h4>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-300">
-              Pendientes:{" "}
-              <span className="text-red-300 font-semibold">
-                {adminPendingTasks.length}
-              </span>
+    <div
+      className={`bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl px-9 py-8 w-full max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-xl font-bold text-white leading-tight">
+            Trabajos Pendientes
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-purple-400 font-semibold">
+              (Vista Admin)
             </span>
-            <span className="text-gray-300">
-              Completadas:{" "}
-              <span className="text-green-300 font-semibold">
-                {adminCompletedTasks.length}
-              </span>
-            </span>
+            <i className="bi bi-shield-check text-purple-400 text-sm"></i>
           </div>
         </div>
+        <ButtonGrey
+          className="px-4 py-2 text-sm font-semibold hover:bg-gray-600/50 transition-colors"
+          onClick={handleNavigateToCalendar}
+        >
+          <i className="bi bi-calendar-check text-sm mr-2"></i>
+          Mis Tareas
+        </ButtonGrey>
+      </div>
 
-        {/* Lista de colaboradores con tareas (necesito cambiar unas cosas del la forma en la que se muestran) */}
-        <div className="flex flex-col gap-3 mb-3">
-          <div className="flex justify-between items-center">
-            <h4 className="text-sm font-semibold text-gray-400">
-              Colaboradores
-            </h4>
-            <span className="text-xs text-gray-500">Tareas Pendientes</span>
-          </div>
-          {collaboratorStats.length === 0 ? (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 mx-auto mb-2 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <i className="bi bi-people text-blue-400"></i>
-              </div>
-              <p className="text-blue-400 text-sm font-medium">
-                Sin colaboradores
-              </p>
-              <p className="text-gray-500 text-xs">
-                No hay colaboradores con tareas
-              </p>
-            </div>
-          ) : (
-            <div className="collaborators-scroll">
-              <div className="flex flex-col gap-3 pr-2">
-                {collaboratorStats.map((col) => (
-                  <UserTaskRow
-                    key={col.id}
-                    initials={col.initials}
-                    name={col.name}
-                    rightContent={
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <div className="flex items-center gap-1">
-                            <span
-                              className={`
-                                px-2 py-0.5 rounded text-xs font-medium
-                                ${
-                                  col.pending > 3
-                                    ? "bg-red-900/30 text-red-300"
-                                    : col.pending > 1
-                                    ? "bg-yellow-900/30 text-yellow-300"
-                                    : col.pending === 0
-                                    ? "bg-green-900/30 text-green-300"
-                                    : "bg-gray-700/50 text-gray-300"
-                                }
-                              `}
-                            >
-                              {col.pending}/{col.totalTasks}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              tareas
-                            </span>
-                          </div>
-                        </div>
-                        {col.pending > 3 && (
-                          <div className="flex items-center gap-1">
-                            <i className="bi bi-exclamation-triangle text-red-400 text-xs"></i>
-                            <span className="text-xs text-red-300">
-                              Alta carga
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    }
-                    rightContentClass=""
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
-          <div className="flex items-center gap-2 text-gray-400 text-base font-normal group">
-            <i className="bi bi-people-fill text-lg group-hover:text-purple-400 transition-colors"></i>
-            <span className="text-gray-300 font-bold group-hover:text-white transition-colors">
-              {totalStats.totalCollaborators}
+      <div className="mb-4 p-3 bg-[#1a1a2e] rounded-lg border border-slate-700/30">
+        <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+          <i className="bi bi-person-workspace text-purple-400 text-sm"></i>
+          Mis Tareas
+        </h4>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-300">
+            Pendientes:{" "}
+            <span className="text-red-300 font-semibold">
+              {adminPendingTasks.length}
             </span>
-            <span className="group-hover:text-gray-200 transition-colors">
-              Colaboradores
+          </span>
+          <span className="text-gray-300">
+            Completadas:{" "}
+            <span className="text-green-300 font-semibold">
+              {adminCompletedTasks.length}
             </span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-400 text-base font-normal group">
-            <i className="bi bi-tools text-lg group-hover:text-yellow-400 transition-colors"></i>
-            <span className="text-gray-300 font-bold group-hover:text-white transition-colors">
-              {totalStats.totalPending}
-            </span>
-            <span className="group-hover:text-gray-200 transition-colors">
-              Pendientes
-            </span>
-          </div>
+          </span>
         </div>
       </div>
-    </>
+
+      {/* Lista de colaboradores con tareas (necesito cambiar unas cosas del la forma en la que se muestran) */}
+      <div className="flex flex-col gap-3 mb-3">
+        <div className="flex justify-between items-center">
+          <h4 className="text-sm font-semibold text-gray-400">Colaboradores</h4>
+          <span className="text-xs text-gray-500">Tareas Pendientes</span>
+        </div>
+        {collaboratorStats.length === 0 ? (
+          <div className="text-center py-4">
+            <div className="w-12 h-12 mx-auto mb-2 bg-blue-500/10 rounded-full flex items-center justify-center">
+              <i className="bi bi-people text-blue-400"></i>
+            </div>
+            <p className="text-blue-400 text-sm font-medium">
+              Sin colaboradores
+            </p>
+            <p className="text-gray-500 text-xs">
+              No hay colaboradores con tareas
+            </p>
+          </div>
+        ) : (
+          <div className="collaborators-scroll">
+            <div className="flex flex-col gap-3 pr-2">
+              {collaboratorStats.map((col) => (
+                <UserTaskRow
+                  key={col.id}
+                  initials={col.initials}
+                  name={col.name}
+                  rightContent={
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <span
+                            className={`
+                              px-2 py-0.5 rounded text-xs font-medium
+                              ${
+                                col.pending > 3
+                                  ? "bg-red-900/30 text-red-300"
+                                  : col.pending > 1
+                                  ? "bg-yellow-900/30 text-yellow-300"
+                                  : col.pending === 0
+                                  ? "bg-green-900/30 text-green-300"
+                                  : "bg-gray-700/50 text-gray-300"
+                              }
+                            `}
+                          >
+                            {col.pending}/{col.totalTasks}
+                          </span>
+                          <span className="text-xs text-gray-400">tareas</span>
+                        </div>
+                      </div>
+                      {col.pending > 3 && (
+                        <div className="flex items-center gap-1">
+                          <i className="bi bi-exclamation-triangle text-red-400 text-xs"></i>
+                          <span className="text-xs text-red-300">
+                            Alta carga
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  }
+                  rightContentClass=""
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between border-t border-[#232336] pt-3 mt-1">
+        <div className="flex items-center gap-2 text-gray-400 text-base font-normal group">
+          <i className="bi bi-people-fill text-lg group-hover:text-purple-400 transition-colors"></i>
+          <span className="text-gray-300 font-bold group-hover:text-white transition-colors">
+            {totalStats.totalCollaborators}
+          </span>
+          <span className="group-hover:text-gray-200 transition-colors">
+            Colaboradores
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-gray-400 text-base font-normal group">
+          <i className="bi bi-tools text-lg group-hover:text-yellow-400 transition-colors"></i>
+          <span className="text-gray-300 font-bold group-hover:text-white transition-colors">
+            {totalStats.totalPending}
+          </span>
+          <span className="group-hover:text-gray-200 transition-colors">
+            Pendientes
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

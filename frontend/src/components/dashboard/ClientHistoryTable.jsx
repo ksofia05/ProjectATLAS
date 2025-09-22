@@ -38,7 +38,7 @@ const clientes = [
 
 export default function ClientHistoryTable() {
   return (
-    <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl p-8 w-full text-white shadow-lg mt-4 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.01]">
+    <div className="bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl p-8 w-full text-white shadow-lg mt-4 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.01]">
       <div className="flex flex-wrap items-center justify-between mb-2">
         <h3 className="text-2xl font-bold">HISTORIAL DE CLIENTES</h3>
         <div className="flex flex-col md:flex-row md:items-center gap-4 text-gray-400 text-sm font-normal">

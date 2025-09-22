@@ -9,6 +9,7 @@ import DataTable from "../common/DataTable";
 import Switch from "../common/Switch";
 import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
 import { showErrorToast, showSuccessToast } from "../common/popUp/Loading";
+import { client as supabase } from "../../supabase/client";
 
 export default function CollaboratorsTable() {
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
@@ -23,9 +24,54 @@ export default function CollaboratorsTable() {
     isLoading,
     fetchCollaborators,
     updateCollaboratorState,
+    forceRefresh,
   } = useCollaboratorsStore();
 
-  // Solo cargar colaboradores si no están en cache
+  //Estado para historial
+  const [historialColaboradores, setHistorialColaboradores] = useState([]);
+
+  // Función para cargar historial de eliminados (Lo que dañe de julian :b)
+  const loadHistorialEliminados = async () => {
+    if (!projectId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("historial_colaboradores")
+        .select(
+          `
+          usuario_id,
+          estado,
+          usuario:usuario_id (
+            nombre,
+            apellido,
+            correoElectronico
+          )
+        `
+        )
+        .eq("proyecto_id", projectId)
+        .eq("estado", "eliminado");
+
+      if (error) {
+        console.error("Error consultando historial_colaboradores:", error);
+        setHistorialColaboradores([]);
+        return;
+      }
+
+      const usuarios = (data || []).map((h) => ({
+        id: h.usuario_id,
+        nombre: h.usuario?.nombre ?? "(Sin datos)",
+        apellido: h.usuario?.apellido ?? "(sin datos)",
+        correo: h.usuario?.correoElectronico ?? "(sin datos)",
+        estado: h.estado,
+      }));
+      setHistorialColaboradores(usuarios);
+    } catch (error) {
+      console.error("Error cargando historial:", error);
+      setHistorialColaboradores([]);
+    }
+  };
+
+  // Cargar colaboradores e historial por aparte
   useEffect(() => {
     if (projectId) {
       console.log(
@@ -33,10 +79,37 @@ export default function CollaboratorsTable() {
         projectId
       );
       fetchCollaborators(projectId);
+      loadHistorialEliminados();
     }
   }, [projectId, fetchCollaborators]);
 
-  // Manejo optimista del switch
+  // Actualizacion en tiempo real (necesito cambiarlo)
+  useEffect(() => {
+    if (!projectId) return;
+
+    const channel = supabase
+      .channel("historial_colaboradores_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "historial_colaboradores",
+          filter: `proyecto_id=eq.${projectId}`,
+        },
+        (payload) => {
+          console.log("Cambio en historial_colaboradores:", payload);
+          loadHistorialEliminados();
+          forceRefresh(projectId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, forceRefresh]);
+
   const handleSwitch = async (colaborador, idx) => {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
 
@@ -50,6 +123,11 @@ export default function CollaboratorsTable() {
       showErrorToast("Error al cambiar el estado del colaborador");
     }
   };
+
+  const todosColaboradores = [
+    ...collaborators, // activos/inactivos
+    ...historialColaboradores, // eliminados
+  ];
 
   // Exportar a Excel
   const exportToExcel = (data) => {
@@ -74,7 +152,7 @@ export default function CollaboratorsTable() {
   };
 
   // Filtrado de datos
-  const colaboradoresFiltrados = collaborators
+  const colaboradoresFiltrados = todosColaboradores
     .filter((c) =>
       estadoSeleccionado === "todos"
         ? true
@@ -111,23 +189,38 @@ export default function CollaboratorsTable() {
       key: "estado",
       label: "Estado",
       width: "25%",
-      render: (colaborador, idx) => (
-        <div className="flex items-center justify-center gap-2">
-          <span
-            className={
-              colaborador.estado === "Activo"
-                ? "text-green-400 font-semibold"
-                : "text-red-400 font-semibold"
-            }
-          >
-            {colaborador.estado}
-          </span>
-          <Switch
-            checked={colaborador.estado === "Activo"}
-            onChange={() => handleSwitch(colaborador, idx)}
-          />
-        </div>
-      ),
+      render: (colaborador, idx) => {
+        if (colaborador.estado === "eliminado") {
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-purple-400 font-semibold">Eliminado</span>
+              <button
+                disabled
+                className="w-5 h-5 rounded-full bg-purple-700 flex items-center justify-center "
+              >
+                <i className="bi bi-x text-gray-300"></i>
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <span
+              className={
+                colaborador.estado === "Activo"
+                  ? "text-green-400 font-semibold"
+                  : "text-red-400 font-semibold"
+              }
+            >
+              {colaborador.estado}
+            </span>
+            <Switch
+              checked={colaborador.estado === "Activo"}
+              onChange={() => handleSwitch(colaborador, idx)}
+            />
+          </div>
+        );
+      },
     },
   ];
 
@@ -147,6 +240,11 @@ export default function CollaboratorsTable() {
       label: "Inactivo",
       value: "inactivo",
       selected: estadoSeleccionado === "inactivo",
+    },
+    {
+      label: "Eliminado",
+      value: "eliminado",
+      selected: estadoSeleccionado === "eliminado",
     },
   ];
 

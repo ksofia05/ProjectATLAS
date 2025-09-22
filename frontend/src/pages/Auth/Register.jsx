@@ -86,7 +86,7 @@ const Register = () => {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>_-]/.test(password); 
+    const hasSpecialChar = /[!@#$%^&+*(),.?":{}|<>_-]/.test(password); 
 
     console.log("validatePassword debug:", {
       password,
@@ -301,6 +301,13 @@ const Register = () => {
                 }),
               }
             );
+            if (idUsuario && !isNaN(Number(idUsuario))) {
+                await actualizarHistorialColaborador(
+                  Number(idUsuario),
+                  Number(idProyecto),
+                  "activo"
+                );
+              }
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }

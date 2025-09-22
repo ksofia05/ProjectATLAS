@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import construccionImg from "../../assets/LogoSinProyecto.png";
 import ModalNewProject from "../layout/ModalNewProject";
 import axios from "axios";
-import Searchbar from "./Searchbar";
 import CardProjects from "../layout/cardProjects";
 import useUserStore from "../../stores/useUserStore";
 import { showLoadingToast, showErrorToast } from "../common/popUp/Loading";
@@ -10,7 +8,12 @@ import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import Loader from "../common/Loader";
 import Navbar from "./Navbar";
 
-const CreateProjectPanel = ({ disableCreate, refreshProjects }) => {
+const CreateProjectPanel = ({
+  disableCreate,
+  refreshProjects,
+  onSidebarToggle,
+  isSidebarOpen,
+}) => {
   const user = useUserStore((state) => state.user);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -126,23 +129,25 @@ const CreateProjectPanel = ({ disableCreate, refreshProjects }) => {
   };
 
   return (
-    <div className=" min-h-screen">
-      {/* Navbar (necesito arreglar el ancho) */}
-      <div className="relative z-50 px-6 py-4">
-        <div className="bg-slate-800/60 backdrop-blur-md border border-slate-700/40 rounded-2xl mx-4 shadow-2xl overflow-visible">
+    <div className="min-h-screen w-full flex flex-col">
+      <div className="sticky top-0 z-10 pt-6 w-full">
+        <div className="px-8 w-full">
           <Navbar
             title="Proyectos"
             subtitle="Organiza tus espacios de trabajo."
             showUpgradeButton={false}
+            onSidebarToggle={onSidebarToggle}
+            isSidebarOpen={isSidebarOpen}
           />
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="relative z-10 px-6 pb-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Emcabrzao*/}
-          <div className="text-center mb-8">
+      <div className="flex-1 px-8 pb-6 pt-4 overflow-y-auto w-full">
+        {/* Contenedor con el ancho fijo (aun lo estoy arreglando en version mobil) */}
+        <div className="w-full max-w-none mx-auto">
+          {/* Encabezado */}
+          <div className="text-center mb-8 w-full">
             <style jsx>{`
               @keyframes sparkle {
                 0%,
@@ -176,123 +181,118 @@ const CreateProjectPanel = ({ disableCreate, refreshProjects }) => {
             <p className="text-xl text-gray-300 mb-8">
               Organiza tus espacios de trabajo con estilo
             </p>
-            {/* Search Bar */}
+
             <div className="max-w-2xl mx-auto mb-6">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <i className="bi bi-search text-gray-400 text-lg"></i>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                  <i className="bi bi-search text-white text-lg group-focus-within:text-purple-300 transition-colors duration-300"></i>
                 </div>
+
                 <input
                   type="text"
-                  className="w-full pl-12 pr-6 py-4 bg-slate-800/30 backdrop-blur-md border border-slate-700/40 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300"
+                  className="w-full pl-12 pr-6 py-4 bg-gradient-to-br from-[#0a0a0f]/90 to-[#0f0f15]/90 via-[#0c0c12]/90 backdrop-blur-md border border-slate-800/60 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 text-base font-medium hover:border-purple-500/30"
                   placeholder="Buscar proyectos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/5 to-pink-600/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
             </div>
           </div>
 
-          {/* Projects Grid - Proyectos primero, botón crear al final */}
-          {loadingProjects ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader text="Cargando tus proyectos..." />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Tarjetas de proyectos existentes PRIMERO */}
-              <CardProjects
-                projects={filteredProjects}
-                projectStates={projectStates}
-                userRole={userRole}
-                onProjectClick={handleProjectClick}
-                onProjectsUpdate={() => {
-                  if (refreshProjects) {
-                    setTimeout(() => refreshProjects(), 500);
-                  }
-                }}
-              />
-
-              {/* Aun estoy organizando el orden de las tarjetas de los proyectos*/}
-              <div
-                onClick={handleCreateProject}
-                className="group relative overflow-hidden from-[#14141e] to-[#14141e] via-[#181825] border-2 border-dashed border-purple-500/30 rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-purple-400/50 hover:shadow-2xl hover:shadow-purple-500/20 backdrop-blur-sm min-h-[280px]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                  <div className="w-16 h-16 bg-slate-700/30 border border-purple-500/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-slate-700/40 transition-all duration-300">
-                    <i className="bi bi-plus text-purple-400 text-2xl font-bold group-hover:text-purple-300"></i>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-3 text-center group-hover:text-purple-300 transition-colors duration-300">
-                    Crear Nuevo Proyecto
-                  </h3>
-
-                  <p className="text-gray-400 text-sm text-center group-hover:text-gray-300 transition-colors duration-300 mb-4">
-                    Comienza algo increíble
-                  </p>
-
-                  <div className="flex items-center gap-2 text-purple-400/70 text-xs group-hover:text-purple-300 transition-colors duration-300">
-                    <i className="bi bi-arrow-right"></i>
-                    <span>Haz clic para empezar</span>
-                  </div>
-
-                  <div className="mt-6 w-full h-1 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Posible cambio, son solo estilos*/}
-                <div className="absolute top-4 right-4 w-6 h-6 border border-purple-500/20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
-                <div className="absolute bottom-4 left-4 w-4 h-4 border border-purple-400/15 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
+          <div className="w-full">
+            {loadingProjects ? (
+              <div className="w-full flex justify-center items-center py-20">
+                <Loader text="Cargando tus proyectos..." />
               </div>
-            </div>
-          )}
+            ) : (
+              <>
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <CardProjects
+                    projects={filteredProjects}
+                    projectStates={projectStates}
+                    userRole={userRole}
+                    onProjectClick={handleProjectClick}
+                    onProjectsUpdate={() => {
+                      if (refreshProjects) {
+                        setTimeout(() => refreshProjects(), 500);
+                      }
+                    }}
+                  />
 
-          {/* Esto es para renderizar a  la hora de buscar*/}
-          {!loadingProjects &&
-            filteredProjects.length === 0 &&
-            projects.length > 0 &&
-            searchTerm && (
-              <div className="text-center py-20">
-                <div className="w-24 h-24 bg-slate-800/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <i className="bi bi-search text-slate-400 text-3xl"></i>
+                  {(!searchTerm || projects.length === 0) && (
+                    <div
+                      onClick={handleCreateProject}
+                      className="group relative overflow-hidden bg-gradient-to-br from-[#0a0a0f]/90 to-[#0f0f15]/90 via-[#0c0c12]/90 backdrop-blur-md border-2 border-dashed border-purple-500/30 rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-purple-400/50 hover:shadow-2xl hover:shadow-purple-500/20 min-h-[280px]"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                      <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                        <div className="w-16 h-16 bg-slate-800/40 border border-purple-500/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-slate-800/50 transition-all duration-300">
+                          <i className="bi bi-plus text-purple-400 text-2xl font-bold group-hover:text-purple-300"></i>
+                        </div>
+
+                        <h3 className="text-xl font-bold text-white mb-3 text-center group-hover:text-purple-300 transition-colors duration-300">
+                          {projects.length === 0
+                            ? "¡Crea tu primer proyecto!"
+                            : "Crear Nuevo Proyecto"}
+                        </h3>
+
+                        <p className="text-gray-400 text-sm text-center group-hover:text-gray-300 transition-colors duration-300 mb-4">
+                          {projects.length === 0
+                            ? "Comienza algo increíble"
+                            : "Expande tu espacio de trabajo"}
+                        </p>
+
+                        <div className="flex items-center gap-2 text-purple-400/70 text-xs group-hover:text-purple-300 transition-colors duration-300">
+                          <i className="bi bi-arrow-right"></i>
+                          <span>
+                            {projects.length === 0
+                              ? "Haz clic para empezar"
+                              : "Agregar nuevo proyecto"}
+                          </span>
+                        </div>
+
+                        <div className="mt-6 w-full h-1 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </div>
+
+                      <div className="absolute top-4 right-4 w-6 h-6 border border-purple-500/20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
+                      <div className="absolute bottom-4 left-4 w-4 h-4 border border-purple-400/15 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
+                    </div>
+                  )}
+
+                  {!loadingProjects &&
+                    filteredProjects.length === 0 &&
+                    projects.length > 0 &&
+                    searchTerm && (
+                      <div className="col-span-full flex justify-center items-center py-20">
+                        <div className="text-center max-w-md">
+                          <div className="w-24 h-24 bg-slate-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i className="bi bi-search text-slate-400 text-3xl"></i>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            No se encontraron proyectos
+                          </h3>
+                          <p className="text-gray-400 text-lg">
+                            Prueba con otro término de búsqueda
+                          </p>
+                          <button
+                            onClick={() => setSearchTerm("")}
+                            className="mt-4 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-lg transition-colors duration-300"
+                          >
+                            Limpiar búsqueda
+                          </button>
+                        </div>
+                      </div>
+                    )}
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
-                  No se encontraron proyectos
-                </h3>
-                <p className="text-gray-400 text-lg">
-                  Prueba con otro término de búsqueda
-                </p>
-              </div>
+              </>
             )}
-
-          {!loadingProjects && projects.length === 0 && !searchTerm && (
-            <div className="text-center py-20">
-              <div
-                onClick={handleCreateProject}
-                className="group max-w-md mx-auto bg-slate-800/20 border-2 border-dashed border-purple-500/30 rounded-3xl p-12 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-purple-400/50 hover:shadow-2xl hover:shadow-purple-500/20 backdrop-blur-sm"
-              >
-                <div className="w-20 h-20 bg-slate-700/30 border border-purple-500/30 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group_hover:bg-slate-700/40 transition-all duration-300">
-                  <i className="bi bi-plus text-purple-400 text-3xl font-bold group-hover:text-purple-300"></i>
-                </div>
-
-                <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-purple-300 transition-colors duration-300">
-                  ¡Crea tu primer proyecto!
-                </h3>
-
-                <p className="text-gray-400 text-lg group-hover:text-gray-300 transition-colors duration-300 mb-6">
-                  Comienza organizando tu trabajo de manera eficiente
-                </p>
-
-                <div className="flex items-center justify-center gap-2 text-purple-400/70 group-hover:text-purple-300 transition-colors duration-300">
-                  <i className="bi bi-arrow-right"></i>
-                  <span>Haz clic para empezar</span>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
+
       {/* Modal */}
       <ModalNewProject
         visible={modalOpen}

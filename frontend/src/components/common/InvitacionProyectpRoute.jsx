@@ -3,6 +3,7 @@ import { useParams, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../../context/AuthProvider";
 import NoTenerCuenta from "../common/NoTenerCuenta";
 import { showErrorToast, showSuccessToast, showLoadingToast } from "./popUp/Loading";
+import { actualizarHistorialColaborador } from "./historialColaboradores";
 
 const InvitacionProyectoRoute = () => {
   const { id } = useParams();
@@ -41,12 +42,26 @@ const InvitacionProyectoRoute = () => {
               localStorage.removeItem("showProjectLimitModal");
               localStorage.removeItem("projectLimitMessage");
               showSuccessToast("Te has unido a un nuevo proyecto");
+              const idUsuario =
+                user?.idUsuario ??
+                userProfile?.idUsuario ??
+                userProfile?.id ??
+                null;
+              if (idUsuario && !isNaN(Number(idUsuario))) {
+                await actualizarHistorialColaborador(
+                  Number(idUsuario),
+                  Number(cleanId),
+                  "activo"
+                );
+              } else {
+                console.error("No se encontró un idUsuario válido", { user, userProfile });
+              }
               if (typeof recheckAuth === "function") {
                 await recheckAuth();
               }
               setAsociado(true);
               return;
-            }
+          }
           if (response.status === 400 && data.error) {
             if (data.error === "Este usuario ya hace parte de este proyecto.") {
               localStorage.setItem("showAlreadyInProjectModal", "1");
