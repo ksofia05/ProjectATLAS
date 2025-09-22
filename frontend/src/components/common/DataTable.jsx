@@ -30,7 +30,9 @@ const DataTable = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const startIdx = (currentPage - 1) * rowsPerPage;
-  const filteredData = data.slice(startIdx, startIdx + rowsPerPage);
+  const filteredData = rowsPerPage === "Todos"
+  ? data
+  : data.slice(startIdx, startIdx + rowsPerPage);
   const location = useLocation();
   
 
