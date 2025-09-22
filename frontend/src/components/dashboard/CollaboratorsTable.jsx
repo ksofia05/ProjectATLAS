@@ -193,26 +193,28 @@ export default function CollaboratorsTable() {
         if (colaborador.estado === "eliminado") {
           return (
             <div className="flex items-center justify-center gap-2">
-              <span className="text-purple-400 font-semibold">Eliminado</span>
+              <span className="bg-slate-700/40 text-slate-300 font-medium px-3 py-1.5 rounded-lg text-xs border border-slate-600/40">
+                Eliminado
+              </span>
               <button
                 disabled
-                className="w-5 h-5 rounded-full bg-purple-700 flex items-center justify-center "
+                className="w-5 h-5 rounded-full bg-slate-700/30 flex items-center justify-center border border-slate-600/30 opacity-50"
               >
-                <i className="bi bi-x text-gray-300"></i>
+                <i className="bi bi-x text-slate-400 text-xs"></i>
               </button>
             </div>
           );
         }
         return (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-3">
             <span
-              className={
+              className={`font-medium px-3 py-1.5 rounded-lg text-xs border ${
                 colaborador.estado === "Activo"
-                  ? "text-green-400 font-semibold"
-                  : "text-red-400 font-semibold"
-              }
+                  ? "bg-slate-600/30 text-slate-200 border-slate-500/40"
+                  : "bg-slate-700/40 text-slate-400 border-slate-600/40"
+              }`}
             >
-              {colaborador.estado}
+              {colaborador.estado === "Activo" ? "Activo" : "Inactivo"}
             </span>
             <Switch
               checked={colaborador.estado === "Activo"}

@@ -23,21 +23,21 @@ export default function CustomScrollSelect({ value, options, onChange }) {
       {/* Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1 bg-[#232336] text-gray-200 rounded-lg border border-gray-600 hover:border-gray-500 transition text-sm"
+        className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white rounded-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200 text-sm font-medium min-w-[70px] justify-center"
       >
         <span>{value === "Todos" ? "Todos" : value}</span>
         <i
-          className={`bi bi-chevron-up text-xs transition-transform duration-200 ${
-            isOpen ? "rotate-0" : "rotate-180"
+          className={`bi bi-chevron-down text-xs transition-transform duration-200 ${
+            isOpen ? "rotate-180" : "rotate-0"
           }`}
         ></i>
       </button>
 
-      {/* Dropdown Menu - ahora tiene animaciones lindas :3 */}
+      {/* Dropdown Menu */}
       <div
         className={`
-          absolute bottom-full right-0 mb-1 w-16 bg-[#232336] border border-gray-600 rounded-lg shadow-lg z-50
-          transition-all duration-200 origin-bottom
+          absolute bottom-full right-0 mb-2 min-w-[80px] bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl z-50
+          transition-all duration-300 origin-bottom
           ${
             isOpen
               ? "opacity-100 scale-100 pointer-events-auto"
@@ -46,15 +46,19 @@ export default function CustomScrollSelect({ value, options, onChange }) {
         `}
         style={{ willChange: "opacity, transform" }}
       >
-        <div className="py-1">
-          {options.map((option) => (
+        <div className="py-2">
+          {options.map((option, index) => (
             <button
               key={option}
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
               }}
-              className="block w-full px-3 py-1 text-left text-sm text-gray-200 hover:bg-gray-700 transition"
+              className={`block w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:bg-slate-700/60 hover:text-white transition-all duration-200 
+                ${index === 0 ? "rounded-t-xl" : ""}
+                ${index === options.length - 1 ? "rounded-b-xl" : ""}
+                ${index > 0 ? "border-t border-slate-600/30" : ""}
+              `}
             >
               {option === "Todos" ? "Todos" : option}
             </button>
