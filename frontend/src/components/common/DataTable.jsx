@@ -37,8 +37,8 @@ const DataTable = ({
   
 
   // Detectar la ruta actual para mostrar columnas específicas
-  const isColaboradoresRoute = location.pathname.includes('/colaboradores');
-  const isInventarioRoute = location.pathname.includes('/inventario');
+  const isColaboradoresRoute = location.pathname.includes("/colaboradores");
+  const isInventarioRoute = location.pathname.includes("/inventario");
 
   // Configurar columnas móviles según la ruta
 
@@ -47,14 +47,14 @@ const DataTable = ({
       return {
         headers: ["Nombre", "Apellido", "Correo", "Estado"],
         keys: ["nombre", "apellido", "correo", "estado"],
-        gridCols: "grid-cols-4"
+        gridCols: "grid-cols-4",
       };
     } else {
       // Para inventario y otras rutas (por defecto)
       return {
         headers: ["Equipo", "Nombre", "Estado"],
         keys: ["equipo", "nombre", "estado"],
-        gridCols: "grid-cols-3"
+        gridCols: "grid-cols-3",
       };
     }
   };
@@ -63,7 +63,7 @@ const DataTable = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl p-4 sm:p-5 md:p-6 w-full text-white shadow-lg mt-0 flex flex-col h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] min-h-96 ${className}`}
+      className={`bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl p-4 sm:p-5 md:p-6 w-full text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 mt-0 flex flex-col h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] min-h-96 ${className}`}
     >
       {/* Controles fijos en la parte superior */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3 sm:mb-4 gap-3 sm:gap-4 flex-shrink-0">
@@ -74,7 +74,7 @@ const DataTable = ({
               buttonLabel="Exportar"
               options={exportOptions}
               onSelect={(option) => onExport(option, filteredData)} 
-              buttonClassName="px-3 sm:px-4 md:px-5 py-2 font-semibold text-sm sm:text-base hover:shadow shadow-[#8d49e7]"
+              buttonClassName="px-4 py-2.5 font-medium text-sm bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white rounded-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200"
               icon={<i className="bi bi-download mr-2"></i>}
             />
           )}
@@ -87,7 +87,7 @@ const DataTable = ({
             icon="bi-search"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            inputClassName="bg-[#232336] text-gray-200 rounded-xl px-3 py-2 pl-4 pr-10 h-10 w-full sm:w-64 md:w-72 focus:outline-none border border-[#232336] focus:border-violet-400 transition placeholder:text-gray-400"
+            inputClassName="bg-slate-800/50 text-gray-300 rounded-xl px-4 py-2.5 pl-4 pr-10 h-11 w-full sm:w-64 md:w-72 focus:outline-none border border-slate-700/50 focus:border-slate-600/60 hover:border-slate-600/40 transition-all duration-200 placeholder:text-gray-500"
             containerClassName="mb-0"
           />
           {filters.length > 0 && (
@@ -95,53 +95,66 @@ const DataTable = ({
               buttonLabel="Estado"
               options={filters}
               onSelect={onFilterChange}
-              buttonClassName="px-3 sm:px-4 py-2 font-semibold hover:shadow shadow-[#8d49e7] text-sm sm:text-base flex items-center gap-2 justify-center"
+              align="right"
+              buttonClassName="px-4 py-2.5 font-medium text-sm bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white rounded-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200"
             />
           )}
         </div>
       </div>
 
       {/* Contenedor de tabla con scroll */}
-      <div className="flex-1 overflow-hidden rounded-xl border border-gray-600 flex flex-col">
+      <div className="flex-1 overflow-hidden rounded-2xl border border-slate-700/40 flex flex-col backdrop-blur-sm">
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <Loader text={loadingText} />
           </div>
         ) : data.length === 0 ? (
           <div className="flex justify-center items-center h-full">
-            <p className="text-gray-400 text-base sm:text-lg">{emptyMessage}</p>
+            <div className="text-center">
+              <div className="text-4xl mb-3 opacity-50">👥</div>
+              <p className="text-gray-400 text-base sm:text-lg font-medium">
+                {emptyMessage}
+              </p>
+              <p className="text-gray-500 text-sm mt-1">
+                Invita colaboradores para comenzar
+              </p>
+            </div>
           </div>
         ) : (
           <>
             {/* Vista móvil - Columnas dinámicas según la ruta */}
             <div className="sm:hidden flex flex-col h-full">
               {/* Header móvil dinámico */}
-              <div className="bg-[#1a1a2e] border-b-2 border-purple-500/30 flex-shrink-0">
+              <div className="bg-slate-800/40 backdrop-blur-sm border-b border-slate-700/50 flex-shrink-0">
                 <div className={`${mobileConfig.gridCols} gap-1 py-3 px-2`}>
                   {mobileConfig.headers.map((header, idx) => (
-                    <div key={idx} className="font-bold text-gray-200 text-xs uppercase tracking-wide text-center">
+                    <div
+                      key={idx}
+                      className="font-bold text-purple-300 text-xs uppercase tracking-wide text-center"
+                    >
                       {header}
                     </div>
                   ))}
                 </div>
               </div>
-              
+
               {/* Contenido móvil con scroll */}
               <div className="flex-1 overflow-y-auto">
                 {filteredData.map((item, idx) => (
                   <div
                     key={item.id || idx}
-                    className={`${mobileConfig.gridCols} gap-1 py-3 px-2 border-b border-gray-700/50 hover:bg-purple-500/10 transition-all duration-200 cursor-pointer`}
+                    className={`${mobileConfig.gridCols} gap-1 py-3 px-2 border-b border-slate-700/30 hover:bg-slate-700/20 transition-all duration-200 cursor-pointer`}
                     onClick={() => onRowClick && onRowClick(item, idx)}
                   >
                     {mobileConfig.keys.map((key, colIdx) => {
-                      const column = columns.find(col => col.key === key);
+                      const column = columns.find((col) => col.key === key);
                       return (
                         <div key={colIdx} className="text-center text-xs">
-                          {column?.render 
+                          {column?.render
                             ? column.render(item, idx)
-                            : item[key] || item[getAlternativeKey(key)] || "N/A"
-                          }
+                            : item[key] ||
+                              item[getAlternativeKey(key)] ||
+                              "N/A"}
                         </div>
                       );
                     })}
@@ -196,8 +209,8 @@ const DataTable = ({
         )}
       </div>
 
-      {/* Controles de paginación fijos en la parte inferior */}
-      <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-end text-gray-400 text-xs sm:text-sm gap-2 sm:gap-4 flex-shrink-0 pb-2 mt-2">
+      {/* Controles de paginación */}
+      <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-end text-gray-400 text-xs sm:text-sm gap-2 sm:gap-4 flex-shrink-0 pb-2 mt-3">
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2">
           <span className="text-center sm:text-left">
             <span className="hidden sm:inline">Visualizando: </span>
@@ -214,12 +227,11 @@ const DataTable = ({
   );
 };
 
-// Función helper para claves alternativas
 const getAlternativeKey = (key) => {
   const alternatives = {
-    'equipo': 'tipo',
-    'nombre': 'cliente',
-    'correo': 'email'
+    equipo: "tipo",
+    nombre: "cliente",
+    correo: "email",
   };
   return alternatives[key] || key;
 };

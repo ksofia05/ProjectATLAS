@@ -3,29 +3,20 @@ import React from "react";
 export default function Switch({ checked, onChange }) {
   return (
     <button
-      type="button"
-      className={`w-7 h-4 flex items-center rounded-full px-0.5 transition-colors duration-200
-        ${checked ? "bg-green-500" : "bg-gray-600"}
-        focus:outline-none`}
-      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-500/30 focus:ring-offset-2 focus:ring-offset-slate-800 ${
+        checked
+          ? "bg-slate-600 shadow-sm"
+          : "bg-slate-700/80 border border-slate-600/50"
+      } hover:opacity-90`}
+      onClick={onChange}
       aria-checked={checked}
       role="switch"
     >
       <span
-        className={`w-3 h-3 bg-white rounded-full shadow flex items-center justify-center text-xs transition-transform duration-200
-          ${checked ? "translate-x-3" : ""}
-        `}
-      >
-        {checked ? (
-          <svg width="10" height="10" viewBox="0 0 10 10" className="text-green-500">
-            <path d="M2 5.5L4.5 8L8 2" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-          </svg>
-        ) : (
-          <svg width="10" height="10" viewBox="0 0 10 10" className="text-gray-400">
-            <path d="M3 3L7 7M7 3L3 7" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-          </svg>
-        )}
-      </span>
+        className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+          checked ? "translate-x-5" : "translate-x-1"
+        }`}
+      />
     </button>
   );
 }

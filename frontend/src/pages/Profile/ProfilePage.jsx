@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const correo = user?.email || user?.user_metadata?.email || "";
 
   return (
-    <div className="min-h-screen bg-[#0a0a12] flex">
+    <div className="min-h-screen bg-black flex">
       <SidebarProfile onPhotoClick={() => setShowPhotoModal(true)} />
       <div className="flex-1 flex flex-col" style={{ marginLeft: 300 }}>
         <div className="max-w-[1200px] mx-auto w-full px-8">
