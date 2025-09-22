@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { client as supabase } from "../../supabase/client";
-// filepath: c:\Users\Milton\Desktop\project-Atlas\ProjectATLAS\frontend\src\components\dashboard\InventoryTable.jsx
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
@@ -39,7 +38,9 @@ export default function InventoryTable({ onEmojiClick }) {
   const clientesFiltrados = getClientesFiltrados(estadoSeleccionado, searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
   const startIdx = (currentPage - 1) * rowsPerPage;
-  const clientesPaginaActual = clientesFiltrados.slice(startIdx, startIdx + rowsPerPage);
+  const clientesPaginaActual = rowsPerPage === "Todos"
+  ? clientesFiltrados
+  : clientesFiltrados.slice(startIdx, startIdx + rowsPerPage);
   
 
 
