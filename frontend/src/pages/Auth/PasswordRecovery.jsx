@@ -54,7 +54,7 @@ const PasswordRecovery = () => {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
         toast.dismiss(toastId);
-        showErrorToast("Por favor, introduce un correo electrónico válido");
+        showErrorToast("Por favor, introduce un correo electrónico válido.");
         setMessage("Por favor, introduce un correo electrónico válido");
         return;
       }
@@ -113,11 +113,9 @@ const PasswordRecovery = () => {
           setMessage("Error técnico al enviar el correo. Contacta al soporte.");
         } else {
           showErrorToast(
-            "Error al enviar el correo. Intenta con otro correo electrónico."
+            "Por favor, espera 1 minuto para volver a reenviar una solicitud."
           );
-          setMessage(
-            "Error al enviar el correo. Intenta con otro correo electrónico."
-          );
+          
         }
       } else {
         showSuccessToast("¡Enlace enviado! Revisa tu correo electrónico.");
