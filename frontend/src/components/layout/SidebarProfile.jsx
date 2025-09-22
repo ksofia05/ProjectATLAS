@@ -5,7 +5,7 @@ import userAtlas from "../../assets/atlasUser.png";
 import { Link } from "react-router-dom";
 
 export default function SidebarProfile() {
-  const { user,userProfile, isLoading } = useAuth();
+  const { user, userProfile, isLoading } = useAuth();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   // datos del user
@@ -20,14 +20,14 @@ export default function SidebarProfile() {
       : userAtlas;
 
   return (
-    <aside className="fixed left-0 top-0 bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40">
+    <aside className="fixed left-0 top-0 bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-800/40 overflow-y-auto z-40">
       <div>
         <div className="flex flex-col items-center mb-8">
           <div className="relative group">
             <img
               src={fotoPerfil}
               alt="Perfil"
-              className="relative w-32 h-32 rounded-full object-cover border-4 border-gray-700/50 mb-4 transition-transform duration-300 hover:scale-105"
+              className="relative w-32 h-32 rounded-full object-cover border-4 border-slate-700/50 mb-4 transition-transform duration-300 hover:scale-105"
               title="Foto de perfil"
               onError={(e) => {
                 e.target.onerror = null;
@@ -35,7 +35,7 @@ export default function SidebarProfile() {
               }}
             />
             <div
-              className="absolute bottom-6 right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors"
+              className="absolute bottom-6 right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors shadow-lg"
               onClick={() => setShowPhotoModal(true)}
               title="Actualizar foto de perfil"
             >
@@ -50,7 +50,7 @@ export default function SidebarProfile() {
         </div>
 
         <div className="space-y-4 mb-8">
-          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+          <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200">
             <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
               <i className="bi bi-info-circle-fill text-purple-400"></i>
               Información
@@ -84,7 +84,7 @@ export default function SidebarProfile() {
             </div>
           </div>
 
-          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+          <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200">
             <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
               <i className="bi bi-graph-up text-green-400"></i>
               Actividad
@@ -103,7 +103,7 @@ export default function SidebarProfile() {
         </div>
       </div>
 
-      <footer className="text-xs text-gray-500 border-t border-gray-700/50 pt-4 relative z-10">
+      <footer className="text-xs text-gray-500 border-t border-slate-700/50 pt-4 relative z-10">
         <div className="mb-3 text-center">
           <span className="text-purple-400 font-medium">
             &copy; 2025 AtlasCo.

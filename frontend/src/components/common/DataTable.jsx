@@ -72,7 +72,7 @@ const DataTable = ({
               buttonLabel="Exportar"
               options={exportOptions}
               onSelect={(option) => onExport(option, filteredData)} 
-              buttonClassName="px-3 sm:px-4 md:px-5 py-2 font-semibold text-sm sm:text-base hover:shadow shadow-[#8d49e7]"
+              buttonClassName="px-4 py-2.5 font-medium text-sm bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white rounded-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200"
               icon={<i className="bi bi-download mr-2"></i>}
             />
           )}
