@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider"; //
+import { API_BASE } from "../api/apiBase";
 
 export const useProjectAccess = () => {
   const [isValidating, setIsValidating] = useState(true);
@@ -45,7 +46,7 @@ export const useProjectAccess = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:8000/tasks/api/v1/estado_colaborador_proyecto/?id_usuario=${id_usuario}&id_proyecto=${id_proyecto}`
+          `${API_BASE}tasks/api/v1/estado_colaborador_proyecto/?id_usuario=${id_usuario}&id_proyecto=${id_proyecto}`
         );
 
         if (response.status !== 200) {

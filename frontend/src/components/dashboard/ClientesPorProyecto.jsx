@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE } from "../../api/apiBase";
 
 function ClientesPorProyecto({ idProyecto, refreshFlag, onClienteClick }) {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
+  
 
   useEffect(() => {
     if (!idProyecto) return;
     setLoading(true);
-    fetch(`http://localhost:8000/inventario/clientes_por_proyecto?id_proyecto=${idProyecto}`)
+    fetch(`${API_BASE}inventario/clientes_por_proyecto?id_proyecto=${idProyecto}`)
       .then((res) => res.json())
       .then((data) => {
         setClientes(data.clientes || []);

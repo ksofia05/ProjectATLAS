@@ -8,6 +8,7 @@ import useUserStore from "../../stores/useUserStore";
 import { showLoadingToast } from "../common/popUp/Loading";
 import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import Loader from "../common/Loader";
+import { API_BASE } from "../../api/apiBase";
 
 const CreateProjectPanel = ({ disableCreate ,refreshProjects }) => {
   const user = useUserStore((state) => state.user);
@@ -32,7 +33,7 @@ const CreateProjectPanel = ({ disableCreate ,refreshProjects }) => {
         }
         // 1. Obtener el usuario por correo electrónico
         const usuarioResponse = await axios.get(
-          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+          `${API_BASE}tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
         const usuarioDb = usuarioResponse.data[0];
         if (!usuarioDb || !usuarioDb.idusuario) {
@@ -46,13 +47,13 @@ const CreateProjectPanel = ({ disableCreate ,refreshProjects }) => {
         if (usuarioDb.rol_idrol === 1) {
           // Admin
           const proyectosResponse = await axios.get(
-            `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+            `${API_BASE}tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
           );
           setProjects(proyectosResponse.data);
         } else if (usuarioDb.rol_idrol === 2) {
           // Colaborador
           const colaboradorResponse = await axios.get(
-            `http://localhost:8000/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
+            `${API_BASE}tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
           );
           const proyectos = colaboradorResponse.data.proyectos || [];
           setProjects(proyectos);
@@ -62,7 +63,7 @@ const CreateProjectPanel = ({ disableCreate ,refreshProjects }) => {
           for (const proyecto of proyectos) {
             try {
               const res = await axios.get(
-                `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
+                `${API_BASE}tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
               );
               const colaborador = res.data.colaboradores.find(
                 (c) => c.correo === email

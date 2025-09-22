@@ -53,9 +53,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -139,9 +139,36 @@ STATICFILES_DIRS = [BASE_DIR / "backend" / "autenticacion" / "static"]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+CORS_ALLOW_ALL_ORIGINS = True
 #cords headers
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "http://localhost:80",
+    "http://localhost:5173",
+    "http://127.0.0.1:80",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+]
+CORS_ALLOW_CREDENTIALS = True
+ALLOWED_HOSTS = ["*", "localhost", "frontend", "backend"]
+
+
+
+CSRF_TRUSTED_ORIGINS = [
+    # "http://localhost:8000/",
+    # "http://127.0.0.1:8000/",
+    # "http://localhost:5173",
+    # "http://frontend",
+    "http://localhost",
+    "http://localhost:80",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:80",
+    "http://127.0.0.1:8000",
+
+]
+
+
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",

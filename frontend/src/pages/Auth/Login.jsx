@@ -15,6 +15,7 @@ import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
 import { useAuth } from "../../context/AuthProvider";
+import { API_BASE } from "../../api/apiBase";
 
 const Login = () => {
   const location = useLocation();
@@ -106,7 +107,7 @@ const Login = () => {
         // Lógica de asociación de colaborador
         if (idProyecto && formData.email) {
           try {
-            const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+            const response = await fetch(`${API_BASE}tasks/api/v1/asociar_colaborador/`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

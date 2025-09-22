@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
+import { API_BASE } from "../api/apiBase";
 
 const useCollaboratorsStore = create(
   persist(
@@ -33,7 +34,7 @@ const useCollaboratorsStore = create(
 
         try {
           const response = await axios.get(
-            `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
+            `${API_BASE}tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
           );
 
           const colaboradores = response.data.colaboradores || [];
@@ -75,7 +76,7 @@ const useCollaboratorsStore = create(
         try {
           // Actualizar en el backend (en paralelo)
           await axios.patch(
-            `http://localhost:8000/tasks/api/v1/usuarios/${colaboradorId}/estado/`,
+            `${API_BASE}tasks/api/v1/usuarios/${colaboradorId}/estado/`,
             { estado: newState }
           );
 
@@ -110,7 +111,7 @@ const useCollaboratorsStore = create(
         
         try {
           const response = await axios.get(
-            `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
+            `${API_BASE}tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
           );
 
           const colaboradores = response.data.colaboradores || [];

@@ -113,7 +113,8 @@ def recuperacion_contra(request):
     token = str(uuid.uuid4())
     request.session['reset_token'] = token
     request.session['reset_email'] = email
-    reset_url = f"http://localhost:5173/password-reset/{token}?email={email}"
+    # reset_url = f"http://localhost:5173/password-reset/{token}?email={email}"
+    reset_url = f"http://localhost/password-reset/{token}?email={email}"
     asunto = 'Recuperacion de contrasena'
     html_content = render_to_string('autenticacion/email_recuperacion.html', {
         'usuario': usuario,
@@ -191,7 +192,8 @@ def invitacion_colaborador(request):
             pass
         
         # Despues de todas las validaciones anteriores, ahora si que se envie el correo
-        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+        # invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+        invitacion_url = f"http://localhost/invitacion-proyecto/{id_proyecto}"
         asunto = 'Invitación a colaborar en un proyecto'
         html_content = render_to_string('mensajeColabo.html', {
             'email': email,

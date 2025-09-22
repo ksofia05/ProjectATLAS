@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
+import { API_BASE } from "../../api/apiBase";
 
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
@@ -20,7 +21,7 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:8000/tasks/api/v1/save_proyect/", {
+      const response = await fetch(`${API_BASE}tasks/api/v1/save_proyect/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

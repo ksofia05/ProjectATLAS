@@ -1,6 +1,7 @@
 import axios from "axios";
 import { showErrorToast } from "../components/common/popUp/Loading";
 import toast from "react-hot-toast";
+import { API_BASE } from "../api/apiBase";
 
 export async function openDashboardIfActive(id_proyecto, user, toastId) {
   const id_usuario = user?.idUsuario || user?.idusuario;
@@ -11,7 +12,7 @@ export async function openDashboardIfActive(id_proyecto, user, toastId) {
   }
   try {
     const res = await axios.get(
-      `http://localhost:8000/tasks/api/v1/estado_colaborador_proyecto/?id_usuario=${id_usuario}&id_proyecto=${id_proyecto}`
+      `${API_BASE}tasks/api/v1/estado_colaborador_proyecto/?id_usuario=${id_usuario}&id_proyecto=${id_proyecto}`
     );
     if (res.data.estado !== "Activo") {
       if (toastId) toast.dismiss(toastId);

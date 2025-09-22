@@ -4,6 +4,7 @@ import { showErrorToast, showSuccessToast, showLoadingToast } from '../common/po
 import useUserStore from "../../stores/useUserStore";
 import WarningModal from '../dashboard/WarningModal';
 import toast from 'react-hot-toast';
+import { API_BASE } from '../../api/apiBase';
 
 const InventoryCard = ({
   project,
@@ -30,7 +31,7 @@ const InventoryCard = ({
     setLoading(true);
     const toastId=showLoadingToast("Eliminando proyecto...");
     try {
-      const response = await fetch("http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/", {
+      const response = await fetch(`${API_BASE}tasks/api/v1/quitar_colaborador_de_proyecto/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

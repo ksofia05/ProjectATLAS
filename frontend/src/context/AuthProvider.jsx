@@ -1,4 +1,3 @@
-// frontend/src/context/AuthProvider.jsx
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { client } from '../supabase/client';
 import { getUserProfile } from '../services/userService';

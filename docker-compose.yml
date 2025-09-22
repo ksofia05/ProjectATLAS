@@ -1,0 +1,31 @@
+# version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    command: >
+      sh -c "gunicorn backend.wsgi:application --workers 3 --bind 0.0.0.0:8000 --timeout 60"
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: backend.settings
+      GUNICORN_BIND: 0.0.0.0:8000
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge

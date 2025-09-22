@@ -29,73 +29,79 @@ import { Toaster } from "react-hot-toast";
 import NoTenerCuenta from "./components/common/NoTenerCuenta";
 import InvitacionProyectoRoute from "./components/common/InvitacionProyectpRoute";
 import CalendarAdvancedPage from "./pages/Dashboard/CalendarAdvancedPage";
-import { AuthProvider } from "./context/AuthProvider";
+import { AuthProvider,useAuth} from "./context/AuthProvider";
 import { NavbarTitleProvider } from "./context/NavbarTitleContext";
 
 
 const App = () => {
+  const { isLoading, isAuthenticated } = useAuth();
+  useEffect(() => {
+    console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+    console.log("VITE_API_BASE:", import.meta.env.VITE_API_BASE);
+  }, []);
   return (
+    <AuthProvider>
       <BrowserRouter>
-      <AuthProvider>
-      <NavbarTitleProvider>
-      <Routes>
+        <NavbarTitleProvider>
+          <Routes>
 
-        <Route path="/" element={<Navigate to="/home" />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/iniciar-sesion" element={<Login />} />
-        <Route path="/registrarse" element={<Register />} />
-        <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
-        <Route path="/email-recuperacion" element={<EmailRecovery />} />
-        <Route path="/reset-password" element={<PasswordReset />} />
-        <Route path="/terminos" element={<Terms />} />
-        <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
-        <Route path="/sobre-nosotros" element={<AboutUs />} />
-        <Route path="/notenercuenta" element={<NoTenerCuenta />} />
-        <Route
-          path="/invitacion-proyecto/:id"
-          element={<InvitacionProyectoRoute />}
-        />
-        <Route
-          path="/dashboard-create-project"
-          element={
-            <ProtectedRoute>
-              <DashboardCreateProject />
-            </ProtectedRoute>
-          }
-        />
-        {/* Rutas anidadas para dashboard */}
-        <Route
-          path="/dashboard/:id"
-          element={
-            <ProtectedRoute>
-                <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardMain />} />
-          <Route path="calendario" element={<CalendarPage />} />
-          <Route
-            path="calendario-avanzado"
-            element={<CalendarAdvancedPage />}
-          />
-          <Route path="colaboradores" element={<CollaboratorsPage />} />
-          <Route path="inventario" element={<InventoryPage />} />
-        </Route>
-        <Route
-          path="/perfil"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/404" element={<Error404 />} />
-        <Route path="*" element={<Error404 />} />
-      </Routes>
-      <Toaster />
-      </NavbarTitleProvider>
-      </AuthProvider >
-    </BrowserRouter>
+            <Route path="/" element={<Navigate to="/home" />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/iniciar-sesion" element={<Login />} />
+            <Route path="/registrarse" element={<Register />} />
+            <Route path="/recuperar-contrasena" element={<PasswordRecovery />} />
+            <Route path="/email-recuperacion" element={<EmailRecovery />} />
+            <Route path="/reset-password" element={<PasswordReset />} />
+            <Route path="/terminos" element={<Terms />} />
+            <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
+            <Route path="/sobre-nosotros" element={<AboutUs />} />
+            <Route path="/notenercuenta" element={<NoTenerCuenta />} />
+            <Route
+              path="/invitacion-proyecto/:id"
+              element={<InvitacionProyectoRoute />}
+            />
+            <Route
+              path="/dashboard-create-project"
+              element={
+                <ProtectedRoute>
+                  <DashboardCreateProject />
+                </ProtectedRoute>
+              }
+            />
+            {/* Rutas anidadas para dashboard */}
+            <Route
+              path="/dashboard/:id"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardMain />} />
+              <Route path="calendario" element={<CalendarPage />} />
+              <Route
+                path="calendario-avanzado"
+                element={<CalendarAdvancedPage />}
+              />
+              <Route path="colaboradores" element={<CollaboratorsPage />} />
+              <Route path="inventario" element={<InventoryPage />} />
+            </Route>
+            <Route
+              path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/404" element={<Error404 />} />
+            <Route path="*" element={<Error404 />} />
+          </Routes>
+          <Toaster />
+        </NavbarTitleProvider>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

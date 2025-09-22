@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { API_BASE } from "../api/apiBase";
 
 const useProjectStore = create(
   persist(
@@ -22,8 +23,8 @@ const useProjectStore = create(
         set({ isLoading: true });
 
         const endpoints = [
-          `http://localhost:8000/tasks/api/v1/info_proyecto_colaboradores/?id_proyecto=${projectId}`,
-          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
+          `${API_BASE}tasks/api/v1/info_proyecto_colaboradores/?id_proyecto=${projectId}`,
+          `${API_BASE}tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
         ];
 
         try {
