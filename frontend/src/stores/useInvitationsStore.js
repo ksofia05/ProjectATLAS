@@ -1,201 +1,225 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useInvitationsStore = create((set, get) => ({
-  // Estado
-  invitacionesPendientes: {}, // { [projectId]: [{ email, fecha_invitacion, nombre_invitador }] }
-  invitacionesOptimistas: {}, // { [projectId]: [{ email, fecha_invitacion, nombre_invitador, isOptimistic: true }] }
-  loading: false,
+const useInvitationsStore = create(
+  persist(
+    (set, get) => ({
+      // Estado
+      invitacionesPendientes: {}, 
+      invitacionesOptimistas: {}, 
+      loading: false,
 
-  // Obtener invitaciones pendientes (incluyendo optimistas)
-  getPendingInvitations: (projectId, colaboradoresActivos = []) => {
-    if (!projectId) return [];
-    
-    const state = get();
-    const pendientes = state.invitacionesPendientes[projectId] || [];
-    const optimistas = state.invitacionesOptimistas[projectId] || [];
-    
-    // Combinar invitaciones reales + optimistas
-    const todasLasInvitaciones = [...pendientes, ...optimistas];
-    
-    // Filtrar las que ya son colaboradores activos
-    const emailsColaboradores = colaboradoresActivos
-      .map(c => c.correo ? c.correo.toLowerCase() : '')
-      .filter(email => email);
-    
-    return todasLasInvitaciones.filter(inv => 
-      inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
-    );
-  },
+      //  Obtener invitaciones pendientes (incluyendo optimistas)
+      getPendingInvitations: (projectId, colaboradoresActivos = []) => {
+        if (!projectId) return [];
+        
+        const state = get();
+        const pendientes = state.invitacionesPendientes[projectId] || [];
+        const optimistas = state.invitacionesOptimistas[projectId] || [];
+        
+        const todasLasInvitaciones = [...pendientes, ...optimistas];
+        
+        const emailsColaboradores = colaboradoresActivos
+          .map(c => c.correo ? c.correo.toLowerCase() : '')
+          .filter(email => email);
+        
+        return todasLasInvitaciones.filter(inv => 
+          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+        );
+      },
 
-  // Agregar invitación optimista (mostrar inmediatamente)
-  addOptimisticInvitation: (projectId, email, nombreInvitador) => {
-    if (!projectId || !email || !nombreInvitador) return;
+      //  NUEVO: Sincronizar invitaciones desde el servidor
+      syncInvitationsFromServer: async (projectId) => {
+        if (!projectId) return;
 
-    set(state => ({
-      invitacionesOptimistas: {
-        ...state.invitacionesOptimistas,
-        [projectId]: [
-          ...(state.invitacionesOptimistas[projectId] || []),
-          {
-            email: email.trim(),
-            fecha_invitacion: new Date().toISOString(),
-            nombre_invitador: nombreInvitador,
-            isOptimistic: true,
-            id: `optimistic-${Date.now()}-${Math.random()}`
-          }
-        ]
-      }
-    }));
-    
-    console.log('Invitación optimista agregada:', email);
-  },
-
-  // Confirmar invitación optimista (cuando el servidor responde OK)
- confirmOptimisticInvitation: (projectId, email) => {
-  if (!projectId || !email) return;
-
-  set(state => {
-    const optimistas = state.invitacionesOptimistas[projectId] || [];
-    const invitacionConfirmada = optimistas.find(inv => 
-      inv.email && inv.email.toLowerCase() === email.toLowerCase()
-    );
-
-    if (invitacionConfirmada) {
-      // Remover de optimistas
-      const nuevasOptimistas = optimistas.filter(inv => 
-        !inv.email || inv.email.toLowerCase() !== email.toLowerCase()
-      );
-
-      // Agregar a pendientes reales
-      const pendientesActuales = state.invitacionesPendientes[projectId] || [];
-      
-      return {
-        invitacionesOptimistas: {
-          ...state.invitacionesOptimistas,
-          [projectId]: nuevasOptimistas
-        },
-        invitacionesPendientes: {
-          ...state.invitacionesPendientes,
-          [projectId]: [
-            ...pendientesActuales,
+        set(state => ({ loading: true }));
+        
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:8000/tasks/api/v1/invitacionesProyecto/${projectId}/`,
             {
-              ...invitacionConfirmada,
-              isOptimistic: false, // Ya no es optimista
-              fecha_invitacion: new Date().toISOString() //  Actualizar fecha real
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
             }
-          ]
-        }
-      };
-    }
-    return state;
-  });
-  
-  console.log('Invitación confirmada y movida a pendientes:', email);
-},
+          );
 
-  //  Cancelar invitación optimista (cuando el servidor responde ERROR)
-  cancelOptimisticInvitation: (projectId, email) => {
-    if (!projectId || !email) return;
+          if (response.ok) {
+            const data = await response.json();
+            const invitacionesServidor = data.invitaciones || [];
 
-    set(state => {
-      const optimistas = state.invitacionesOptimistas[projectId] || [];
-      const nuevasOptimistas = optimistas.filter(inv => 
-        !inv.email || inv.email.toLowerCase() !== email.toLowerCase()
-      );
+            set(state => ({
+              invitacionesPendientes: {
+                ...state.invitacionesPendientes,
+                [projectId]: invitacionesServidor.map(inv => ({
+                  email: inv.email,
+                  fecha_invitacion: inv.fecha_invitacion,
+                  nombre_invitador: inv.nombre_invitador,
+                  isOptimistic: false,
+                  id: `server-${inv.id}`
+                }))
+              },
+              loading: false
+            }));
 
-      return {
-        invitacionesOptimistas: {
-          ...state.invitacionesOptimistas,
-          [projectId]: nuevasOptimistas
-        }
-      };
-    });
-    
-    console.log('Invitación optimista cancelada:', email);
-  },
-
-  //  Agregar invitación confirmada (desde el servidor)
-  addSentInvitation: (projectId, email, nombreInvitador) => {
-    if (!projectId || !email) return;
-
-    set(state => ({
-      invitacionesPendientes: {
-        ...state.invitacionesPendientes,
-        [projectId]: [
-          ...(state.invitacionesPendientes[projectId] || []),
-          {
-            email: email.trim(),
-            fecha_invitacion: new Date().toISOString(),
-            nombre_invitador: nombreInvitador,
-            isOptimistic: false,
-            id: `confirmed-${Date.now()}`
+            console.log(' Invitaciones sincronizadas desde servidor para proyecto:', projectId);
+          } else {
+            console.warn('No se pudieron obtener invitaciones del servidor');
+            set(state => ({ loading: false }));
           }
-        ]
+        } catch (error) {
+          console.error('Error sincronizando invitaciones:', error);
+          set(state => ({ loading: false }));
+        }
+      },
+
+      //  Agregar invitación optimista
+      addOptimisticInvitation: (projectId, email, nombreInvitador) => {
+        if (!projectId || !email || !nombreInvitador) return;
+
+        set(state => ({
+          invitacionesOptimistas: {
+            ...state.invitacionesOptimistas,
+            [projectId]: [
+              ...(state.invitacionesOptimistas[projectId] || []),
+              {
+                email: email.trim(),
+                fecha_invitacion: new Date().toISOString(),
+                nombre_invitador: nombreInvitador,
+                isOptimistic: true,
+                id: `optimistic-${Date.now()}-${Math.random()}`
+              }
+            ]
+          }
+        }));
+        
+        console.log(' Invitación optimista agregada:', email);
+      },
+
+      //  Confirmar invitación optimista
+      confirmOptimisticInvitation: (projectId, email) => {
+        if (!projectId || !email) return;
+
+        set(state => {
+          const optimistas = state.invitacionesOptimistas[projectId] || [];
+          const invitacionConfirmada = optimistas.find(inv => 
+            inv.email && inv.email.toLowerCase() === email.toLowerCase()
+          );
+
+          if (invitacionConfirmada) {
+            const nuevasOptimistas = optimistas.filter(inv => 
+              !inv.email || inv.email.toLowerCase() !== email.toLowerCase()
+            );
+
+            const pendientesActuales = state.invitacionesPendientes[projectId] || [];
+            
+            return {
+              invitacionesOptimistas: {
+                ...state.invitacionesOptimistas,
+                [projectId]: nuevasOptimistas
+              },
+              invitacionesPendientes: {
+                ...state.invitacionesPendientes,
+                [projectId]: [
+                  ...pendientesActuales,
+                  {
+                    ...invitacionConfirmada,
+                    isOptimistic: false,
+                    fecha_invitacion: new Date().toISOString(),
+                    id: `confirmed-${Date.now()}`
+                  }
+                ]
+              }
+            };
+          }
+          return state;
+        });
+        
+        console.log(' Invitación optimista confirmada:', email);
+      },
+
+      //  Cancelar invitación optimista
+      cancelOptimisticInvitation: (projectId, email) => {
+        if (!projectId || !email) return;
+
+        set(state => {
+          const optimistas = state.invitacionesOptimistas[projectId] || [];
+          const nuevasOptimistas = optimistas.filter(inv => 
+            !inv.email || inv.email.toLowerCase() !== email.toLowerCase()
+          );
+
+          return {
+            invitacionesOptimistas: {
+              ...state.invitacionesOptimistas,
+              [projectId]: nuevasOptimistas
+            }
+          };
+        });
+        
+        console.log(' Invitación optimista cancelada:', email);
+      },
+
+      //  Filtrar invitaciones pendientes (mejorado con sync)
+      filterPendingInvitations: async (projectId, colaboradoresActivos = []) => {
+        if (!projectId) return;
+        
+        // Primero sincronizar desde servidor
+        await get().syncInvitationsFromServer(projectId);
+        
+        // Luego filtrar localmente
+        const pendientes = get().invitacionesPendientes[projectId] || [];
+        const emailsColaboradores = colaboradoresActivos
+          .map(c => c.correo ? c.correo.toLowerCase() : '')
+          .filter(email => email);
+        
+        const invitacionesFiltradas = pendientes.filter(inv => 
+          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+        );
+        
+        set(state => ({
+          invitacionesPendientes: {
+            ...state.invitacionesPendientes,
+            [projectId]: invitacionesFiltradas
+          }
+        }));
+        
+        console.log(' Invitaciones filtradas para proyecto:', projectId);
+      },
+
+      //  Limpiar invitaciones de un proyecto
+      clearProjectInvitations: (projectId) => {
+        if (!projectId) return;
+
+        set(state => {
+          const nuevasPendientes = { ...state.invitacionesPendientes };
+          const nuevasOptimistas = { ...state.invitacionesOptimistas };
+          
+          delete nuevasPendientes[projectId];
+          delete nuevasOptimistas[projectId];
+          
+          return {
+            invitacionesPendientes: nuevasPendientes,
+            invitacionesOptimistas: nuevasOptimistas
+          };
+        });
+      },
+
+      //  Limpiar todas las invitaciones
+      clearAllInvitations: () => {
+        set({
+          invitacionesPendientes: {},
+          invitacionesOptimistas: {},
+          loading: false
+        });
       }
-    }));
-  },
-
-  //  CORREGIDO: Filtrar invitaciones pendientes
-  filterPendingInvitations: async (projectId, colaboradoresActivos = []) => {
-    if (!projectId) return;
-    
-    set(state => ({ loading: true }));
-
-    try {
-      // Usar nombres de propiedades correctos del estado
-      const pendientes = get().invitacionesPendientes[projectId] || [];
-      
-      // Filtrar las que ya no son relevantes
-      const emailsColaboradores = colaboradoresActivos
-        .map(c => c.correo ? c.correo.toLowerCase() : '')
-        .filter(email => email);
-      
-      const invitacionesFiltradas = pendientes.filter(inv => 
-        inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
-      );
-      
-      set(state => ({
-        invitacionesPendientes: {
-          ...state.invitacionesPendientes,
-          [projectId]: invitacionesFiltradas
-        },
-        loading: false
-      }));
-      
-      console.log('Invitaciones filtradas para proyecto:', projectId);
-      
-    } catch (error) {
-      console.error('Error filtrando invitaciones:', error);
-      set(state => ({ loading: false }));
+    }),
+    {
+      name: 'invitations-storage', //  Nombre para localStorage
+      partialize: (state) => ({ 
+        //  Solo persistir invitaciones confirmadas, no optimistas
+        invitacionesPendientes: state.invitacionesPendientes 
+      })
     }
-  },
-
-  // Limpiar invitaciones de un proyecto
-  clearProjectInvitations: (projectId) => {
-    if (!projectId) return;
-
-    set(state => {
-      const nuevasPendientes = { ...state.invitacionesPendientes };
-      const nuevasOptimistas = { ...state.invitacionesOptimistas };
-      
-      delete nuevasPendientes[projectId];
-      delete nuevasOptimistas[projectId];
-      
-      return {
-        invitacionesPendientes: nuevasPendientes,
-        invitacionesOptimistas: nuevasOptimistas
-      };
-    });
-  },
-
-  //  Limpiar todas las invitaciones
-  clearAllInvitations: () => {
-    set({
-      invitacionesPendientes: {},
-      invitacionesOptimistas: {},
-      loading: false
-    });
-  }
-}));
+  )
+);
 
 export default useInvitationsStore;

@@ -27,6 +27,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     addOptimisticInvitation,
     confirmOptimisticInvitation,
     cancelOptimisticInvitation,
+    syncInvitationsFromServer,
     filterPendingInvitations
   } = invitationsStore;
 
@@ -55,13 +56,17 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
   const invitacionesList = getInvitacionesPendientes();
 
-  useEffect(() => {
+   useEffect(() => {
     setShowModal(open);
     if (open && projectId) {
       fetchProjectInfo(projectId);
       fetchCollaborators(projectId);
-
-      filterPendingInvitations(projectId, colaboradoresActivos);
+        const loadInvitations = async () => {
+        await syncInvitationsFromServer(projectId);
+        filterPendingInvitations(projectId, colaboradoresActivos);
+      };
+      
+      loadInvitations();
     }
   }, [
     open,
@@ -70,6 +75,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     fetchCollaborators,
     colaboradoresActivos,
     filterPendingInvitations,
+    syncInvitationsFromServer // ✅ NUEVO
   ]);
 
   useEffect(() => {
