@@ -62,15 +62,19 @@ const CalendarCard = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl px-6 sm:px-8 md:px-9 py-6 sm:py-7 md:py-8 w-full full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
+      className={`bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl px-6 sm:px-8 md:px-9 py-6 sm:py-7 md:py-8 w-full full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
       onClick={handleCalendarClick}
     >
       <div className="flex items-center justify-between mb-2 sm:mb-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="text-lg sm:text-xl md:text-2xl font-bold">Calendario</h3>
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold">
+            Calendario
+          </h3>
           <i className="bi bi-calendar-event text-lg sm:text-xl md:text-2xl text-gray-300" />
         </div>
-        <div className="text-xl sm:text-2xl md:text-3xl font-bold">{monthName}</div>
+        <div className="text-xl sm:text-2xl md:text-3xl font-bold">
+          {monthName}
+        </div>
       </div>
       <div className="text-gray-400 text-sm sm:text-base font-semibold mb-2 sm:mb-3 ml-1">
         (Trabajos Pendientes)
@@ -78,7 +82,10 @@ const CalendarCard = ({
       <div>
         <div className="grid grid-cols-7 gap-y-1 mb-1 sm:mb-2">
           {diasSemana.map((dia) => (
-            <div key={dia} className="text-center font-semibold text-xs sm:text-sm md:text-base">
+            <div
+              key={dia}
+              className="text-center font-semibold text-xs sm:text-sm md:text-base"
+            >
               {dia}
             </div>
           ))}

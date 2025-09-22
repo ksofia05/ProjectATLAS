@@ -128,7 +128,7 @@ const DashboardLayout = () => {
   const isColaborador = user?.rol_idRol === 2 || user?.rol_idrol === 2;
 
   return (
-    <div className="min-h-screen bg-[#0a0a12]">
+    <div className="min-h-screen bg-black">
       <Sidebar
         showLogo={true}
         menuItems={getMenuItems()}
@@ -137,7 +137,6 @@ const DashboardLayout = () => {
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
       />
-
       <div className="sm:ml-0 md:ml-0 lg:ml-72 flex flex-col min-h-screen">
         <div className="sticky top-0 z-10 pt-6">
           <div className="px-8">
