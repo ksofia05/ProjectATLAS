@@ -28,6 +28,7 @@ export default function InventoryTable({ onEmojiClick }) {
     refreshClientes,
     shouldRefresh,
   } = useClientsStore();
+ 
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
@@ -35,6 +36,11 @@ export default function InventoryTable({ onEmojiClick }) {
   const [refreshFlag, setRefreshFlag] = useState(0); // Nuevo estado
   const [showEditDrawer, setShowEditDrawer] = useState(false);
   const [clienteEditando, setClienteEditando] = useState(null);
+  const clientesFiltrados = getClientesFiltrados(estadoSeleccionado, searchTerm);
+  const [currentPage, setCurrentPage] = useState(1);
+  const startIdx = (currentPage - 1) * rowsPerPage;
+  const clientesPaginaActual = clientesFiltrados.slice(startIdx, startIdx + rowsPerPage);
+  
 
 
   useEffect(() => {
@@ -49,12 +55,19 @@ export default function InventoryTable({ onEmojiClick }) {
       fetchClientes(email);
     }
   }, [user, isLoading, initialized, fetchClientes, shouldRefresh]);
+  
 
   // Función para manejar cuando se agrega un nuevo cliente
   const handleClienteAdded = () => {
     console.log('Cliente agregado, cerrando drawer');
+    fetchClientes();
     setShowDrawer(false);
   };
+  const handleClienteEdited = () => {
+  useClientsStore.getState().refreshClientes(email); // email del usuario actual
+  setShowEditDrawer(false);
+  setClienteEditando(null);
+};
 
   // Exportar a Excel
   const exportToExcel = (data) => {
@@ -94,8 +107,7 @@ export default function InventoryTable({ onEmojiClick }) {
     doc.save("clientes.pdf");
   };
 
-  //  Obtener clientes filtrados usando el selector del store
-  const clientesFiltrados = getClientesFiltrados(estadoSeleccionado, searchTerm);
+ 
 
   // Configuración de columnas
   const columns = [
@@ -223,9 +235,11 @@ export default function InventoryTable({ onEmojiClick }) {
   ];
 
   const handleExport = (value) => {
-    if (value === "excel") exportToExcel(clientesFiltrados);
-    if (value === "pdf") exportToPDF(clientesFiltrados);
-  };
+  if (value === "excel") exportToExcel(clientesPaginaActual);
+  if (value === "pdf") exportToPDF(clientesPaginaActual);
+};
+
+
 
   //  Función para reintentar carga de datos
   const handleRetry = () => {
@@ -338,6 +352,8 @@ const handleExportAgendamientos = async (cliente, formato) => {
         exportOptions={exportOptions}
         onExport={handleExport}
         rowsPerPage={rowsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
         onRowsPerPageChange={setRowsPerPage}
         rowsPerPageOptions={[10, 20, 30, 40, 50, "Todos"]}
         extraActions={extraActions}
