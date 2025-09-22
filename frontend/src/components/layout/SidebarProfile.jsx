@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import UpdateProfilePhotoModal from "./UpdateProfilePhotoModal";
 import userAtlas from "../../assets/atlasUser.png";
 import { Link } from "react-router-dom";
 
 export default function SidebarProfile() {
-  const { user, isLoading } = useAuth();
+  const { user,userProfile, isLoading } = useAuth();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   // datos del user
