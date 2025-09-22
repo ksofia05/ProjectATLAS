@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import Input from "./Input";
 import DropdownMenu from "./DropdownMenu";
 import CustomScrollSelect from "./CustomScrollSelect";
 import Loader from "./Loader";
+
 
 const DataTable = ({
   title,
@@ -27,14 +28,18 @@ const DataTable = ({
   emptyMessage = "No hay datos disponibles",
   className = "",
 }) => {
-  const filteredData = data.slice(0, rowsPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
+  const startIdx = (currentPage - 1) * rowsPerPage;
+  const filteredData = data.slice(startIdx, startIdx + rowsPerPage);
   const location = useLocation();
+  
 
   // Detectar la ruta actual para mostrar columnas específicas
   const isColaboradoresRoute = location.pathname.includes("/colaboradores");
   const isInventarioRoute = location.pathname.includes("/inventario");
 
   // Configurar columnas móviles según la ruta
+
   const getMobileColumns = () => {
     if (isColaboradoresRoute) {
       return {
@@ -66,8 +71,8 @@ const DataTable = ({
             <DropdownMenu
               buttonLabel="Exportar"
               options={exportOptions}
-              onSelect={onExport}
-              buttonClassName="px-4 py-2.5 font-medium text-sm bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white rounded-xl border border-slate-700/50 hover:border-slate-600/60 transition-all duration-200"
+              onSelect={(option) => onExport(option, filteredData)} 
+              buttonClassName="px-3 sm:px-4 md:px-5 py-2 font-semibold text-sm sm:text-base hover:shadow shadow-[#8d49e7]"
               icon={<i className="bi bi-download mr-2"></i>}
             />
           )}
@@ -158,57 +163,45 @@ const DataTable = ({
 
             {/* Vista desktop - Tabla completa */}
             <div className="hidden sm:flex flex-col h-full">
-              {/* Header desktop */}
-              <div className="bg-slate-800/40 backdrop-blur-sm border-b border-slate-700/50 flex-shrink-0">
-                <table className="w-full text-center table-fixed">
-                  <colgroup>
-                    {columns.map((col, idx) => (
-                      <col key={idx} style={{ width: col.width }} />
-                    ))}
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      {columns.map((col, idx) => (
-                        <th
-                          key={idx}
-                          className="py-2 sm:py-3 px-2 sm:px-3 md:px-4 font-bold text-purple-300 text-xs sm:text-sm uppercase tracking-wide"
-                        >
-                          {col.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                </table>
-              </div>
+              {/* Contenido del panel con scroll independiente */}
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle z-0">
+             <table className="min-w-full text-center table-fixed z-0">
+             <colgroup>
+             {columns.map((col, idx) => (
+             <col key={idx} style={{ width: col.width }} />
+         ))}
+             </colgroup>
+             <thead>
+            <tr>
+             {columns.map((col, idx) => (
+             <th
+             key={idx}
+             className="py-3 px-4 font-bold text-gray-200 text-sm uppercase tracking-wide bg-[#1a1a2e] sticky top-0 z-10"
+            >
+              {col.label}
+          </th>
+        ))}
+           </tr>
+         </thead>
+             <tbody>
+              {filteredData.map((item, idx) => (
+             <tr
+              key={item.id || idx}
+              className="border-b-2 border-[#232336] hover:bg-purple-500/10 transition-all duration-200 cursor-pointer"
+             onClick={() => onRowClick && onRowClick(item, idx)}
+        >
+               {columns.map((col, colIdx) => (
+             <td key={colIdx} className="py-2 px-4">
+               {col.render ? col.render(item, idx) : item[col.key]}
+            </td>
+          ))}
+        </tr>
+      ))}
+             </tbody>
+       </table>
+  </div>
+              
 
-              {/* Contenido desktop con scroll */}
-              <div className="flex-1 overflow-y-auto">
-                <table className="w-full text-center table-fixed">
-                  <colgroup>
-                    {columns.map((col, idx) => (
-                      <col key={idx} style={{ width: col.width }} />
-                    ))}
-                  </colgroup>
-                  <tbody>
-                    {filteredData.map((item, idx) => (
-                      <tr
-                        key={item.id || idx}
-                        className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-all duration-200 cursor-pointer group"
-                        onClick={() => onRowClick && onRowClick(item, idx)}
-                      >
-                        {columns.map((col, colIdx) => (
-                          <td
-                            key={colIdx}
-                            className="py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm text-gray-200 group-hover:text-white transition-colors"
-                          >
-                            {col.render ? col.render(item, idx) : item[col.key]}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </>
         )}

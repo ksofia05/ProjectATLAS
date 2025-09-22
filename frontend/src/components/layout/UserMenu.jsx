@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import ButtonGrey from "../common/ButtonGrey";
 import userAtlas from "../../assets/atlasUser.png"
 

@@ -4,6 +4,7 @@ import { isSunday, getHolidayInfo } from "../../utils/holidayUtils.js";
 import dayjs from "dayjs";
 import { client as supabase } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore"; 
+import useProjectsStore from "../../stores/useProjectsStore"; 
 
 const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const dayNames = [
@@ -23,39 +24,38 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   
   const [tasksByDay, setTasksByDay] = useState({});
   const user = useUserStore((state) => state.user);
+  
+  
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      if (!user) return;
-      const startDate = dayjs()
-        .year(year)
-        .month(month)
-        .startOf("month")
-        .format("YYYY-MM-DD");
-      const endDate = dayjs()
-        .year(year)
-        .month(month)
-        .endOf("month")
-        .format("YYYY-MM-DD");
+const fetchTasks = async () => {
+  if (!user) return;
+  const startDate = dayjs().year(year).month(month).startOf("month").format("YYYY-MM-DD");
+  const endDate = dayjs().year(year).month(month).endOf("month").format("YYYY-MM-DD");
 
-      const { data, error } = await supabase
-        .from("Tareas")
-        .select("*")
-        .gte("fechaCreacion", startDate)
-        .lte("fechaCreacion", endDate);
+  const { data, error } = await supabase
+    .from("Tareas")
+    .select("*")
+    .gte("fechaCreacion", startDate)
+    .lte("fechaCreacion", endDate)
+    .eq("id_usuario", user.idUsuario) 
+    console.log("Supabase error:", error);
+console.log("Tareas recibidas:", data);
+     
+  
 
-      if (!error && data) {
-        const grouped = {};
-        data.forEach((task) => {
-          const day = dayjs(task.fechaCreacion).date();
-          if (!grouped[day]) grouped[day] = [];
-          grouped[day].push(task);
-        });
-        setTasksByDay(grouped);
-      }
-    };
+  if (!error && data) {
+    const grouped = {};
+    data.forEach((task) => {
+      const day = dayjs(task.fechaCreacion).date();
+      if (!grouped[day]) grouped[day] = [];
+      grouped[day].push(task);
+    });
+    setTasksByDay(grouped);
+  }
+};
     fetchTasks();
-  }, [year, month, user]);
+  }, [year, month, user,]);
 
 
   const generateCalendarDays = () => {
@@ -202,11 +202,11 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 <div className="flex-1 space-y-1">
                   {dayObj.isCurrentMonth && tasksByDay[dayObj.day] && (
                     <div className="flex flex-col gap-1 mt-1">
-                      {tasksByDay[dayObj.day].map((task, idx) => (
+                      {tasksByDay[dayObj.day]?.map((task, idx) => (
                         <div
-                          key={task.id_Tarea || idx}
-                          className="h-1 rounded-full bg-purple-400 w-3/4 mx-auto"
-                          title={task.nombreTarea}
+                        key={task.id_Tarea || idx}
+                        className="h-1 rounded-full bg-purple-400 w-3/4 mx-auto"
+                        title={task.nombreTarea}
                         />
                       ))}
                     </div>
