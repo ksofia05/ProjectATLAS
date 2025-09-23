@@ -142,13 +142,11 @@ export default function TasksListDrawer({
   const confirmDeleteAllCompletedTasks = async () => {
     const idUsuario = tasks[0]?.id_usuario;
     if (!idUsuario) return;
-    // busca en la BD y elimina la tarea
     await supabase
       .from("Tareas")
       .delete()
       .eq("id_usuario", idUsuario)
       .eq("filtro", "completado");
-    // se vuelve a consultar la BD para  reflejar cambios
     const { data, error } = await supabase
       .from("Tareas")
       .select("*")
@@ -162,6 +160,13 @@ export default function TasksListDrawer({
 
   const isCompleteButtonDisabled = selectedTaskIds.size === 0;
 
+  // Cierra el modal de confirmación si el panel se cierra
+  useEffect(() => {
+    if (!open) {
+      setShowDeleteModal(false);
+    }
+  }, [open]);
+
   if (!mounted) return null;
 
   return (
@@ -174,8 +179,9 @@ export default function TasksListDrawer({
               ? "backdrop-blur-[2px] bg-black/20 pointer-events-auto"
               : "backdrop-blur-0 bg-transparent pointer-events-none"
           }
+          ${showDeleteModal ? "pointer-events-none" : ""}
         `}
-        onClick={onClose}
+        onClick={showDeleteModal ? undefined : onClose}
         aria-label="Cerrar lista de tareas"
       />
       <aside
@@ -322,7 +328,6 @@ export default function TasksListDrawer({
         </div>
 
         <div className="mt-auto pt-4 gap-3">
-          {/* Contenedor con animación para el botón de completar */}
           <div
             className={`transition-all duration-300 ease-out transform ${
               selectedTaskIds.size > 0
