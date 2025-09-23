@@ -194,7 +194,7 @@ export default function CalendarAdvancedPage() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] rounded-3xl p-6 w-full text-white shadow-lg border-slate-700/50">
+      <div className="bg-gradient-to-r from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 rounded-3xl p-6 w-full text-white shadow-lg border border-slate-800/40">
         <BreadcrumbNavigation />
 
         {/* Navegación principal */}
@@ -229,7 +229,7 @@ export default function CalendarAdvancedPage() {
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
                 viewMode === "year"
                   ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
               }`}
             >
               Año
@@ -239,7 +239,7 @@ export default function CalendarAdvancedPage() {
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
                 viewMode === "month"
                   ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
               }`}
             >
               Mes
@@ -249,7 +249,7 @@ export default function CalendarAdvancedPage() {
               className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
                 viewMode === "day"
                   ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-gradient-to-r from-[#1a1a2e] to-[#1a1a2e] via-[#232340] text-gray-300 border border-slate-600/40 hover:border-purple-500/50 hover:text-white"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
               }`}
             >
               Día
