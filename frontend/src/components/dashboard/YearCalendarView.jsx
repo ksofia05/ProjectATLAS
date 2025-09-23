@@ -80,7 +80,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
         return (
           <div
             key={monthIndex}
-            className="bg-[#1a1a2e] rounded-xl p-4 border border-gray-600/30 hover:border-purple-500/50 hover:bg-[#232340] transition-all duration-300 cursor-pointer group"
+            className="bg-gradient-to-br from-slate-700/25 to-slate-800/30 hover:from-slate-600/35 hover:to-slate-700/40 border border-slate-600/30 hover:border-purple-500/50 rounded-xl p-4 transition-all duration-300 cursor-pointer group backdrop-blur-sm"
             onClick={() => onMonthSelect(monthIndex)}
           >
             <h3 className="text-white text-lg font-semibold mb-3 text-center group-hover:text-purple-300 transition-colors">
@@ -109,7 +109,7 @@ const YearCalendarView = ({ year, onMonthSelect }) => {
                       dayObj.isCurrentMonth
                         ? dayObj.isToday
                           ? "bg-purple-600 text-white font-bold"
-                          : "text-white hover:bg-gray-700"
+                          : "text-white hover:bg-slate-600/50"
                         : "text-gray-500"
                     }
                   `}
