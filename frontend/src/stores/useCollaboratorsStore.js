@@ -11,13 +11,14 @@ const useCollaboratorsStore = create(
       lastUpdated: null,
 
       // Cargar colaboradores del proyecto
-      fetchCollaborators: async (projectId) => {
+      fetchCollaborators: async (projectId, { force = false } = {}) => {
         if (!projectId) return;
 
         const { lastProjectId, collaborators, lastUpdated } = get();
 
         const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
         const shouldRefresh =
+          force ||
           lastProjectId !== projectId ||
           collaborators.length === 0 ||
           !lastUpdated ||
@@ -59,6 +60,28 @@ const useCollaboratorsStore = create(
           set({ isLoading: false });
         }
       },
+
+      addCollaborator: (colab)=> {
+        if (!colab) return;
+        const { collaborators } = get();
+        const idNorm = colab.id || colab.idusuario || colab.idUsuario;
+        if (collaborators.some(c => c.id === idNorm)) return;
+        set({
+          collaborators: [
+            ...collaborators,
+            { ...colab, id: idNorm }
+          ],
+          lastUpdated: Date.now(),
+        });
+      },
+      removeCollaborator: (colaboradorId) => {
+        const { collaborators } = get();
+        set({
+          collaborators: collaborators.filter(c => c.id !== colaboradorId),
+          lastUpdated: Date.now(),
+        });
+      },
+      
 
       // Actualización optimista del estado del colaborador
       updateCollaboratorState: async (colaboradorId, newState) => {
@@ -117,33 +140,10 @@ const useCollaboratorsStore = create(
       // Forzar recarga de colaboradores
       forceRefresh: async (projectId) => {
         if (!projectId) return;
-
-        console.log("Forzando recarga de colaboradores...");
-        set({ isLoading: true, lastUpdated: null });
-
-        try {
-          const response = await axios.get(
-            `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
-          );
-
-          const colaboradores = response.data.colaboradores || [];
-          const normalizedCollaborators = colaboradores.map((colab) => ({
-            ...colab,
-            id: colab.id || colab.idusuario || colab.idUsuario,
-          }));
-
-          set({
-            collaborators: normalizedCollaborators,
-            lastProjectId: projectId,
-            lastUpdated: Date.now(),
-            isLoading: false,
-          });
-
-          console.log("Colaboradores recargados desde servidor");
-        } catch (error) {
-          console.error("Error recargando colaboradores:", error);
-          set({ isLoading: false });
-        }
+        console.log("Force refresh (join/remove)...");
+        set({ isLoading: true });
+        await get().fetchCollaborators(projectId, { force: true });
+        
       },
 
       // Invalidar cache

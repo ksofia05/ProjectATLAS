@@ -81,6 +81,13 @@
             background-color: #e2e8f0;
             margin: 30px 0;
         }
+        .security-note {
+            background-color: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
     </style>
 </head>
 <body>
@@ -100,12 +107,11 @@
                 </a>
             </div>
             <div class="divider"></div>
-            <p style="color:#6b7280;font-size:14px;text-align:center">
-                Si tienes problemas para entrar por el botón, copia y pega la siguiente URL en tu navegador:
-            </p>
-            <p style="word-break:break-all;font-size:14px;text-align:center">
-                <a href="{{ invitacion_url }}" target="_blank">{{ invitacion_url }}</a>
-            </p>
+            <div class="security-note">
+                <p style="margin: 0; font-size: 14px;">
+                    <strong>🛡️ Nota de seguridad:</strong> Este correo es unicamente para cada proyecto. Si no solicitaste este cambio, puedes ignorar este correo.
+                </p>
+            </div>
         </div>
         <div class="footer">
             <p>© 2025 Atlas. Todos los derechos reservados.</p>
