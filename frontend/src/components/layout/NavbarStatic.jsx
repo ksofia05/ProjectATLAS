@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import UserMenu from "./UserMenu";
 import { useAuth } from "../../context/AuthProvider";
-import ButtonGrey from "../common/ButtonGrey";
 import userAtlas from "../../assets/atlasUser.png";
 import ButtonSidebar from "../buttonSidebar";
 
@@ -14,12 +13,15 @@ const NavbarStatic = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const userRef = useRef(null);
 
-  const { user, userProfile, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   const getUserName = () => {
     if (!user) return isLoading ? "Cargando..." : "Invitado";
-    const metadata = user.user_metadata || user.nombre;
-    return `${metadata.nombre} ${metadata.apellido}`;
+    const metadata = user.user_metadata;
+    if (metadata && metadata.nombre && metadata.apellido) {
+      return `${metadata.nombre} ${metadata.apellido}`;
+    }
+    return user.nombre ? user.nombre : "Usuario";
   };
 
   const fotoPerfil =

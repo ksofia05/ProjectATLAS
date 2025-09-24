@@ -21,7 +21,6 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Correcion del sidebar cuando aparece y desaparece (lo que me pidio karen corregir) */}
       {isOpen && (
         <div
           className="fixed inset-0 from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 z-30 lg:hidden"
