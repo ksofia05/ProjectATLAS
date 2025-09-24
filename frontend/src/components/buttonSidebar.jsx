@@ -4,6 +4,7 @@ const ButtonSidebar = ({ onClick, isOpen, className = "", ...props }) => {
   return (
     <button
       onClick={onClick}
+      aria-label={isOpen ? "Cerrar menú lateral" : "Abrir menú lateral"}
       className={`
         w-10 h-10 rounded-xl flex items-center justify-center
         bg-gradient-to-br from-slate-800/60 to-slate-900/60 

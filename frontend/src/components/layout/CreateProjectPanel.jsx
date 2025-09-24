@@ -46,7 +46,7 @@ const CreateProjectPanel = ({
           setUserRole(null);
           return;
         }
-        setUserRole(usuarioDb.rol_idrol);
+        setUserRole(usuarioDb.rol_idrol); 
         const usuarioId = usuarioDb.idusuario;
 
         if (usuarioDb.rol_idrol === 1) {
@@ -73,7 +73,7 @@ const CreateProjectPanel = ({
               estados[proyecto.id_proyecto] = colaborador
                 ? colaborador.estado
                 : "Inactivo";
-            } catch {
+            } catch (err) {
               estados[proyecto.id_proyecto] = "Inactivo";
             }
           }
@@ -91,7 +91,7 @@ const CreateProjectPanel = ({
   }, [user, refreshProjects]);
 
   const getUserDisplayName = () => {
-    return user?.nombre || user?.email || "Usuario";
+    return user?.nombre || user?.correoElectronico || user?.email || "Usuario";
   };
 
   const filteredProjects = projects.filter(
@@ -101,20 +101,20 @@ const CreateProjectPanel = ({
   );
 
   const handleProjectClick = async (project) => {
-    if (user?.rol_idrol === 1 || user?.rol_idRol === 1) {
+    if (Number(userRole) === 1) {
       window.open(`/dashboard/${project.id_proyecto}`, "_blank");
       return;
     }
+    // Solo para colaboradores (rol 2)
     const toastId = showLoadingToast("Verificando acceso...");
     try {
       await openDashboardIfActive(project.id_proyecto, user, toastId);
     } finally {
-      toastId.dismiss(toastId);
+      toast.dismiss(toastId);
     }
   };
 
   const handleCreateProject = () => {
-    // Verificar si el usuario ya tiene proyectos
     if (projects.length > 0) {
       showErrorToast(
         "No puedes crear más proyectos. Ya tienes un proyecto asociado a tu cuenta."
@@ -211,11 +211,6 @@ const CreateProjectPanel = ({
                     projectStates={projectStates}
                     userRole={userRole}
                     onProjectClick={handleProjectClick}
-                    onProjectsUpdate={() => {
-                      if (refreshProjects) {
-                        setTimeout(() => refreshProjects(), 500);
-                      }
-                    }}
                   />
 
                   {(!searchTerm || projects.length === 0) && (
