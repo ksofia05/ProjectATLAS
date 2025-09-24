@@ -32,8 +32,6 @@ const PasswordRecovery = () => {
     const toastId = showLoadingToast("Verificando correo...");
 
     try {
-      console.log("Enviando email para verificación:", email);
-
       const response = await fetch(
         "http://localhost:8000/tasks/api/v1/verificar-correo/",
         {
@@ -49,7 +47,6 @@ const PasswordRecovery = () => {
         toast.dismiss(toastId);
         const errorMessage =
           data.message || data.error || "Correo no encontrado";
-        console.error("Error del backend:", errorMessage);
         showErrorToast(errorMessage);
         return;
       }
@@ -62,19 +59,13 @@ const PasswordRecovery = () => {
         return;
       }
 
-      console.log("Verificando estado del usuario en Supabase...");
-
       const {
         data: { users },
         error: adminError,
       } = await client.auth.admin.listUsers();
 
-      if (adminError) {
-        console.error("Error al verificar usuario:", adminError);
-      } else {
+      if (!adminError) {
         const user = users.find((u) => u.email === email);
-        console.log("Usuario encontrado en Supabase:", user);
-        console.log("Email confirmado:", user?.email_confirmed_at);
 
         // Verificar si el email está confirmado
         if (user && !user.email_confirmed_at) {
@@ -107,8 +98,6 @@ const PasswordRecovery = () => {
       toast.dismiss(toastId);
 
       if (error) {
-        console.error("Error de Supabase:", error);
-
         if (error.message?.includes("invalid")) {
           showErrorToast(
             "Error técnico al enviar el correo. El usuario existe pero hay un problema de configuración."
@@ -124,7 +113,6 @@ const PasswordRecovery = () => {
         setStep(3);
       }
     } catch (error) {
-      console.error("Error completo:", error);
       toast.dismiss(toastId);
       showErrorToast("Error al enviar solicitud. Intenta nuevamente.");
       setMessage("Error al enviar solicitud. Intenta nuevamente.");

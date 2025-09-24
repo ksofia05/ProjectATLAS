@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Eliminado useParams
 import PasswordInput from "../../components/common/PasswordInput";
 import Button from "../../components/common/Button";
 import FormContainer from "../../components/common/FormContainer";
@@ -9,10 +9,11 @@ import {
   showSuccessToast,
   showErrorToast,
 } from "../../components/common/popUp/Loading";
+import toast from "react-hot-toast";
 import { client } from "../../supabase/client";
 
 const PasswordReset = () => {
-  const { token } = useParams();
+  // const { token } = useParams(); // Eliminado, no se usa
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState("");
@@ -170,7 +171,7 @@ const PasswordReset = () => {
         password: formData.newPassword,
       });
 
-      showLoadingToast.dismiss?.(toastId);
+      toast.dismiss(toastId);
 
       if (error) {
         let errorMsg = error.message;
@@ -200,7 +201,7 @@ const PasswordReset = () => {
         navigate(loginURL, { replace: true });
       }
     } catch (error) {
-      showLoadingToast.dismiss?.(toastId);
+      toast.dismiss(toastId); 
       showErrorToast("Error al restablecer la contraseña. Intenta nuevamente.");
       setApiError("Error al restablecer la contraseña. Intenta nuevamente.");
     }

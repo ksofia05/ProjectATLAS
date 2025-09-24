@@ -38,7 +38,7 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
-  const [isStep2SubmitDisabled, setIsStep2SubmitDisabled] = useState(true); // Nuevo estado para paso 2
+  const [isStep2SubmitDisabled, setIsStep2SubmitDisabled] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -66,8 +66,6 @@ const Register = () => {
   };
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
-    console.log("handleChange ejecutado:", { name, value, type, checked }); // Debug
-
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
@@ -80,22 +78,12 @@ const Register = () => {
     }));
   };
 
-  // Nueva función para validar contraseña
   const validatePassword = (password) => {
     const hasMinLength = password.length >= 8;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
     const hasSpecialChar = /[!@#$%^&+*(),.?":{}|<>_-]/.test(password);
-
-    console.log("validatePassword debug:", {
-      password,
-      hasMinLength,
-      hasUpperCase,
-      hasLowerCase,
-      hasNumber,
-      hasSpecialChar,
-    });
 
     return (
       hasMinLength &&
@@ -118,7 +106,6 @@ const Register = () => {
     );
   }, [formData.firstName, formData.lastName, formData.email, errors]);
 
-  // Nuevo useEffect para el paso 2
   useEffect(() => {
     if (step === 2) {
       const isPasswordValid = validatePassword(formData.password);
@@ -126,16 +113,6 @@ const Register = () => {
       const passwordsNotEmpty =
         formData.password !== "" && formData.confirmPassword !== "";
       const areTermsAccepted = formData.termsAccepted;
-
-      console.log("Validación paso 2:", {
-        isPasswordValid,
-        doPasswordsMatch,
-        passwordsNotEmpty,
-        areTermsAccepted,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        termsAccepted: formData.termsAccepted,
-      });
 
       setIsStep2SubmitDisabled(
         !(
@@ -190,13 +167,12 @@ const Register = () => {
         }
       } catch (error) {
         toast.dismiss(toastId);
-        console.error("Error al verificar el correo:", error);
         setErrors((prevErrors) => ({
           ...prevErrors,
           email: "Error al verificar el correo. Intenta nuevamente.",
         }));
       } finally {
-        setIsValidating(false); // Siempre se desbloquea aquí ;(
+        setIsValidating(false);
       }
     } else {
       setIsValidating(false);
@@ -219,7 +195,6 @@ const Register = () => {
       const toastId = showLoadingToast("Registrando...");
 
       try {
-        // registrar en Supabase Auth
         const { data: authData, error: authError } = await client.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -246,7 +221,6 @@ const Register = () => {
           return;
         }
 
-        // guardar en tabla Usuario
         if (authData.user) {
           const { data: userData, error: dbError } = await client
             .from("Usuario")
@@ -267,7 +241,6 @@ const Register = () => {
 
           if (dbError) {
             toast.dismiss(toastId);
-            console.error("Error al guardar en tabla Usuario:", dbError);
             showErrorToast(
               "Error al completar el registro en la base de datos."
             );
@@ -279,7 +252,6 @@ const Register = () => {
           });
         }
 
-        // Limpiar localStorage
         localStorage.removeItem("registerFormData");
         localStorage.removeItem("registerStep");
 
@@ -313,7 +285,6 @@ const Register = () => {
           }
         }
 
-        // Redirige al login
         let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
         const idProyectoParam = params.get("id_proyecto");
         if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
@@ -324,9 +295,8 @@ const Register = () => {
       } catch (err) {
         toast.dismiss(toastId);
         showErrorToast("Error inesperado al registrar.");
-        console.error("Error en registro:", err);
       } finally {
-        setIsRegistering(false); // Siempre se desbloquea aquí
+        setIsRegistering(false);
       }
     }
   };

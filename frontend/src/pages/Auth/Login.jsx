@@ -10,7 +10,6 @@ import {
   showErrorToast,
 } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
-import { client } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
@@ -36,7 +35,6 @@ const Login = () => {
   useEffect(() => {
     const fromPasswordReset = localStorage.getItem("fromPasswordReset");
     if (isAuthenticated && !isLoading && !fromPasswordReset) {
-      console.log("Usuario autenticado detectado, redirigiendo...");
       setTimeout(() => {
         navigate(next);
       }, 100);
@@ -75,16 +73,9 @@ const Login = () => {
       }
 
       if (data.user && data.session) {
-        console.log(
-          "✅ Login exitoso, token guardado, esperando AuthProvider..."
-        );
-
-        // Guardar token para compatibilidad
         localStorage.setItem("token", data.session.access_token);
-
         localStorage.removeItem("fromPasswordReset");
 
-        // MANTENER compatibilidad con useUserStore temporalmente
         try {
           const userProfile = await getUserProfile(data.user.id);
 
@@ -96,12 +87,7 @@ const Login = () => {
           };
 
           useUserStore.getState().setUser(fullUserData);
-          console.log(
-            "Usuario guardado en store (compatibilidad):",
-            fullUserData.nombre
-          );
         } catch (profileError) {
-          console.error("Error obteniendo perfil en login:", profileError);
           useUserStore.getState().setUser({
             auth_user_id: data.user.id,
             email: data.user.email,
@@ -112,7 +98,6 @@ const Login = () => {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
 
-        // Lógica de asociación de colaborador
         if (idProyecto && formData.email) {
           try {
             const response = await fetch(
@@ -162,23 +147,14 @@ const Login = () => {
           }
         }
 
-        console.log("Login completado, forzando recheck del AuthProvider...");
-
-        // FORZAR RECHECK
         setTimeout(async () => {
           if (recheckAuth) {
             await recheckAuth();
-            console.log(
-              "Recheck completado, AuthProvider debería estar actualizado"
-            );
-          } else {
-            console.error("recheckAuth no está disponible");
           }
         }, 1000);
       }
     } catch (error) {
       toast.dismiss(toastId);
-      console.error("Error de login:", error);
       showErrorToast("No se pudo conectar con el servidor.");
       setErrors((prev) => ({
         ...prev,
