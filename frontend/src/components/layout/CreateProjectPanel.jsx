@@ -6,7 +6,7 @@ import useUserStore from "../../stores/useUserStore";
 import { showLoadingToast, showErrorToast } from "../common/popUp/Loading";
 import { openDashboardIfActive } from "../../utils/openDashboardIfActive";
 import Loader from "../common/Loader";
-import Navbar from "./Navbar";
+import NavbarStatic from "./NavbarStatic";
 
 const CreateProjectPanel = ({
   disableCreate,
@@ -132,10 +132,7 @@ const CreateProjectPanel = ({
     <div className="min-h-screen w-full flex flex-col">
       <div className="sticky top-0 z-10 pt-6 w-full">
         <div className="px-8 w-full">
-          <Navbar
-            title="Proyectos"
-            subtitle="Organiza tus espacios de trabajo."
-            showUpgradeButton={false}
+          <NavbarStatic
             onSidebarToggle={onSidebarToggle}
             isSidebarOpen={isSidebarOpen}
           />
