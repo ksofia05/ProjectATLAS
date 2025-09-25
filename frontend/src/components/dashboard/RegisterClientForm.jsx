@@ -10,6 +10,7 @@ import { validateClientForm } from "../../utils/validateClientForm";
 import { useClientAutocomplete } from "../../hooks/useClientAutocomplete";
 import { dateUtils } from "../../utils/dateUtils";
 import useClientsStore from "../../stores/useClientsStore";
+
 export default function RegisterClientForm({
   onClose,
   idproyecto,
@@ -39,7 +40,7 @@ export default function RegisterClientForm({
   const [touched, setTouched] = useState({});
   const [triedSubmit, setTriedSubmit] = useState(false);
 
-  //  Obtener función para agregar cliente al store
+  //  Obtener función para agregar cliente al store
   const { addCliente } = useClientsStore();
 
   const {
@@ -322,7 +323,7 @@ export default function RegisterClientForm({
 
       showSuccessToast("Cliente registrado");
       
-      //  Llamar al callback si existe (para compatibilidad)
+      //  Llamar al callback si existe (para compatibilidad)
       if (onClienteAdded) {
         onClienteAdded();
       }
@@ -331,10 +332,15 @@ export default function RegisterClientForm({
     } catch (err) {
       console.error("Error al registrar cliente/equipo:", err);
       if (err && err.message) {
-        // Traducción para el toast de error de rango :3
+        // Traducción para el toast de error de rango
         if (err.message.includes("is out of range for type integer")) {
           showErrorToast("El valor de identificación es demasiado grande. Debe tener máximo 10 dígitos.");
-        } else {
+        } 
+        // Traducción para 'value too long for type character varying' (el error de 45 caracteres)
+        else if (err.message.includes("value too long for type character varying")) {
+          showErrorToast("El valor de un campo excede el límite de 45 caracteres.");
+        }
+        else {
           showErrorToast(err.message);
         }
       } else {
