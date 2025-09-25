@@ -18,7 +18,6 @@ export default function PendingTasksCard({ className }) {
     );
   }
 
-  // Esto posibolemente lo cambie (da errores con la obtencion del rol :b)
   const isAdmin =
     userProfile.rol_idRol === 1 ||
     userProfile.rol_idrol === 1 ||

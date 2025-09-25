@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { client as supabase } from "../../supabase/client";
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthProvider";
 import ButtonGrey from "../common/ButtonGrey";
+
+function filterTasks(tasks, filtro) {
+  return tasks.filter((task) => task.filtro === filtro);
+}
 
 export default function CollaboratorPendingTasksCard({ className }) {
   const { userProfile } = useContext(AuthContext);
@@ -57,14 +60,18 @@ export default function CollaboratorPendingTasksCard({ className }) {
     fetchTasks();
   }, [fetchTasks]);
 
+  // Funcion para filtrar tareas por estado
+  const pendingTasks = filterTasks(tasks, "por completar");
+  const completedTasks = filterTasks(tasks, "completado");
+
+  // Obtener las tareas pendientes más recientes (Limitado a 3)
+  const recentPendingTasks = pendingTasks
+    .sort((a, b) => new Date(b.fechaActual) - new Date(a.fechaActual))
+    .slice(0, 3);
+
   const handleNavigateToCalendar = () => {
     navigate("/dashboard/84/calendario-avanzado");
   };
-
-  // Obtener las 3 tareas más recientes pendientes para mostrar
-  const recentPendingTasks = tasks
-    .filter((task) => task.filtro === "por completar")
-    .sort((a, b) => new Date(b.fechaActual) - new Date(a.fechaActual));
 
   return (
     <div
