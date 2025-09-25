@@ -111,19 +111,6 @@ const DashboardLayout = () => {
     return null;
   }
 
-  // Definir projectsBlock aquí
-  const projectsBlock = (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold text-white mb-2">Proyecto Actual</h3>
-      <div className="bg-white/5 rounded-lg p-3 border border-slate-600/30">
-        <p className="text-sm text-gray-300 font-medium">
-          {projectInfo?.nombre || "Cargando proyecto..."}
-        </p>
-        <p className="text-xs text-gray-400 mt-1">ID: {projectId}</p>
-      </div>
-    </div>
-  );
-
   // Determinar si el usuario es colaborador (rol_idRol === 2)
   const isColaborador = user?.rol_idRol === 2 || user?.rol_idrol === 2;
 
