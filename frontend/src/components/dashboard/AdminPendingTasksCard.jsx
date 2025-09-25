@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { client as supabase } from "../../supabase/client";
-import { useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthProvider";
 import ButtonGrey from "../common/ButtonGrey";
 import UserTaskRow from "../common/UserTaskRow";
 import axios from "axios";
+
+// Función auxiliar para filtrar tareas por estado
+function filterTasks(tasks, filtro) {
+  return tasks.filter((task) => task.filtro === filtro);
+}
 
 export default function AdminPendingTasksCard({ className }) {
   const { userProfile } = useContext(AuthContext);
@@ -21,10 +25,7 @@ export default function AdminPendingTasksCard({ className }) {
 
   const fetchAdminTasks = useCallback(async () => {
     if (!userProfile) return;
-
     try {
-      console.log("Fetching admin tasks for user:", userProfile.idUsuario);
-
       const { data, error } = await supabase
         .from("Tareas")
         .select("*")
@@ -32,45 +33,18 @@ export default function AdminPendingTasksCard({ className }) {
 
       if (!error) {
         setAdminTasks(data || []);
-        console.log("Admin tasks loaded:", data);
-      } else {
-        console.error("Error cargando tareas del admin:", error);
       }
     } catch (error) {
-      console.error("Error cargando tareas del admin:", error);
     }
   }, [userProfile]);
 
   const fetchCollaboratorStats = useCallback(async () => {
-    if (!userProfile || !projectId) {
-      console.log("No userProfile o projectId:", {
-        userProfile: !!userProfile,
-        projectId,
-      });
-      return;
-    }
-
+    if (!userProfile || !projectId) return;
     try {
-      console.log("Fetching collaborators for project:", projectId);
-
       const response = await axios.get(
         `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
       );
-
-      console.log("Colaboradores response:", response.data);
-
       const colaboradores = response.data.colaboradores || [];
-
-      if (colaboradores.length === 0) {
-        console.log("No hay colaboradores en el proyecto");
-        setTotalStats({
-          totalCollaborators: 0,
-          totalTasks: 0,
-          totalPending: 0,
-        });
-        setCollaboratorStats([]);
-        return;
-      }
 
       // Filtrar colaboradores activos (excluyendo al admin actual)
       const colaboradoresActivos = colaboradores.filter((colab) => {
@@ -81,10 +55,7 @@ export default function AdminPendingTasksCard({ className }) {
         return isNotCurrentUser && isActive;
       });
 
-      console.log("Colaboradores activos filtrados:", colaboradoresActivos);
-
       if (colaboradoresActivos.length === 0) {
-        console.log("No hay colaboradores activos (excluyendo admin)");
         setTotalStats({
           totalCollaborators: 0,
           totalTasks: 0,
@@ -99,37 +70,14 @@ export default function AdminPendingTasksCard({ className }) {
         colaboradoresActivos.map(async (colab) => {
           try {
             const userId = colab.id || colab.idusuario || colab.idUsuario;
-
-            console.log(
-              `Fetching tasks for colaborador ${colab.nombre} (ID: ${userId})`
-            );
-
             const { data: userTasks, error: tasksError } = await supabase
               .from("Tareas")
               .select("*")
               .eq("id_usuario", userId);
 
-            console.log(
-              `Tareas para ${colab.nombre}:`,
-              userTasks,
-              "Error:",
-              tasksError
-            );
-
-            if (tasksError) {
-              console.error(
-                `Error obteniendo tareas para colaborador ${userId}:`,
-                tasksError
-              );
-              return null; // No incluir colaboradores con errores
-            }
-
+            if (tasksError) return null;
             const tasks = userTasks || [];
-
-            // Por temas de espacio, solo se van a mostrar los colaboradores que ya tienen almenos una tarea relacionada
-            if (tasks.length === 0) {
-              return null;
-            }
+            if (tasks.length === 0) return null;
 
             const pendingTasks = tasks.filter(
               (task) => task.filtro === "por completar"
@@ -138,7 +86,7 @@ export default function AdminPendingTasksCard({ className }) {
               (task) => task.filtro === "completado"
             );
 
-            const result = {
+            return {
               id: userId,
               name: `${colab.nombre} ${colab.apellido}`,
               initials: `${colab.nombre?.charAt(0) || ""}${
@@ -148,14 +96,7 @@ export default function AdminPendingTasksCard({ className }) {
               pending: pendingTasks.length,
               completed: completedTasks.length,
             };
-
-            console.log(`Stats for ${colab.nombre}:`, result);
-            return result;
           } catch (error) {
-            console.error(
-              `Error obteniendo tareas para colaborador ${colab.id}:`,
-              error
-            );
             return null;
           }
         })
@@ -164,10 +105,6 @@ export default function AdminPendingTasksCard({ className }) {
       const validCollaboratorData = collaboratorData.filter(
         (data) => data !== null
       );
-
-      console.log("Valid collaborator data:", validCollaboratorData);
-
-      // Ordenar por total de tareas
       const sortedCollaborators = validCollaboratorData.sort(
         (a, b) => b.totalTasks - a.totalTasks
       );
@@ -188,35 +125,17 @@ export default function AdminPendingTasksCard({ className }) {
         totalTasks: totalTasks,
         totalPending: totalPending,
       });
-
-      console.log("Final stats:", {
-        totalCollaborators: validCollaboratorData.length,
-        totalTasks: totalTasks,
-        totalPending: totalPending,
-        sortedCollaborators,
-      });
     } catch (error) {
-      console.error("Error cargando estadísticas de colaboradores:", error);
-      console.error("Error details:", error.response?.data || error.message);
     }
   }, [userProfile, projectId]);
 
   useEffect(() => {
-    console.log("AdminPendingTasksCard useEffect triggered", {
-      userProfile: !!userProfile,
-      projectId,
-    });
-
     fetchAdminTasks();
     fetchCollaboratorStats();
   }, [fetchAdminTasks, fetchCollaboratorStats]);
 
-  const adminPendingTasks = adminTasks.filter(
-    (task) => task.filtro === "por completar"
-  );
-  const adminCompletedTasks = adminTasks.filter(
-    (task) => task.filtro === "completado"
-  );
+  const adminPendingTasks = filterTasks(adminTasks, "por completar");
+  const adminCompletedTasks = filterTasks(adminTasks, "completado");
 
   const handleNavigateToCalendar = () => {
     navigate("/dashboard/84/calendario-avanzado");
