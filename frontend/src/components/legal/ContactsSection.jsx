@@ -52,11 +52,13 @@ const ContactsSection = () => {
             </p>
           </div>
         </div>
-        <div className="w-full md:w-1/2 flex justify-end">
+
+        <div className="w-full md:w-1/2 flex justify-center md:justify-end">
           <img
             src={ContactsImage}
             alt="Equipo de trabajo"
-            className="max-w-[420px] w-[32vw] h-auto"
+
+            className="w-4/5 md:w-[32vw] max-w-[420px] h-auto"
             style={{ animation: 'float 8s ease-in-out infinite' }}
           />
         </div>
