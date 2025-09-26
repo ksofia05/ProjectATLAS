@@ -1,14 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import DrawerTaskItem, { formatTimeAgo } from "./DrawerTaskItem";
+import DrawerTaskItem from "./DrawerTaskItem";
 import ButtonBG from "../common/ButtonBG";
 import EstateAdEquipmentModal from "../dashboard/EstateAdEquipmentModal";
 import { client as supabase } from "../../supabase/client";
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString();
-}
 
 export default function TasksListDrawer({
   open,
@@ -20,9 +14,8 @@ export default function TasksListDrawer({
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
   const [tasks, setTasks] = useState(initialTasks || []);
-  const [completedTasks, setCompletedTasks] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [restoringTaskIds, setRestoringTaskIds] = useState(new Set()); // Nuevo estado
+  const [restoringTaskIds, setRestoringTaskIds] = useState(new Set());
   const timeoutRef = useRef();
 
   useEffect(() => {
@@ -54,7 +47,6 @@ export default function TasksListDrawer({
   };
 
   const handleUpdateComment = (id_Tarea, newDescription) => {
-    //deja observar la descripcion
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id_Tarea === id_Tarea
@@ -65,19 +57,11 @@ export default function TasksListDrawer({
   };
 
   const handleCompleteSelectedTasks = async () => {
-    //se busca con el filtro las tareas que estan como "completada"
     const toComplete = tasks.filter(
       (task) =>
         selectedTaskIds.has(task.id_Tarea) && task.filtro !== "completado"
     );
-    //se actualizan las tareas en la base de datos
     for (const task of toComplete) {
-      console.log(
-        "Actualizando tarea",
-        task.id_Tarea,
-        "a filtro:",
-        "completado"
-      );
       await supabase
         .from("Tareas")
         .update({
@@ -87,7 +71,6 @@ export default function TasksListDrawer({
         .eq("id_Tarea", task.id_Tarea);
     }
     if (onTasksUpdate) onTasksUpdate();
-    //se vuelve a consultar la BD para  reflejar cambios
     const { data, error } = await supabase
       .from("Tareas")
       .select("*")
@@ -111,7 +94,6 @@ export default function TasksListDrawer({
 
       if (onTasksUpdate) onTasksUpdate();
 
-      // vuelve a consultar la BD para reflejar cambios
       const { data, error } = await supabase
         .from("Tareas")
         .select("*")
@@ -126,13 +108,12 @@ export default function TasksListDrawer({
         );
       }
 
-      // Remover de la lista de restaurando
       setRestoringTaskIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(taskId);
         return newSet;
       });
-    }, 300); // Animacion (se traba no se pq)
+    }, 300);
   };
 
   const handleDeleteAllCompletedTasks = () => {
@@ -160,7 +141,6 @@ export default function TasksListDrawer({
 
   const isCompleteButtonDisabled = selectedTaskIds.size === 0;
 
-  // Cierra el modal de confirmación si el panel se cierra
   useEffect(() => {
     if (!open) {
       setShowDeleteModal(false);
@@ -351,7 +331,6 @@ export default function TasksListDrawer({
             </div>
           </div>
 
-          {/* Botón de eliminar completadas abajito */}
           <div className="flex justify-center">
             {tasks.filter((t) => t.filtro === "completado").length > 0 && (
               <button
