@@ -1,15 +1,14 @@
 import React, { useRef } from "react";
 import FloatingModal from "../common/popUp/FloatingModal";
 import Button from "../common/Button";
-import ButtonGrey from "../common/ButtonGrey"; 
+import ButtonGrey from "../common/ButtonGrey";
 
 const EstateAdEquipmentModal = ({ onClose, onSave }) => {
   const fileInputRef = useRef();
 
   return (
     <FloatingModal onClose={onClose} showCloseIcon={false}>
-      <div className="p-6">
-        {" "}
+      <div className="p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-2xl font-bold text-white mb-4 text-center">
           Actualizar Estado
         </h2>

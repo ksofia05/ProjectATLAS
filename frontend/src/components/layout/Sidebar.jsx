@@ -9,7 +9,7 @@ const Sidebar = ({
   projectsBlock = null,
   footerLinks = true,
   children,
-  refreshProjects=0,
+  refreshProjects = 0,
   isOpen = false,
   onClose,
 }) => {
@@ -21,30 +21,32 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Overlay para móvil y tablet */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 z-30 lg:hidden"
           onClick={onClose}
         ></div>
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-lg border-r border-slate-700/50 overflow-y-auto z-40 transform transition-transform duration-300
+        className={`fixed left-0 top-0 bg-gradient-to-b from-[#08080e] via-[#0a0a12] to-[#0c0c14] backdrop-blur-sm text-white w-72 h-screen flex flex-col justify-between py-8 px-6 shadow-2xl border-r border-slate-800/50 overflow-y-auto z-40 transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0`}
       >
         <div className="mt-8 lg:mt-0">
           {showLogo && (
-            <div className="flex items-center gap-3 mb-10">
+            <Link
+              to="/"
+              className="flex items-center gap-3 mb-10 cursor-pointer"
+              onClick={onClose}
+            >
               <img
                 src={logo}
                 alt="Logo ATLAS"
                 className="w-12 h-12 object-contain"
               />
               <span className="text-3xl font-bold tracking-wide">ATLAS</span>
-            </div>
+            </Link>
           )}
 
           {showProjectsBlock && (

@@ -10,7 +10,7 @@ export default function CollaboratorsPage() {
   }, [setTitle, setSubtitle]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden pb-2">
+    <div className="flex flex-col overflow-hidden pb-2">
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <CollaboratorsTable />
       </div>

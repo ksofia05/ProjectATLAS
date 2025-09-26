@@ -1,22 +1,30 @@
-import React from "react"
+import React from "react";
 
-const ButtonSidebar = ({ onClick, isOpen, className = "" }) => {
-    return (
-        <button
-            onClick={onClick}
-            className={`inline-flex items-center p-2 text-sm text-gray-400 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all ${className}`}
-        >
-            <span className="sr-only">
-                {isOpen ? "Cerrar sidebar" : "Abrir sidebar"}
-            </span>
-            {/* Ícono hamburguesa con animación */}
-            <div className="w-6 h-6 flex flex-col justify-center items-center">
-                <span className={`block w-5 h-0.5 bg-current transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-                <span className={`block w-5 h-0.5 bg-current transition-all duration-300 mt-1 ${isOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`block w-5 h-0.5 bg-current transition-all duration-300 mt-1 ${isOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-            </div>
-        </button>
-    );
+const ButtonSidebar = ({ onClick, isOpen, className = "", ...props }) => {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={isOpen ? "Cerrar menú lateral" : "Abrir menú lateral"}
+      className={`
+        w-10 h-10 rounded-xl flex items-center justify-center
+        bg-gradient-to-br from-slate-800/60 to-slate-900/60 
+        backdrop-blur-sm border border-slate-700/40
+        text-white hover:from-slate-700/70 hover:to-slate-800/70 
+        hover:border-purple-500/30 hover:text-purple-300
+        transition-all duration-300 ease-in-out
+        shadow-lg hover:shadow-purple-500/10
+        active:scale-95 group
+        ${className}
+      `}
+      {...props}
+    >
+      <i
+        className={`bi ${
+          isOpen ? "bi-x-lg" : "bi-list"
+        } text-lg group-hover:scale-110 transition-transform duration-200`}
+      ></i>
+    </button>
+  );
 };
 
 export default ButtonSidebar;

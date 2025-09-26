@@ -1,9 +1,14 @@
-import React from 'react'
-import { Users, Edit, Plus } from 'lucide-react';
-import { showErrorToast, showSuccessToast, showLoadingToast } from '../common/popUp/Loading';
+import React from "react";
+import { Users, X } from "lucide-react";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showLoadingToast,
+} from "../common/popUp/Loading";
 import useUserStore from "../../stores/useUserStore";
-import WarningModal from '../dashboard/WarningModal';
-import toast from 'react-hot-toast';
+import WarningModal from "../dashboard/WarningModal";
+import toast from "react-hot-toast";
+import { actualizarHistorialColaborador } from "../common/historialColaboradores";
 import { API_BASE } from '../../api/apiBase';
 
 const InventoryCard = ({
@@ -11,7 +16,7 @@ const InventoryCard = ({
   isColaborador = false,
   estado = "Activo",
   onProjectClick,
-  onProjectUpdate
+  onProjectUpdate,
 }) => {
   const user = useUserStore((state) => state.user);
 
@@ -19,6 +24,11 @@ const InventoryCard = ({
   const [loading, setLoading] = React.useState(false);
 
   const handleCardClick = async (e) => {
+    // Evitar que el click en el botón de eliminar abra el proyecto
+    if (e.target.closest(".delete-button")) {
+      return;
+    }
+
     e.preventDefault();
     if (onProjectClick) {
       await onProjectClick(project);
@@ -26,10 +36,15 @@ const InventoryCard = ({
       showErrorToast("No se ha definido acción para este proyecto.");
     }
   };
-  
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setShowDeleteModal(true);
+  };
+
   const handleRemoveAsCollaborator = async () => {
     setLoading(true);
-    const toastId=showLoadingToast("Eliminando proyecto...");
+    const toastId = showLoadingToast("Eliminando proyecto...");
     try {
       const response = await fetch(`${API_BASE}tasks/api/v1/quitar_colaborador_de_proyecto/`, {
         method: "POST",
@@ -43,6 +58,11 @@ const InventoryCard = ({
       toast.dismiss(toastId);
       if (response.ok && data.success) {
         showSuccessToast("Has salido del proyecto.");
+        await actualizarHistorialColaborador(
+          Number(user.idUsuario),
+          Number(project.id_proyecto),
+          "eliminado"
+        );
         setShowDeleteModal(false);
         if (window.refreshUserAndProjects) {
           await window.refreshUserAndProjects();
@@ -57,110 +77,130 @@ const InventoryCard = ({
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (!project) return null;
+
   return (
     <>
-    <div
-      type="button"
-      className={`rounded-2xl p-10 border border-white/50 shadow-lg max-w-sm transition-colors duration-200 block text-left
-        ${isColaborador && estado === "Inactivo" ? "opacity-50 cursor-not-allowed" : "hover:border-white/70 cursor-pointer"}`}
-      style={{ textDecoration: "none" }}
-      onClick={handleCardClick}
-      tabIndex={0}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-white text-2xl font-bold font-['Nunito']">{project.nombreproyecto}</h2>
-      </div>
-      <div className="flex items-center gap-6 mb-3">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Users size={18} />
-          <span className="text-sm">3 Miembros</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-400">
-          <Edit size={18} />
-          <span className="text-sm">12 Pendientes</span>
-        </div>
-      </div>
-      <hr className="border-gray-700 border-t mb-3" />
-      <div className="text-gray-400 text-sm flex items-center ">
-          <span>
-            <span className="text-white font-medium">Última Actividad:</span> Ayer, 4:24 PM
-          </span>
-          {isColaborador &&(
-            <button
-              type="button"
-              className='ml-2  rounded-full hover:bg-red-100/10 transition text-gray-400 hover:text-red-500'
-              onClick={e=> {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              title='Eliminar todo'
-            >
-              <i className='bi bi-trash text-base'></i>
-            </button>
+      <div
+        key={project.id_proyecto}
+        onClick={handleCardClick}
+        className="group relative overflow-hidden bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl p-6 cursor-pointer transition-all duration-500 hover:scale-105 hover:border-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/15 min-h-[280px]"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        {/* Botón de eliminar para colaboradores */}
+        {isColaborador && (
+          <button
+            onClick={handleDeleteClick}
+            className="delete-button absolute top-4 right-4 w-8 h-8 bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 hover:border-red-500/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 hover:scale-110"
+            title="Salir del proyecto"
+          >
+            <X size={16} className="text-red-400 hover:text-red-300" />
+          </button>
+        )}
+
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="w-16 h-16 bg-slate-800/40 border border-purple-500/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-slate-800/50 transition-all duration-300">
+            <i className="bi bi-folder text-purple-400 text-2xl group-hover:text-purple-300"></i>
+          </div>
+
+          {/* Información del proyecto */}
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors duration-300 line-clamp-2">
+              {project.nombreproyecto}
+            </h3>
+
+            {/* Estado del colaborador */}
+            {isColaborador && (
+              <div className="mb-2 flex items-center gap-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold
+          ${
+            estado === "Activo"
+              ? "bg-green-700/30 text-green-400"
+              : "bg-red-700/30 text-red-400"
+          }
+        `}
+                >
+                  {estado === "Activo" ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+            )}
+
+            {/* Estadísticas del proyecto */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                <i className="bi bi-people text-sm"></i>
+                <span className="text-sm">
+                  {project.miembros || 0} Miembros
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                <i className="bi bi-list-task text-sm"></i>
+                <span className="text-sm">
+                  {project.tareas_pendientes || 0} Pendientes
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer de la tarjeta */}
+          <div className="mt-auto">
+            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300">
+              <span>Última actividad</span>
+              <span>{project.ultima_actividad || "Hoy"}</span>
+            </div>
+
+            {/* Barra de progreso visual */}
+            <div className="mt-4 w-full h-1 bg-slate-800/50 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+          </div>
+          {!isColaborador && (
+            <div className="absolute top-4 right-4 w-6 h-6 border border-purple-500/20 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
           )}
-      </div>
-      
-      {isColaborador && estado === "Inactivo" && (
-        <div className="mt-4 text-red-400 font-semibold">
-          Estado: Inactivo
+          <div className="absolute bottom-4 left-4 w-4 h-4 border border-purple-400/15 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
         </div>
+      </div>
+
+      {showDeleteModal && (
+        <WarningModal
+          visible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          title="¿Estás seguro que quieres salir del proyecto?"
+          message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto y aparecerás como 'Eliminado' en la lista de colaboradores."
+          confirmText="Salir del proyecto"
+          showConfirm={true}
+          onConfirm={handleRemoveAsCollaborator}
+          loading={loading}
+        />
       )}
-    </div>
-  {showDeleteModal && (
-    <WarningModal
-      visible={showDeleteModal}
-      onClose={() => setShowDeleteModal(false)}
-      title='¿Estas seguro que quieres salir del proyecto?'
-      message='Esta accion es irreversible. Si sales, perderas el acceso al proyecto.'
-      confirmText='Cancelar'
-      showConfirm={true}
-      onConfirm={handleRemoveAsCollaborator}
-    />
-    )}
     </>
   );
 };
 
-const CreateProjectCard = () => {
-  const handleClick = () => {
-    console.log('Click en "Crear nuevo proyecto"');
-  };
-
+const CardProjects = ({
+  projects = [],
+  projectStates = {},
+  userRole,
+  onProjectClick,
+  onProjectsUpdate,
+}) => {
   return (
-    <div className="rounded-2xl px-22 py-8 border-3 border-dashed border-purple-500/50 hover:border-purple-400/70 transition-colors duration-200  flex flex-col items-center justify-center cursor-pointer group" onClick={handleClick}>
-      <div className="flex items-center justify-between w-full px-6 mb-4">
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-600/30 transition-colors duration-200">
-          <Plus size={24} className="text-purple-400" />
-        </div>
-        <h3 className="text-white text-xl font-semibold mb-2 justify-center">Crear nuevo proyecto</h3>
-        <p className="text-gray-400 text-sm">Haz clic para comenzar</p>
-      </div>
-    </div>
-  );
-};
-
-const CardProjects = ({ projects = [], projectStates = {}, userRole, onProjectClick, onProjectsUpdate }) => {
-  return (
-    <div className="p-0">
-      <div className="flex flex-col sm:flex-row gap-10 items-start">
-        {projects.map((project) => (
-          <InventoryCard
-            key={project.id || project.id_proyecto}
-            project={project}
-            isColaborador={userRole === 2}
-            estado={projectStates[project.id_proyecto] || "Activo"}
-            onProjectClick={onProjectClick} 
-            onProjectUpdate={onProjectsUpdate}
-          />
-        ))}
-        <CreateProjectCard />
-      </div>
-    </div>
+    <>
+      {projects.map((project) => (
+        <InventoryCard
+          key={project.id || project.id_proyecto}
+          project={project}
+          isColaborador={userRole === 2}
+          estado={projectStates[project.id_proyecto] || "Activo"}
+          onProjectClick={onProjectClick}
+          onProjectUpdate={onProjectsUpdate}
+        />
+      ))}
+    </>
   );
 };
 

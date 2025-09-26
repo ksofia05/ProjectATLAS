@@ -1,30 +1,47 @@
 import React from "react";
-import Navbar from "../home/navbar";  
-import AboutUsSection from "./AboutUsSection";
-import MissionVisionSection from "./MissionVisionSection";
-import CorporateValuesSection from "./CorporateValuesSection";
-import ServicesSection from "./ServicesSection";
-import ContactsSection from "./ContactsSection";
+import { useNavigate, useLocation } from "react-router-dom";
+import logo from "../../assets/LogoTransparente.png";
 
-const LegalPage = () => (
-  <div className="bg-black text-white relative overflow-hidden">
-    {/* Fondo general que se desplaza y pulsa suavemente */}
-    <div className="fixed inset-0 z-0 pointer-events-none">
-      <div className="absolute top-1/2 left-1/4 w-[50rem] h-[50rem] rounded-full bg-purple-900/30 blur-3xl transform -translate-x-1/2 -translate-y-1/2 animate-pulse-slow"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[40rem] h-[40rem] rounded-full bg-fuchsia-800/30 blur-3xl transform translate-x-1/2 translate-y-1/2 animate-pulse-slow delay-1000"></div>
-    </div>
-    
-    <div className="relative z-10">
-      <Navbar /> 
-      <div>
-        <AboutUsSection />
-        <MissionVisionSection />
-        <CorporateValuesSection />
-        <ServicesSection />
-        <ContactsSection />
+const LegalPage = ({ title, content }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    if (location.state && location.state.from) {
+      navigate(location.state.from);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-black text-white relative">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 80%, rgba(107, 70, 193, 0.3), rgba(0, 0, 0, 0.9) 90%)",
+        }}
+      ></div>
+
+      <div className="relative z-10 bg-[#13131a] p-8 rounded-3xl shadow-2xl w-full max-w-4xl border border-slate-800/40">
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="Logo Atlas" className="h-14 w-auto" />
+        </div>
+        <h1 className="text-3xl font-bold mb-6 text-center">{title}</h1>
+        <div className="text-gray-300 space-y-4">{content}</div>
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="text-purple-400 hover:underline bg-transparent border-none cursor-pointer"
+          >
+            Regresar
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default LegalPage;

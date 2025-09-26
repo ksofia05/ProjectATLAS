@@ -13,7 +13,7 @@ const SecurityCard = ({
   onDisabledClick,
 }) => {
   return (
-    <div className="bg-gradient-to-br from-[#14141e] via-[#181825] to-[#14141e] border border-slate-700/50 rounded-2xl px-9 py-8 shadow-2xl backdrop-blur-sm w-full">
+    <div className="bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl px-9 py-8 w-full shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02]">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
           <i className="bi bi-shield-lock-fill text-red-400 text-xl"></i>
@@ -33,7 +33,7 @@ const SecurityCard = ({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Ingresa tu nueva contraseña"
-            className="bg-gray-900/50 border-gray-600/50 focus:border-purple-500/50 focus:ring-purple-500/20"
+            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:border-slate-600/60"
           />
         </div>
         <div className="space-y-2">
@@ -44,7 +44,7 @@ const SecurityCard = ({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirma tu contraseña"
-            className="bg-gray-900/50 border-gray-600/50 focus:border-purple-500/50 focus:ring-purple-500/20"
+            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:border-slate-600/60"
           />
         </div>
       </div>
@@ -60,7 +60,7 @@ const SecurityCard = ({
             ${
               canSave
                 ? "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-purple-500/25 hover:scale-105"
-                : "bg-gray-700 text-gray-400 cursor-not-allowed opacity-50"
+                : "bg-slate-700/50 text-gray-400 cursor-not-allowed opacity-50"
             }
           `}
           onClick={canSave ? onPasswordUpdate : onDisabledClick}

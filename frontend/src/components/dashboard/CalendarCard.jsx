@@ -62,39 +62,46 @@ const CalendarCard = ({
 
   return (
     <div
-      className={`bg-gradient-to-r from-[#14141e] to-[#14141e] via-[#181825] border border-slate-700/50 rounded-3xl py-6 px-8 w-[540px] max-w-full text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
+      className={`bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl px-6 sm:px-8 md:px-9 py-6 sm:py-7 md:py-8 w-full full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl text-white shadow-lg hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer ${className}`}
       onClick={handleCalendarClick}
     >
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-3">
-          <h3 className="text-2xl font-bold">Calendario</h3>
-          <i className="bi bi-calendar-event text-2xl text-gray-300" />
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold">
+            Calendario
+          </h3>
+          <i className="bi bi-calendar-event text-lg sm:text-xl md:text-2xl text-gray-300" />
         </div>
-        <div className="text-3xl font-bold">{monthName}</div>
+        <div className="text-xl sm:text-2xl md:text-3xl font-bold">
+          {monthName}
+        </div>
       </div>
-      <div className="text-gray-400 text-base font-semibold mb-2 ml-1">
+      <div className="text-gray-400 text-sm sm:text-base font-semibold mb-2 sm:mb-3 ml-1">
         (Trabajos Pendientes)
       </div>
       <div>
-        <div className="grid grid-cols-7 gap-y-1 mb-1">
+        <div className="grid grid-cols-7 gap-y-1 mb-1 sm:mb-2">
           {diasSemana.map((dia) => (
-            <div key={dia} className="text-center font-semibold text-base">
+            <div
+              key={dia}
+              className="text-center font-semibold text-xs sm:text-sm md:text-base"
+            >
               {dia}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-y-2">
+        <div className="grid grid-cols-7 gap-y-1 sm:gap-y-2">
           {semanas.flat().map((d, idx) =>
             d ? (
               <div
                 key={idx}
-                className={`text-center text-base relative ${
+                className={`text-center text-xs sm:text-sm md:text-base relative py-1 sm:py-0 ${
                   d === todayDay
-                    ? "bg-purple-600 rounded-full font-bold text-white"
+                    ? "bg-purple-600 rounded-full font-bold text-white w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 flex items-center justify-center mx-auto text-xs sm:text-sm"
                     : ""
                 } ${
                   diasConPendientes.includes(d)
-                    ? "after:content-[''] after:block after:h-1 after:bg-violet-400 after:rounded-full after:mt-1"
+                    ? "after:content-[''] after:block after:h-0.5 sm:after:h-0.5 md:after:h-1 after:bg-violet-400 after:rounded-full after:mt-0.5 sm:after:mt-1 after:mx-auto after:w-2 sm:after:w-3 md:after:w-4"
                     : ""
                 }`}
               >
