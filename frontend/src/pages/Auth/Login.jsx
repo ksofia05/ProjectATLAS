@@ -29,6 +29,7 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const params = new URLSearchParams(location.search);
+  const exp =params.get("exp");
   const next = params.get("next") || "/dashboard-create-project";
   const idProyecto = params.get("id_proyecto");
 
@@ -108,6 +109,7 @@ const Login = () => {
                 body: JSON.stringify({
                   id_proyecto: idProyecto,
                   email: formData.email,
+                  exp: params.get("exp"),
                 }),
               }
             );

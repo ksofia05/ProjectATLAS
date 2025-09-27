@@ -8,6 +8,7 @@ from .models import Proyect, Proyecto, ColaboradorProyecto
 from tasks.models import Rol, Usuario
 from proyectos.models import ColaboradorProyecto
 import jwt
+from datetime import datetime
 
 class ProyectView(viewsets.ModelViewSet):
     serializer_class = ProyectSerializer
@@ -120,6 +121,15 @@ def get_user_projects(request):
 def asociar_colaborador(request):
     email = request.data.get('email')
     id_proyecto = request.data.get('id_proyecto')
+    exp = request.data.get('exp')
+
+    if exp:
+        now = int(datetime.utcnow().timestamp())
+        if now > int(exp):
+            return Response({
+                'success': False,
+                'message': 'El link de invitación ha expirado.'
+            }, status=410)
     
     if not email or not id_proyecto:
         return Response({'error': 'Faltan datos'}, status=400)

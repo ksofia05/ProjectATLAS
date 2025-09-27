@@ -17,6 +17,7 @@ from tasks.models import Task, Usuario, Rol
 from proyectos.models import Proyecto
 from rest_framework.authtoken.models import Token
 from proyectos.models import Proyecto, ColaboradorProyecto
+from datetime import datetime, timedelta
 
 class TaskView(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
@@ -191,7 +192,8 @@ def invitacion_colaborador(request):
             pass
         
         # Despues de todas las validaciones anteriores, ahora si que se envie el correo
-        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
+        expiracion = (datetime.utcnow() + timedelta(minutes=10)).timestamp()
+        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}?exp={int(expiracion)}"
         asunto = 'Invitación a colaborar en un proyecto'
         html_content = render_to_string('mensajeColabo.html', {
             'email': email,
@@ -211,7 +213,8 @@ def invitacion_colaborador(request):
         
         return Response({
             'success': True, 
-            'message': 'Invitación enviada correctamente.'
+            'message': 'Invitación enviada correctamente.',
+            'expiracion': int(expiracion),
         })
         
     except Proyecto.DoesNotExist:

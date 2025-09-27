@@ -32,6 +32,7 @@ const Register = () => {
   });
 
   const params = new URLSearchParams(location.search);
+  const exp = params.get("exp");
   const next = params.get("next") || "/dashboard-create-project";
 
   useRegisterFormPersistence(setFormData, setStep);
@@ -270,6 +271,7 @@ const Register = () => {
                 body: JSON.stringify({
                   id_proyecto: idProyecto,
                   email: formData.email,
+                  exp: params.get("exp"),
                 }),
               }
             );
@@ -288,6 +290,8 @@ const Register = () => {
         let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
         const idProyectoParam = params.get("id_proyecto");
         if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
+        const expParam = params.get("exp");
+        if (expParam) loginUrl += `&exp=${encodeURIComponent(expParam)}`;
 
         toast.dismiss(toastId);
         showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
