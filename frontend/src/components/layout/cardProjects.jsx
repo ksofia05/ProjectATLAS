@@ -56,6 +56,7 @@ const InventoryCard = ({
           }),
         }
       );
+      window.dispatchEvent(new Event("collaboratorStateChanged"));
       const data = await response.json();
       toast.dismiss(toastId);
       if (response.ok && data.success) {

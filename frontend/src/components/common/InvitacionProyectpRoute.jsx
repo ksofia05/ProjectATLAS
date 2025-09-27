@@ -12,7 +12,19 @@ const InvitacionProyectoRoute = () => {
   const [asociado, setAsociado] = useState(false);
   const { isAuthenticated, isLoading, userProfile, user, recheckAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const asociacionIntentada = useRef(false);
+
+  useEffect(()=>{
+    const params = new URLSearchParams(location.search);
+    const exp = params.get("exp");
+    if (exp){
+      const now = Math.floor(Date.now() / 1000);
+      if(now > Number(exp)){
+        navigate("/error404",{ replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     if (
@@ -24,15 +36,20 @@ const InvitacionProyectoRoute = () => {
       !asociacionIntentada.current
     ) {
       asociacionIntentada.current = true;
+
+  
       const asociar = async () => {
         try {
           setAsociando(true);
+          const search = new URLSearchParams(location.search);
+          const expParam = search.get("exp");
           const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id_proyecto: cleanId,
               email: userProfile.correoelectronico || userProfile.email || user?.email,
+              exp: expParam,
             }),
           });
           const data = await response.json();
