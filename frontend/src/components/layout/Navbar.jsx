@@ -27,7 +27,6 @@ const Navbar = ({
   const { title, subtitle } = useNavbarTitle();
 
   const handleClose = () => setShowShareModal(false);
-  
 
   const fotoPerfil =
     user?.user_metadata?.fotosPerfiles &&
@@ -151,13 +150,13 @@ const Navbar = ({
                     ></i>
                   </div>
                 </div>
-                <UserMenu
-                  visible={menuOpen}
-                  onClose={() => setMenuOpen(false)}
-                  fotoPerfil={fotoPerfil}
-                />
               </div>
             )}
+            <UserMenu
+              visible={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              fotoPerfil={fotoPerfil}
+            />
 
             {/* Notificación */}
             <div className="relative cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors">
