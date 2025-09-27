@@ -21,36 +21,6 @@ const EquipmentClientModal = ({
   const [comentarioSalida, setComentarioSalida] = useState("");
   const salidaRef = useRef(null);
 
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    numeroSerie: "",
-    comentarioEntrada: "",
-    comentarioSalida: "",
-  });
- // Este useEffect debe ir aquí, nunca después de un return
-  useEffect(() => {
-    let equipoActualLocal = {};
-    if (equipos.length > 0) {
-      const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
-      const duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
-      if (duplicados.length > 1) {
-        equipoActualLocal = duplicados[registroActual] || {};
-      } else {
-        equipoActualLocal = equipos.find((eq) => eq.numeroSerie === serie) || {};
-      }
-    }
-    if (equipoActualLocal && Object.keys(equipoActualLocal).length > 0) {
-      setEditForm({
-        numeroSerie: equipoActualLocal.numeroSerie || "",
-        comentarioEntrada: equipoActualLocal.comentarioEntrada || "",
-        comentarioSalida: equipoActualLocal.comentarioSalida || "",
-      });
-    }
-  }, [equipos, registroActual, numeroSerieSeleccionado, equipo]);
-
-  
-
   useEffect(() => {
     if (!cliente) return;
     const fetchEquipos = async () => {
@@ -87,7 +57,6 @@ const EquipmentClientModal = ({
           setLoading(false);
           return;
         }
-       
         // Unir datos y contar repeticiones, asegurando que cada registro duplicado tenga su propia imagen
         const equiposCompletos = equipoAgs.map((ea) => {
           const equipo =
@@ -216,35 +185,6 @@ const EquipmentClientModal = ({
       setShowConfirmModal(true);
     }
   };
-   const handleSave = async () => {
-  const { error } = await supabase
-    .from("EquipoAgendamiento")
-    .update({
-      equipo_numeroSerie: editForm.numeroSerie,
-      comentarioEntrada: editForm.comentarioEntrada,
-      comentarioSalida: editForm.comentarioSalida,
-    })
-    .eq("agendamiento_equipo", equipoActual.agendamiento_equipo);
-
-  if (!error) {
-    setIsEditing(false);
-    // Actualiza el estado local si lo necesitas
-    setEquipos(prev =>
-      prev.map((eq, idx) =>
-        idx === registroActual
-          ? {
-              ...eq,
-              numeroSerie: editForm.numeroSerie,
-              comentarioEntrada: editForm.comentarioEntrada,
-              comentarioSalida: editForm.comentarioSalida,
-            }
-          : eq
-      )
-    );
-  } else {
-    alert("Error al guardar cambios");
-  }
-};
 
   if (loading) return;
 
@@ -253,8 +193,17 @@ const EquipmentClientModal = ({
   let equipoActual = {};
   if (equipos.length > 0) {
     const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
-    const duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
+    let duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
     if (duplicados.length > 1) {
+      // Ordenar por fechaIngreso y luego por agendamiento_idAgendamiento
+      duplicados = duplicados.sort((a, b) => {
+        const fechaA = new Date(a.ingreso);
+        const fechaB = new Date(b.ingreso);
+        if (fechaA < fechaB) return -1;
+        if (fechaA > fechaB) return 1;
+        // Si la fecha es igual, ordenar por agendamiento_idAgendamiento
+        return String(a.agendamiento_idAgendamiento).localeCompare(String(b.agendamiento_idAgendamiento));
+      });
       equiposFiltrados = duplicados;
       equipoActual = equiposFiltrados[registroActual] || {};
     } else {
@@ -262,7 +211,6 @@ const EquipmentClientModal = ({
       equipoActual = equiposFiltrados[0] || {};
     }
   }
-  
 
   const hasUnsavedChanges = () => {
     return (
@@ -314,20 +262,18 @@ const EquipmentClientModal = ({
               
               <div>
                 <label className="text-gray-300 font-semibold">No. Serie</label>
-                
                 <Input
                   name="serie"
                   value={
                     equipoActual.numeroSerie
                       ? equipoActual.repeticiones > 1
-                        ? equipoActual.numeroSerie +` (${equipoActual.repeticiones})`
+                        ? `${equipoActual.numeroSerie} (${registroActual + 1})`
                         : equipoActual.numeroSerie
                       : "Sin número de serie"
                   }
                   readOnly
                   className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
-                
               </div>
             </div>
           </div>
@@ -357,19 +303,9 @@ const EquipmentClientModal = ({
               </div>
             </div>
             <div>
-              <label className="text-gray-300 font-semibold">Comentario Entrada </label>
-              {isEditing ? (
-               <Input
-               name="comentarioEntrada"
-               as="textarea"
-               rows={2}
-               maxlength={120}
-               value={editForm.comentarioEntrada}
-               onChange={e => setEditForm({ ...editForm, comentarioEntrada: e.target.value })}
-               className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
-               />
-               ) : (
-
+              <label className="text-gray-300 font-semibold">
+                Comentario Entrada
+              </label>
               <Input
                 name="comentarioEntrada"
                 as="textarea"
@@ -378,29 +314,12 @@ const EquipmentClientModal = ({
                 readOnly
                 className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
               />
-               )}
-              {isEditing && (
-              <div className="text-right text-xs mt-1" style={{ color: editForm.comentarioEntrada.length === 120 ? "#f87171" : "#a78bfa" }}>
-              {editForm.comentarioEntrada.length}/120 caracteres
-              </div>
-             )}
             </div>
-
-
             <div className="flex flex-row gap-4 items-start">
               <div className="flex-1">
-                <label className="text-gray-300 font-semibold">Comentario Salida  </label>
-                {isEditing ? (
-                <Input
-                 name="comentarioSalida"
-                 as="textarea"
-                 rows={2}
-                 maxlength={120}
-                 value={editForm.comentarioSalida}
-                 onChange={e => setEditForm({ ...editForm, comentarioSalida: e.target.value })}
-                 className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
-                 />
-                 ) : (
+                <label className="text-gray-300 font-semibold">
+                  Comentario Salida
+                </label>
                 <Input
                   name="comentarioSalida"
                   as="textarea"
@@ -410,13 +329,11 @@ const EquipmentClientModal = ({
                       ? equipoActual.comentarioSalida
                       : comentarioSalida || equipoActual.comentarioSalida
                   }
+                   onChange={(e) => {
+    if (e.target.value.length <= 120) setComentarioSalida(e.target.value);
+  }}
+                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
-                 )}{isEditing && (
-  <div className="text-right text-xs mt-1" style={{ color: editForm.comentarioSalida.length === 120 ? "#f87171" : "#a78bfa" }}>
-    {editForm.comentarioSalida.length}/120 caracteres
-  </div>
-)}
-
                  {equipoActual.estado !== "Inactivo" && (
       <div
         className="text-right text-xs mt-1"
@@ -424,7 +341,7 @@ const EquipmentClientModal = ({
           color: comentarioSalida.length === 120 ? "#f87171" : "#a78bfa",
         }}
       >
-        
+        {comentarioSalida.length}/120 caracteres
       </div>
     )}
               </div>
@@ -488,39 +405,20 @@ const EquipmentClientModal = ({
                 )}
               </div>
             </div>
-            
           </div>
-          
         </div>
-               {showConfirmModal && (
+        {showConfirmModal && (
           <EstateAdEquipmentModal
             onClose={() => setShowConfirmModal(false)}
             onSave={handleConfirmInactivar}
           />
         )}
-        <div className="absolute bottom-8 left-8">
-  {!isEditing ? (
-    <button
-      className="bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-purple-700 transition"
-      onClick={() => setIsEditing(true)}
-    >
-      Editar
-    </button>
-  ) : (
-    <button
-      className="bg-green-600 text-white px-6 py-2 rounded-xl font-semibold shadow hover:bg-green-700 transition"
-      onClick={handleSave}
-    >
-      Guardar cambios
-    </button>
-  )}
-</div>
-        
       </WideFloatingModal>
     </>
   );
 };
 
 export default EquipmentClientModal;
+
 
 //Psd : Si esta mrd funciona, porfavor no la toquen, att: luis
