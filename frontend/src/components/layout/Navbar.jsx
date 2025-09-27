@@ -26,14 +26,7 @@ const Navbar = ({
 
   const { title, subtitle } = useNavbarTitle();
 
-  const getUserName = () => {
-    if (!user) return isLoading ? "Cargando..." : "Invitado";
-    const metadata = user.user_metadata || user.nombre;
-    return `${metadata.nombre} ${metadata.apellido}`;
-  };
-
   const handleClose = () => setShowShareModal(false);
-  const userName = getUserName();
 
   const fotoPerfil =
     user?.user_metadata?.fotosPerfiles &&
@@ -42,7 +35,6 @@ const Navbar = ({
       : userAtlas;
 
   useEffect(() => {
-    console.log("usuario", user);
     const handleClickOutside = (event) => {
       if (userRef.current && !userRef.current.contains(event.target)) {
         setMenuOpen(false);
@@ -55,6 +47,16 @@ const Navbar = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuOpen]);
+
+  const getUserName = () => {
+    if (!user) return isLoading ? "Cargando..." : "Invitado";
+    const metadata = user.user_metadata || {};
+    const nombre = metadata.nombre || user.nombre || "";
+    const apellido = metadata.apellido || user.apellido || "";
+    return `${nombre} ${apellido}`.trim();
+  };
+
+  const userName = getUserName();
 
   return (
     <>
@@ -148,13 +150,13 @@ const Navbar = ({
                     ></i>
                   </div>
                 </div>
-                <UserMenu
-                  visible={menuOpen}
-                  onClose={() => setMenuOpen(false)}
-                  fotoPerfil={fotoPerfil}
-                />
               </div>
             )}
+            <UserMenu
+              visible={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              fotoPerfil={fotoPerfil}
+            />
 
             {/* Notificación */}
             <div className="relative cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors">

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { dateUtils, isDayBlocked, canClickDay } from "../../utils/dateUtils.js";
+import { dateUtils, isDayBlocked } from "../../utils/dateUtils.js";
 import { isSunday, getHolidayInfo } from "../../utils/holidayUtils.js";
 import dayjs from "dayjs";
 import { client as supabase } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore";
-import useProjectsStore from "../../stores/useProjectsStore";
 
 const MonthCalendarView = ({ year, month, onDaySelect }) => {
   const dayNames = [

@@ -61,9 +61,13 @@ const UserMenu = ({ visible, onClose, fotoPerfil }) => {
     <>
       <div
         className={`
-          absolute right-0 top-14 z-50 min-w-[20rem] 
+          fixed top-24 left-1/2 z-50
+          w-full max-w-[calc(100vw-2rem)]
+          -translate-x-1/2
+          sm:absolute sm:top-16 sm:right-0 sm:left-auto sm:translate-x-0
+          sm:min-w-[20rem] sm:max-w-sm
           bg-[#14141e] from-[#08080e]/95 border border-slate-700/50
-          rounded-2xl shadow-2xl p-4
+          rounded-2xl shadow-2xl p-2 sm:p-4
           transition-all duration-300
           ${isClosing ? "animate-fadeOutScale" : "animate-fadeInScale"}
           hover:shadow-xl hover:shadow-purple-500/10

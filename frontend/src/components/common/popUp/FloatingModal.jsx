@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 const FloatingModal = ({
   children,
@@ -41,48 +41,50 @@ const FloatingModal = ({
   if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-auto">
+    <>
       <div
-        className={`absolute inset-0 transition-all duration-400 pointer-events-auto ${
+        className={`fixed inset-0 z-[99999] transition-all duration-400 pointer-events-auto ${
           isVisible
             ? "bg-black/5 backdrop-blur-[2px] opacity-100"
             : "bg-black/0 backdrop-blur-0 opacity-0"
         }`}
         onClick={handleBackdropClick}
       />
-
-      <div
-        className={`relative z-10 w-full max-w-md transition-all duration-400 pointer-events-auto ${
-          isVisible
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 -translate-y-12 scale-95"
-        }`}
-        style={{
-          transitionTimingFunction: isVisible
-            ? "cubic-bezier(0.34, 1.56, 0.64, 1)" 
-            : "cubic-bezier(0.25, 0.46, 0.45, 0.94)", // salida suave
-        }}
-      >
+      {/* Modal */}
+      <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 pointer-events-auto">
         <div
-          className="bg-[#14141e] border border-slate-700/50 rounded-2xl shadow-2xl p-8 w-full"
-          style={{ minHeight: "220px" }}
-          onClick={(e) => e.stopPropagation()}
+          className={`relative w-full max-w-md transition-all duration-400 pointer-events-auto ${
+            isVisible
+              ? "opacity-100 translate-y-0 scale-100"
+              : "opacity-0 -translate-y-12 scale-95"
+          }`}
+          style={{
+            transitionTimingFunction: isVisible
+              ? "cubic-bezier(0.34, 1.56, 0.64, 1)"
+              : "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          }}
         >
-          {showCloseIcon && onClose && (
-            <button
-              onClick={handleClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
-              aria-label="Cerrar"
-            >
-              <i className="bi bi-x-lg"></i>
-            </button>
-          )}
-          {typeof children === "function"
-            ? children({ handleClose })
-            : children}
+          <div
+            className="bg-[#14141e] border border-slate-700/50 rounded-2xl shadow-2xl p-8 w-full"
+            style={{ minHeight: "220px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {showCloseIcon && onClose && (
+              <button
+                onClick={handleClose}
+                className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                aria-label="Cerrar"
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            )}
+            {typeof children === "function"
+              ? children({ handleClose })
+              : children}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
