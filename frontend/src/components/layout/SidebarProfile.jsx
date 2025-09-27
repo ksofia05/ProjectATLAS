@@ -109,30 +109,6 @@ export default function SidebarProfile() {
             &copy; 2025 AtlasCo.
           </span>
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          <Link
-            to="/terminos"
-            state={{ from: "/perfil" }}
-            className="hover:text-purple-400 transition-colors cursor-pointer"
-          >
-            Términos
-          </Link>
-          <span>•</span>
-          <Link
-            to="/politica-de-privacidad"
-            state={{ from: "/perfil" }}
-            className="hover:text-purple-400 transition-colors cursor-pointer"
-          >
-            Privacidad
-          </Link>
-          <span>•</span>
-          <Link
-            to="/sobre-nosotros"
-            className="hover:text-purple-400 transition-colors cursor-pointer"
-          >
-            Acerca de
-          </Link>
-        </div>
       </footer>
       {showPhotoModal && (
         <UpdateProfilePhotoModal
