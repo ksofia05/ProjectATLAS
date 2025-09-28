@@ -4,11 +4,13 @@ from pathlib import Path
 import dj_database_url
 from decouple import config
 
-# Build paths - Apuntar a la raíz del proyecto completo
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Build paths correctos
+BASE_DIR = Path(__file__).resolve().parent.parent  # backend/
+PROJECT_ROOT = BASE_DIR.parent  # ProjectATLAS/
 
-# Agregar la raíz al path de Python para encontrar las apps
-sys.path.insert(0, str(BASE_DIR))
+# CRÍTICO: Agregar la raíz del proyecto al Python path
+# Para que 'proyectos', 'inventario', 'autenticacion' sean encontrados
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -22,10 +24,10 @@ RENDER = config('RENDER', default=False, cast=bool)
 # Production allowed hosts
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# Application definition - SOLO APPS QUE REALMENTE EXISTEN
+# Application definition
 INSTALLED_APPS = [
     'admin_interface',
-    'colorfield', 
+    'colorfield',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,8 +37,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_extensions',
-    # Solo apps que realmente existen - empezar con las básicas
-    'tasks',  # Verificar que esta existe y funciona
+    # Apps en backend/
+    'tasks',
+    # Apps en raíz del proyecto (PROJECT_ROOT)
+    'autenticacion',
+    'proyectos',     # ← Necesario para tasks/urls.py
+    'inventario',    # ← Necesario para tasks/urls.py
+    'colaboradores',
+    'calendario',
 ]
 
 MIDDLEWARE = [
@@ -108,7 +116,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATICFILES_DIRS = []
 
 # WhiteNoise configuration
@@ -116,7 +124,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -139,15 +147,15 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Debug info para logs
+# Debug info crítico para verificar paths
 print("=== CONFIGURACIÓN DE PRODUCCIÓN ===")
-print(f"BASE_DIR: {BASE_DIR}")
-print(f"Python path: {sys.path[:3]}")
-print(f"DEBUG: {DEBUG}")
-print(f"RENDER: {RENDER}")
-print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
-print(f"Apps directory exists:")
-print(f"  - BASE_DIR exists: {BASE_DIR.exists()}")
-print(f"  - tasks path: {BASE_DIR / 'tasks'}")
-print(f"  - tasks exists: {(BASE_DIR / 'tasks').exists()}")
+print(f"BASE_DIR (backend/): {BASE_DIR}")
+print(f"PROJECT_ROOT (ProjectATLAS/): {PROJECT_ROOT}")
+print(f"Python path[0]: {sys.path[0]}")
+print(f"DEBUG: {DEBUG}, RENDER: {RENDER}")
+print("Verificando apps críticas:")
+print(f"  ✓ tasks: {(BASE_DIR / 'tasks').exists()}")
+print(f"  ✓ proyectos: {(PROJECT_ROOT / 'proyectos').exists()}")
+print(f"  ✓ inventario: {(PROJECT_ROOT / 'inventario').exists()}")
+print(f"  ✓ autenticacion: {(PROJECT_ROOT / 'autenticacion').exists()}")
 print("===================================")
