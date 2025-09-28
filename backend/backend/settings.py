@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+
 from pathlib import Path
+import os
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,9 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
     'coreapi',
     'tasks',
-    'autenticacion',
+    'proyectos',
+    'calendario',
+    'colaboradores',
+    'inventario',
 ]
 
 MIDDLEWARE = [
@@ -81,11 +89,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Atlas',
-        'USER': 'usuario_backend',
-        'PASSWORD': 'atlas',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'postgres',
+        'USER': 'postgres.ukpjvbvzqmehjormyrza',
+        'PASSWORD': 'Atlas1234*',
+        'HOST': 'aws-0-sa-east-1.pooler.supabase.com',
+        'PORT': '6543',
     }
 }
 
@@ -125,6 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "backend" / "autenticacion" / "static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -132,8 +141,24 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #cords headers
-CORS_ALLOWED_ORIGINS = []
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
 }
+
+
+STATIC_URL = '/static/'
+#Emails
+
+EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST= 'smtp.gmail.com'
+EMAIL_PORT= 587
+EMAIL_USE_TLS= True
+EMAIL_HOST_USER= 'atlas.inovationcompany@gmail.com'
+EMAIL_HOST_PASSWORD= 'yddt w ajh wuho dnrp'
+DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
+
+
+os.environ['SUPABASE_URL'] = "https://ukpjvbvzqmehjormyrza.supabase.co"
+os.environ['SUPABASE_SERVICE_ROLE'] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrcGp2YnZ6cW1laGpvcm15cnphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjQ1NzQ1MCwiZXhwIjoyMDYyMDMzNDUwfQ.Wex6pOxwagRhdI-DO7QYXPhRrcwBtIxrgwd6K6kqgvw"
