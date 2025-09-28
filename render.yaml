@@ -29,8 +29,9 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "https://projectatlas-frontend.onrender.com,http://localhost:3000,http://localhost:5173"
 
-  - type: static
+  - type: web
     name: projectatlas-frontend
+    env: static
     buildCommand: |
       cd frontend
       npm ci
