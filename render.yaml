@@ -1,7 +1,7 @@
 services:
   - type: web
     name: projectatlas-backend
-    runtime: python3
+    env: python
     buildCommand: |
       cd backend
       pip install -r requirements.txt
@@ -31,7 +31,7 @@ services:
 
   - type: web
     name: projectatlas-frontend
-    runtime: static
+    env: static
     buildCommand: |
       cd frontend
       npm ci
