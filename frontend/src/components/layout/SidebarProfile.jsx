@@ -103,13 +103,7 @@ export default function SidebarProfile() {
         </div>
       </div>
 
-      <footer className="text-xs text-gray-500 border-t border-slate-700/50 pt-4 relative z-10">
-        <div className="mb-3 text-center">
-          <span className="text-purple-400 font-medium">
-            &copy; 2025 AtlasCo.
-          </span>
-        </div>
-      </footer>
+      
       {showPhotoModal && (
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
