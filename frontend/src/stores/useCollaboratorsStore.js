@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import axios from "axios";
-
+import API_BASE_URL from "../api/apiBase";
 const useCollaboratorsStore = create(
   persist(
     (set, get) => ({
@@ -34,7 +34,7 @@ const useCollaboratorsStore = create(
 
         try {
           const response = await axios.get(
-            `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
+            `${API_BASE_URL}/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
           );
 
           const colaboradores = response.data.colaboradores || [];
@@ -98,7 +98,7 @@ const useCollaboratorsStore = create(
         try {
           // Actualizar en el backend (Aveces no funciona
           await axios.patch(
-            `http://localhost:8000/tasks/api/v1/usuarios/${colaboradorId}/estado/`,
+            `${API_BASE_URL}/tasks/api/v1/usuarios/${colaboradorId}/estado/`,
             { estado: newState }
           );
 

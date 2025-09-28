@@ -9,7 +9,7 @@ import useUserStore from "../../stores/useUserStore";
 import WarningModal from "../dashboard/WarningModal";
 import toast from "react-hot-toast";
 import { actualizarHistorialColaborador } from "../common/historialColaboradores";
-
+import API_BASE_URL from "../../api/apiBase";
 const InventoryCard = ({
   project,
   isColaborador = false,
@@ -46,7 +46,7 @@ const InventoryCard = ({
     const toastId = showLoadingToast("Eliminando proyecto...");
     try {
       const response = await fetch(
-        "http://localhost:8000/tasks/api/v1/quitar_colaborador_de_proyecto/",
+        `${API_BASE_URL}/tasks/api/v1/quitar_colaborador_de_proyecto/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

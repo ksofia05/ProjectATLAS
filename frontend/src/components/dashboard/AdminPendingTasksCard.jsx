@@ -5,6 +5,7 @@ import { AuthContext } from "../../context/AuthProvider";
 import ButtonGrey from "../common/ButtonGrey";
 import UserTaskRow from "../common/UserTaskRow";
 import axios from "axios";
+import API_BASE_URL from "../../api/apiBase";
 
 // Función auxiliar para filtrar tareas por estado
 function filterTasks(tasks, filtro) {
@@ -42,7 +43,7 @@ export default function AdminPendingTasksCard({ className }) {
     if (!userProfile || !projectId) return;
     try {
       const response = await axios.get(
-        `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
+        `${API_BASE_URL}/tasks/api/v1/filtro_colaborador/?id_proyecto=${projectId}`
       );
       const colaboradores = response.data.colaboradores || [];
 

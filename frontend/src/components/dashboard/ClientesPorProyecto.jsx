@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API_BASE_URL from "../../api/apiBase";
 
 function ClientesPorProyecto({ idProyecto, refreshFlag, onClienteClick }) {
   const [clientes, setClientes] = useState([]);
@@ -7,7 +8,7 @@ function ClientesPorProyecto({ idProyecto, refreshFlag, onClienteClick }) {
   useEffect(() => {
     if (!idProyecto) return;
     setLoading(true);
-    fetch(`http://localhost:8000/inventario/clientes_por_proyecto?id_proyecto=${idProyecto}`)
+    fetch(`${API_BASE_URL}/inventario/clientes_por_proyecto?id_proyecto=${idProyecto}`)
       .then((res) => res.json())
       .then((data) => {
         setClientes(data.clientes || []);

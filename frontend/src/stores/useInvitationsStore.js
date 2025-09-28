@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
+import API_BASE_URL from '../api/apiBase';
 const useInvitationsStore = create(
   persist(
     (set, get) => ({
@@ -36,7 +36,7 @@ const useInvitationsStore = create(
         
         try {
           const response = await fetch(
-            `http://127.0.0.1:8000/tasks/api/v1/invitacionesProyecto/${projectId}/`,
+            `${API_BASE_URL}/tasks/api/v1/invitacionesProyecto/${projectId}/`,
             {
               method: 'GET',
               headers: { 'Content-Type': 'application/json' }

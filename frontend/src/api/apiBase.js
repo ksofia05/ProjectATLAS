@@ -1,17 +1,13 @@
-// Detectar entorno automáticamente
-const isProduction = import.meta.env.PROD;
-const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
-export const API_BASE = isProduction 
-  ? 'https://projectatlas-backend.onrender.com/'
-  : import.meta.env.VITE_API_BASE || 'http://localhost:8000/';
+// Asegurar que termine sin slash para concatenación consistente
+export const API_BASE_URL_CLEAN = API_BASE_URL.endsWith('/') 
+  ? API_BASE_URL.slice(0, -1) 
+  : API_BASE_URL;
 
-// Debug para desarrollo
-if (isDevelopment) {
-  console.log('🔧 Entorno:', { 
-    isProduction, 
-    isDevelopment, 
-    API_BASE,
-    VITE_API_BASE: import.meta.env.VITE_API_BASE 
-  });
-}
+export default API_BASE_URL_CLEAN;
+
+console.log('API Base URL:', API_BASE_URL_CLEAN);
+console.log('Environment:', {
+  VITE_API_BASE: import.meta.env.VITE_API_BASE 
+});

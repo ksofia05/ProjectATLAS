@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {showErrorToast, showSuccessToast,} from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
-
+import API_BASE_URL from "../../api/apiBase";
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,7 +21,7 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
     }
     try {
       const response = await fetch(
-        "http://localhost:8000/tasks/api/v1/save_proyect/",
+        `${API_BASE_URL}/tasks/api/v1/save_proyect/`,
         {
           method: "POST",
           headers: {

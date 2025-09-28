@@ -15,7 +15,7 @@ import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
 import { useAuth } from "../../context/AuthProvider";
 import { actualizarHistorialColaborador } from "../../components/common/historialColaboradores";
-
+import API_BASE_URL from "../../api/apiBase";
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -101,7 +101,7 @@ const Login = () => {
         if (idProyecto && formData.email) {
           try {
             const response = await fetch(
-              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
+              `${API_BASE_URL}/tasks/api/v1/asociar_colaborador/`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

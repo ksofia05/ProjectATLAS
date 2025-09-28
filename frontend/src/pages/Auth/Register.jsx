@@ -17,7 +17,7 @@ import {
 } from "../../components/common/popUp/Loading";
 import { toast } from "react-hot-toast";
 import { client } from "../../supabase/client";
-
+import API_BASE_URL from "../../api/apiBase";
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -146,7 +146,7 @@ const Register = () => {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/tasks/api/v1/verificar-correo/",
+          `${API_BASE_URL}/tasks/api/v1/verificar-correo/`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -263,7 +263,7 @@ const Register = () => {
           const idProyecto = next.split("/dashboard/")[1];
           try {
             await fetch(
-              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
+              `${API_BASE_URL}/tasks/api/v1/asociar_colaborador/`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

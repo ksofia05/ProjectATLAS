@@ -1,5 +1,6 @@
 import axios from 'axios';
+import API_BASE_URL from '../api/apiBase'
 
 export const getUsuario = async () => {
-    return axios.get('http://localhost:8000/tasks/api/v1/usuarios/')
+    return axios.get(`${API_BASE_URL}/tasks/api/v1/usuarios/`)
 }
