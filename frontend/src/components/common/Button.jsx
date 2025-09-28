@@ -16,9 +16,15 @@ const Button = ({
       type={type}
       onClick={isDisabled ? undefined : onClick || (() => {})}
       disabled={isDisabled}
-      className={`w-full bg-purple-700 text-white py-3 px-4 rounded-lg hover:bg-purple-600 hover:shadow-lg transition-all font-semibold shadow-md ${
-        isDisabled ? "opacity-50 cursor-not-allowed" : ""
-      } ${className}`}
+      className={`
+        w-full py-3 px-4 rounded-xl font-semibold text-white
+        bg-gradient-to-r from-purple-700 via-purple-600 to-purple-800
+        shadow-lg transition-all duration-200
+        hover:from-purple-800 hover:to-purple-900 hover:shadow-xl
+        focus:outline-none focus:ring-2 focus:ring-purple-400
+        ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+        ${className}
+      `}
     >
       {loading ? loadingText : children}
     </button>

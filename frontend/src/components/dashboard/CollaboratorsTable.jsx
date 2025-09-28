@@ -25,6 +25,8 @@ export default function CollaboratorsTable() {
     fetchCollaborators,
     updateCollaboratorState,
     forceRefresh,
+    addCollaborator,
+    removeCollaborator,
   } = useCollaboratorsStore();
 
   //Estado para historial
@@ -86,29 +88,60 @@ export default function CollaboratorsTable() {
   // Actualizacion en tiempo real (necesito cambiarlo)
   useEffect(() => {
     if (!projectId) return;
-
-    const channel = supabase
-      .channel("historial_colaboradores_changes")
+    const TABLE_RELACION="colaborador_proyecto";
+    const relationChannel = supabase
+      .channel("relacion_colaboradores_changes")
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
-          table: "historial_colaboradores",
+          table: TABLE_RELACION,
           filter: `proyecto_id=eq.${projectId}`,
         },
         (payload) => {
-          console.log("Cambio en historial_colaboradores:", payload);
+          console.log("INSERT realtime recibido:", payload);
+          fetchCollaborators(projectId, { force: true});
           loadHistorialEliminados();
-          forceRefresh(projectId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: TABLE_RELACION,
+          filter: `proyecto_id=eq.${projectId}`,
+        },
+        (payload) => {
+          const idEliminado = payload?.old?.usuario_id;
+          if (idEliminado) {
+            removeCollaborator(idEliminado);
+          }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+     supabase.removeChannel(relationChannel); 
     };
-  }, [projectId, forceRefresh]);
+  }, [projectId, fetchCollaborators, removeCollaborator, loadHistorialEliminados]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const channel = supabase
+      .channel("historial_colaboradores_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "historial_colaboradores", filter: `proyecto_id=eq.${projectId}` },
+        () => {
+          loadHistorialEliminados();
+        }
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [projectId]);
+
 
   const handleSwitch = async (colaborador, idx) => {
     const nuevoEstado = colaborador.estado === "Activo" ? "Inactivo" : "Activo";
@@ -123,11 +156,9 @@ export default function CollaboratorsTable() {
       showErrorToast("Error al cambiar el estado del colaborador");
     }
   };
-
-  const todosColaboradores = [
-    ...collaborators, // activos/inactivos
-    ...historialColaboradores, // eliminados
-  ];
+   const eliminadosIds = new Set(historialColaboradores.map(h => h.id));
+   const activosSinEliminados = collaborators.filter(c => !eliminadosIds.has(c.id));
+   const todosColaboradores = [...activosSinEliminados, ...historialColaboradores];
 
   // Exportar a Excel
   const exportToExcel = (data) => {

@@ -6,16 +6,14 @@ import { useAuth } from "../context/AuthProvider";
 import WarningModal from "../components/dashboard/WarningModal";
 
 const DashboardCreateProject = () => {
-  const { user, userProfile, isLoading, isAuthenticated, recheckAuth } =
-    useAuth();
-  const [refreshProjects, setRefreshProjects] = React.useState(0);
-  const [showProjectLimitModal, setShowProjectLimitModal] =
-    React.useState(false);
-  const [projectLimitMessage, setProjectLimitMessage] = React.useState("");
-  const [showInstructionsModal, setShowInstructionsModal] =
-    React.useState(false);
+  const { user, userProfile } = useAuth();
+  const [refreshProjects, setRefreshProjects] = useState(0);
+  const [showProjectLimitModal, setShowProjectLimitModal] = useState(false);
+  const [projectLimitMessage, setProjectLimitMessage] = useState("");
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const shouldShow = localStorage.getItem("showProjectLimitModal");
     const message = localStorage.getItem("projectLimitMessage");
     if (shouldShow === "1" && !showProjectLimitModal) {
@@ -25,7 +23,7 @@ const DashboardCreateProject = () => {
           "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
       );
     }
-  });
+  }, [showProjectLimitModal]);
 
   useEffect(() => {
     window.refreshUserAndProjects = async () => {
@@ -36,45 +34,42 @@ const DashboardCreateProject = () => {
     };
   }, []);
 
-  let projectsBlock = null;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
-  if (!userProfile) {
-    projectsBlock = <div className="text-white p-4">Cargando usuario...</div>;
-  } else if (userProfile.rol_idRol === 1) {
-    projectsBlock = (
-      <div className="mb-8">
-        <h3 className="font-semibold mb-2 text-white">Mis Proyectos (Admin)</h3>
-        <ProjectList isColaborador={false} refreshProjects={refreshProjects} />
-        <ul className="text-sm text-gray-300 list-decimal list-inside pl-2 mt-2">
-          <li className="cursor-pointer hover:text-[#7c2ae8]">
-            Haz clic en "Nuevo Proyecto"
-          </li>
-        </ul>
-      </div>
-    );
-  } else if (userProfile.rol_idRol === 2) {
-    projectsBlock = (
-      <div>
-        <h3 className="font-semibold mb-2 text-white">
-          Mis Proyectos (Colaborador)
-        </h3>
-        <ProjectList
-          isColaborador={userProfile.rol_idRol === 2}
-          refreshProjects={refreshProjects}
-        />
-      </div>
-    );
-  } else {
-    projectsBlock = (
+  const getProjectsBlock = () => {
+    if (!userProfile) {
+      return <div className="text-white p-4">Cargando usuario...</div>;
+    }
+    if (userProfile.rol_idRol === 1) {
+      return (
+        <div className="mb-8">
+          <h3 className="font-semibold mb-2 text-white">
+            Mis Proyectos (Admin)
+          </h3>
+          <ProjectList
+            isColaborador={false}
+            refreshProjects={refreshProjects}
+          />
+          <ul className="text-sm text-gray-300 list-decimal list-inside pl-2 mt-2">
+            <li className="cursor-pointer hover:text-[#7c2ae8]">
+              Haz clic en "Nuevo Proyecto"
+            </li>
+          </ul>
+        </div>
+      );
+    }
+    if (userProfile.rol_idRol === 2) {
+      return (
+        <div>
+          <h3 className="font-semibold mb-2 text-white">
+            Mis Proyectos (Colaborador)
+          </h3>
+          <ProjectList isColaborador={true} refreshProjects={refreshProjects} />
+        </div>
+      );
+    }
+    return (
       <div>
         <h3 className="font-semibold mb-2 text-white">Mis Proyectos</h3>
         <p className="text-sm text-gray-400">
@@ -84,7 +79,7 @@ const DashboardCreateProject = () => {
         </p>
       </div>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen flex bg-black">
@@ -112,7 +107,7 @@ const DashboardCreateProject = () => {
       <Sidebar
         showLogo={true}
         showProjectsBlock={true}
-        projectsBlock={projectsBlock}
+        projectsBlock={getProjectsBlock()}
         refreshProjects={refreshProjects}
         isOpen={isSidebarOpen}
         onClose={closeSidebar}

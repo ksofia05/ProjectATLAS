@@ -4,18 +4,18 @@ import LegalPage from "../../components/legal/LegalPage";
 const PrivacyPolicy = () => {
   const content = (
     <>
-      <p class="text-center text-gray-400 mb-6">
-        Última actualización: 13/04/2025
+      <p className="text-center text-gray-400 mb-6">
+        Última actualización: 24/09/2025
       </p>
-      <div class="text-gray-300 text-sm space-y-4">
-        <h2 class="text-lg font-semibold text-white">
+      <div className="bg-[#171722] border border-slate-800/40 rounded-2xl p-6 text-gray-300 text-base space-y-6 shadow-lg">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Información que Recopilamos
         </h2>
         <p>
           ATLAS COMPANY puede recopilar la siguiente información personal cuando
           usted solicita nuestros servicios:
         </p>
-        <ul>
+        <ul className="list-disc pl-6">
           <li>Nombre completo.</li>
           <li>
             Información de contacto (teléfono, correo electrónico, dirección).
@@ -27,11 +27,11 @@ const PrivacyPolicy = () => {
           <li>Historial de uso de nuestros servicios.</li>
         </ul>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Uso de la Información
         </h2>
         <p>La información recopilada se utiliza para:</p>
-        <ul>
+        <ul className="list-disc pl-6">
           <li>
             Proveer y gestionar nuestros servicios de conectividad y software de
             gestión de inventario.
@@ -47,7 +47,7 @@ const PrivacyPolicy = () => {
           <li>Cumplir con obligaciones legales y regulatorias.</li>
         </ul>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Confidencialidad y Protección de Datos
         </h2>
         <p>
@@ -59,7 +59,7 @@ const PrivacyPolicy = () => {
           la misma.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Compartición de Información con Terceros
         </h2>
         <p>
@@ -67,7 +67,7 @@ const PrivacyPolicy = () => {
           con terceros, salvo en los siguientes casos:
         </p>
 
-        <ul>
+        <ul className="list-disc pl-6">
           <li>
             Cuando es necesario para cumplir con requisitos legales o
             regulatorios.
@@ -81,18 +81,22 @@ const PrivacyPolicy = () => {
             información con terceros.
           </li>
         </ul>
-        <h2 class="text-lg font-semibold text-white">• Retención de Datos</h2>
+        <h2 className="text-xl font-bold text-white mb-2">
+          • Retención de Datos
+        </h2>
         <p>
           ATLAS COMPANY conservará su información personal solo durante el
           tiempo necesario para cumplir con los fines para los cuales fue
           recopilada o para cumplir con las obligaciones legales aplicables. Una
-          vez que la información ya no sea necesaria,será eliminada de manera
+          vez que la información ya no sea necesaria, será eliminada de manera
           segura.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Derechos del Usuario</h2>
+        <h2 className="text-xl font-bold text-white mb-2">
+          • Derechos del Usuario
+        </h2>
         <p>Usted tiene el derecho de:</p>
-        <ul>
+        <ul className="list-disc pl-6">
           <li>
             Acceder a la información personal que hemos recopilado sobre usted.
           </li>
@@ -108,7 +112,7 @@ const PrivacyPolicy = () => {
           de los medios indicados al final de esta política.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Cookies y Tecnologías Similares
         </h2>
         <p>
@@ -119,7 +123,7 @@ const PrivacyPolicy = () => {
           afectar la funcionalidad del sitio.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Enlaces a Sitios de Terceros
         </h2>
         <p>
@@ -130,31 +134,35 @@ const PrivacyPolicy = () => {
           proporcionarles cualquier información.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">
+        <h2 className="text-xl font-bold text-white mb-2">
           • Cambios en la Política de Privacidad
         </h2>
         <p>
           ATLAS COMPANY se reserva el derecho de actualizar esta Política de
-          Privacidad en cualquier momento. Las actualizacionesse publicarán en
+          Privacidad en cualquier momento. Las actualizaciones se publicarán en
           nuestro sitio web, y le recomendamos revisar esta política
           periódicamente. El uso continuo de nuestros servicios después de
           cualquier cambio constituye la aceptación de los mismos.
         </p>
 
-        <h2 class="text-lg font-semibold text-white">• Contacto</h2>
+        <h2 className="text-xl font-bold text-white mb-2">• Contacto</h2>
         <p>
           Si tiene alguna pregunta o inquietud sobre esta Política de Privacidad
-          o sobre cómo manejamos su información personal,puede contactarnos a
+          o sobre cómo manejamos su información personal, puede contactarnos a
           través de:
         </p>
-        <ul>
+        <ul className="list-disc pl-6">
           <li>
-            {" "}
             Correo electrónico:{" "}
-            <a href="politicas.html">contacto@atlascompany.com</a>
+            <a
+              href="mailto:contacto@atlascompany.com"
+              className="text-purple-400 hover:underline"
+            >
+              contacto@atlascompany.com
+            </a>
           </li>
-          <li> Teléfono: +57 301 243 3965</li>
-          <li> Dirección: Calle 100 #10-20, Oficina 50</li>
+          <li>Teléfono: +57 301 243 3965</li>
+          <li>Dirección: Calle 100 #10-20, Oficina 50</li>
         </ul>
         <p>
           Al utilizar los servicios de ATLAS COMPANY, usted acepta esta Política

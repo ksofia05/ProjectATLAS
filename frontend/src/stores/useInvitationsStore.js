@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const INVITE_TTL_SECONDS = 60;
+function normalizeExpiracion(inv) {
+  if (inv.expiracion) return inv;
+  if (inv.fecha_invitacion) {
+    const ts = Math.floor(new Date(inv.fecha_invitacion).getTime() / 1000);
+    return { ...inv, expiracion: ts + INVITE_TTL_SECONDS };
+  }
+        // Si no tiene fecha, expira en 1 minuto desde ahora
+  return { ...inv, expiracion: Math.floor(Date.now() / 1000) + INVITE_TTL_SECONDS };
+}
+
 const useInvitationsStore = create(
   persist(
     (set, get) => ({
@@ -23,53 +34,38 @@ const useInvitationsStore = create(
           .map(c => c.correo ? c.correo.toLowerCase() : '')
           .filter(email => email);
         
-        return todasLasInvitaciones.filter(inv => 
-          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
-        );
+        const now = Math.floor(Date.now() / 1000);
+        return todasLasInvitaciones
+          .map(normalizeExpiracion)
+          .filter(inv =>
+            inv.email &&
+            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+            now < inv.expiracion // Solo si no ha expirado
+          );
       },
 
-      //  NUEVO: Sincronizar invitaciones desde el servidor
-      syncInvitationsFromServer: async (projectId) => {
+      filterPendingInvitations: (projectId, colaboradoresActivos = []) => {
         if (!projectId) return;
+        const pendientes = get().invitacionesPendientes[projectId] || [];
+        const emailsColaboradores = colaboradoresActivos
+          .map(c => c.correo ? c.correo.toLowerCase() : '')
+          .filter(email => email);
 
-        set(state => ({ loading: true }));
-        
-        try {
-          const response = await fetch(
-            `http://127.0.0.1:8000/tasks/api/v1/invitacionesProyecto/${projectId}/`,
-            {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' }
-            }
+        const now = Math.floor(Date.now() / 1000);
+        const invitacionesFiltradas = pendientes
+          .map(normalizeExpiracion)
+          .filter(inv =>
+            inv.email &&
+            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+            now < inv.expiracion
           );
 
-          if (response.ok) {
-            const data = await response.json();
-            const invitacionesServidor = data.invitaciones || [];
-
-            set(state => ({
-              invitacionesPendientes: {
-                ...state.invitacionesPendientes,
-                [projectId]: invitacionesServidor.map(inv => ({
-                  email: inv.email,
-                  fecha_invitacion: inv.fecha_invitacion,
-                  nombre_invitador: inv.nombre_invitador,
-                  isOptimistic: false,
-                  id: `server-${inv.id}`
-                }))
-              },
-              loading: false
-            }));
-
-            console.log(' Invitaciones sincronizadas desde servidor para proyecto:', projectId);
-          } else {
-            console.warn('No se pudieron obtener invitaciones del servidor');
-            set(state => ({ loading: false }));
+        set(state => ({
+          invitacionesPendientes: {
+            ...state.invitacionesPendientes,
+            [projectId]: invitacionesFiltradas
           }
-        } catch (error) {
-          console.error('Error sincronizando invitaciones:', error);
-          set(state => ({ loading: false }));
-        }
+        }));
       },
 
       //  Agregar invitación optimista
@@ -125,6 +121,7 @@ const useInvitationsStore = create(
                     ...invitacionConfirmada,
                     isOptimistic: false,
                     fecha_invitacion: new Date().toISOString(),
+                    expiracion: Math.floor(Date.now() / 1000) + 60, // 1 minuto desde ahora
                     id: `confirmed-${Date.now()}`
                   }
                 ]
@@ -159,29 +156,28 @@ const useInvitationsStore = create(
       },
 
       //  Filtrar invitaciones pendientes (mejorado con sync)
-      filterPendingInvitations: async (projectId, colaboradoresActivos = []) => {
+      filterPendingInvitations: (projectId, colaboradoresActivos = []) => {
         if (!projectId) return;
-        
-        // Primero sincronizar desde servidor
-        await get().syncInvitationsFromServer(projectId);
-        
-        // Luego filtrar localmente
         const pendientes = get().invitacionesPendientes[projectId] || [];
         const emailsColaboradores = colaboradoresActivos
           .map(c => c.correo ? c.correo.toLowerCase() : '')
           .filter(email => email);
-        
-        const invitacionesFiltradas = pendientes.filter(inv => 
-          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
-        );
-        
+
+        const now = Math.floor(Date.now() / 1000);
+        const invitacionesFiltradas = pendientes
+          .map(normalizeExpiracion)
+          .filter(inv =>
+            inv.email &&
+            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+            now < inv.expiracion
+          );
+
         set(state => ({
           invitacionesPendientes: {
             ...state.invitacionesPendientes,
             [projectId]: invitacionesFiltradas
           }
         }));
-        
         console.log(' Invitaciones filtradas para proyecto:', projectId);
       },
 
@@ -217,7 +213,30 @@ const useInvitationsStore = create(
       partialize: (state) => ({ 
         //  Solo persistir invitaciones confirmadas, no optimistas
         invitacionesPendientes: state.invitacionesPendientes 
-      })
+      }),
+      onRehydrateStorage: () => {
+        return () => {
+          try {
+            const state = get();
+            const proyectos = Object.keys(state.invitacionesPendientes || {});
+            proyectos.forEach((pid) => {
+              // Limpia expiradas al cargar
+              localStorage.removeItem('invitations-storage');
+              const pendientes = state.invitacionesPendientes[pid] || [];
+              const now = Math.floor(Date.now() / 1000);
+              const filtradas = pendientes
+                .map(normalizeExpiracion)
+                .filter(inv => inv.email && now < inv.expiracion);
+              set((s) => ({
+                invitacionesPendientes: {
+                  ...s.invitacionesPendientes,
+                  [pid]: filtradas
+                }
+              }));
+            });
+          } catch {}
+        };
+      }
     }
   )
 );

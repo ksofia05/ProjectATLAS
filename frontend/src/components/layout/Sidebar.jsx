@@ -21,7 +21,6 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Correcion del sidebar cuando aparece y desaparece (lo que me pidio karen corregir) */}
       {isOpen && (
         <div
           className="fixed inset-0 from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 z-30 lg:hidden"
@@ -36,14 +35,18 @@ const Sidebar = ({
       >
         <div className="mt-8 lg:mt-0">
           {showLogo && (
-            <div className="flex items-center gap-3 mb-10">
+            <Link
+              to="/"
+              className="flex items-center gap-3 mb-10 cursor-pointer"
+              onClick={onClose}
+            >
               <img
                 src={logo}
                 alt="Logo ATLAS"
                 className="w-12 h-12 object-contain"
               />
               <span className="text-3xl font-bold tracking-wide">ATLAS</span>
-            </div>
+            </Link>
           )}
 
           {showProjectsBlock && (

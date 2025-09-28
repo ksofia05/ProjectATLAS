@@ -13,15 +13,18 @@ export default function RegisterClientDrawer({
   const timeoutRef = useRef();
 
   useEffect(() => {
+    clearTimeout(timeoutRef.current);
+
     if (open) {
       setMounted(true);
       timeoutRef.current = setTimeout(() => setShowDrawer(true), 10);
-    } else if (mounted) {
+    } else {
       setShowDrawer(false);
       timeoutRef.current = setTimeout(() => setMounted(false), 300);
     }
+
     return () => clearTimeout(timeoutRef.current);
-  }, [open, mounted]);
+  }, [open]);
 
   if (!mounted) return null;
 
@@ -41,15 +44,15 @@ export default function RegisterClientDrawer({
       />
       <aside
         className={`
-          fixed top-0 right-0 h-full w-full max-w-md bg-[#181825] shadow-2xl p-8 overflow-y-auto
+          fixed top-0 right-0 h-full w-full max-w-md
+          bg-[#14141e] rounded-l-3xl border border-slate-700/50
+          shadow-lg p-8 overflow-y-auto
           transition-transform duration-300 ease-in-out
           ${showDrawer ? "translate-x-0" : "translate-x-full"}
-          rounded-l-3xl
           pointer-events-auto
         `}
         style={{
-          boxShadow:
-            "0 0 32px 0 rgba(255,255,255,0.08), 0 2px 8px 0 rgba(0,0,0,0.12)",
+          boxShadow: "0 4px 32px 0 rgba(0,0,0,0.45)",
         }}
       >
         <div className="flex justify-between items-center mb-8">
@@ -62,7 +65,6 @@ export default function RegisterClientDrawer({
             &times;
           </button>
         </div>
-        {console.log("ID Proyecto en Drawer:", idproyecto)}
         <RegisterClientForm
           onClose={onClose}
           onClienteAdded={onClienteAdded}

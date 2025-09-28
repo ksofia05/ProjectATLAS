@@ -32,13 +32,14 @@ const Register = () => {
   });
 
   const params = new URLSearchParams(location.search);
+  const exp = params.get("exp");
   const next = params.get("next") || "/dashboard-create-project";
 
   useRegisterFormPersistence(setFormData, setStep);
 
   const [errors, setErrors] = useState({});
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
-  const [isStep2SubmitDisabled, setIsStep2SubmitDisabled] = useState(true); // Nuevo estado para paso 2
+  const [isStep2SubmitDisabled, setIsStep2SubmitDisabled] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -66,8 +67,6 @@ const Register = () => {
   };
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
-    console.log("handleChange ejecutado:", { name, value, type, checked }); // Debug
-
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
@@ -80,22 +79,12 @@ const Register = () => {
     }));
   };
 
-  // Nueva función para validar contraseña
   const validatePassword = (password) => {
     const hasMinLength = password.length >= 8;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&+*(),.?":{}|<>_-]/.test(password); 
-
-    console.log("validatePassword debug:", {
-      password,
-      hasMinLength,
-      hasUpperCase,
-      hasLowerCase,
-      hasNumber,
-      hasSpecialChar,
-    });
+    const hasSpecialChar = /[!@#$%^&+*(),.?":{}|<>_-]/.test(password);
 
     return (
       hasMinLength &&
@@ -118,7 +107,6 @@ const Register = () => {
     );
   }, [formData.firstName, formData.lastName, formData.email, errors]);
 
-  // Nuevo useEffect para el paso 2
   useEffect(() => {
     if (step === 2) {
       const isPasswordValid = validatePassword(formData.password);
@@ -126,16 +114,6 @@ const Register = () => {
       const passwordsNotEmpty =
         formData.password !== "" && formData.confirmPassword !== "";
       const areTermsAccepted = formData.termsAccepted;
-
-      console.log("Validación paso 2:", {
-        isPasswordValid,
-        doPasswordsMatch,
-        passwordsNotEmpty,
-        areTermsAccepted,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        termsAccepted: formData.termsAccepted,
-      });
 
       setIsStep2SubmitDisabled(
         !(
@@ -190,13 +168,12 @@ const Register = () => {
         }
       } catch (error) {
         toast.dismiss(toastId);
-        console.error("Error al verificar el correo:", error);
         setErrors((prevErrors) => ({
           ...prevErrors,
           email: "Error al verificar el correo. Intenta nuevamente.",
         }));
       } finally {
-        setIsValidating(false); // Siempre se desbloquea aquí ;(
+        setIsValidating(false);
       }
     } else {
       setIsValidating(false);
@@ -219,7 +196,6 @@ const Register = () => {
       const toastId = showLoadingToast("Registrando...");
 
       try {
-        // registrar en Supabase Auth
         const { data: authData, error: authError } = await client.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -246,7 +222,6 @@ const Register = () => {
           return;
         }
 
-        // guardar en tabla Usuario
         if (authData.user) {
           const { data: userData, error: dbError } = await client
             .from("Usuario")
@@ -267,7 +242,6 @@ const Register = () => {
 
           if (dbError) {
             toast.dismiss(toastId);
-            console.error("Error al guardar en tabla Usuario:", dbError);
             showErrorToast(
               "Error al completar el registro en la base de datos."
             );
@@ -279,7 +253,6 @@ const Register = () => {
           });
         }
 
-        // Limpiar localStorage
         localStorage.removeItem("registerFormData");
         localStorage.removeItem("registerStep");
 
@@ -298,25 +271,27 @@ const Register = () => {
                 body: JSON.stringify({
                   id_proyecto: idProyecto,
                   email: formData.email,
+                  exp: params.get("exp"),
                 }),
               }
             );
             if (idUsuario && !isNaN(Number(idUsuario))) {
-                await actualizarHistorialColaborador(
-                  Number(idUsuario),
-                  Number(idProyecto),
-                  "activo"
-                );
-              }
+              await actualizarHistorialColaborador(
+                Number(idUsuario),
+                Number(idProyecto),
+                "activo"
+              );
+            }
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
         }
 
-        // Redirige al login
         let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
         const idProyectoParam = params.get("id_proyecto");
         if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
+        const expParam = params.get("exp");
+        if (expParam) loginUrl += `&exp=${encodeURIComponent(expParam)}`;
 
         toast.dismiss(toastId);
         showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
@@ -324,9 +299,8 @@ const Register = () => {
       } catch (err) {
         toast.dismiss(toastId);
         showErrorToast("Error inesperado al registrar.");
-        console.error("Error en registro:", err);
       } finally {
-        setIsRegistering(false); // Siempre se desbloquea aquí
+        setIsRegistering(false);
       }
     }
   };
@@ -335,129 +309,166 @@ const Register = () => {
     <FormContainer>
       {step === 1 ? (
         <>
-          <h1 className="text-2xl font-bold text-center mb-4">
+          <h1 className="text-3xl font-bold text-center mb-6 text-white">
             Registrar cuenta
           </h1>
-          <p className="text-gray-400 text-center mb-6">
+          <p className="text-gray-400 text-center mb-8">
             ¿Ya estás registrado?{" "}
             <Link
               to="/iniciar-sesion"
-              className="text-purple-500 hover:underline"
+              className="text-purple-400 hover:underline font-semibold"
             >
               Iniciar sesión
             </Link>
           </p>
-          <Input
-            label="Nombres"
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            errorMessage={errors.firstName}
-            icon={"bi-person-fill"}
-          />
-          <Input
-            label="Apellidos"
-            type="text"
-            name="lastName"
-            value={formData.lastName}
-            errorMessage={errors.lastName}
-            onChange={handleChange}
-            icon={"bi-person-fill"}
-          />
-          <Input
-            label="Correo"
-            type="email"
-            name="email"
-            value={formData.email}
-            errorMessage={errors.email}
-            onChange={handleChange}
-            icon={"bi-envelope-fill"}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={isSubmitDisabled || isValidating}
-            className={`${
-              isSubmitDisabled || isValidating
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }`}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleNext();
+            }}
+            className="border border-slate-800/40 rounded-3xl shadow-lg p-8 w-full hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 backdrop-blur-md"
           >
-            Siguiente
-          </Button>
-        </>
-      ) : (
-        <>
-          <h1 className="text-2xl font-bold text-center mb-4">
-            Registrar cuenta
-          </h1>
-          <p className="text-gray-400 text-center mb-6">
-            ¡Casi listo! Continúa con la creación de tu contraseña.
-          </p>
-          <PasswordInput
-            label="Crear Contraseña"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          <PasswordValidator password={formData.password} />
-          <PasswordInput
-            label="Confirmar Contraseña"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            errorMessage={
-              formData.confirmPassword &&
-              formData.confirmPassword !== formData.password
-                ? "Las contraseñas no coinciden"
-                : ""
-            }
-          />
-          <Checkbox
-            label={
-              <>
-                Acepto los{" "}
-                <Link
-                  to="/terminos"
-                  state={{ from: "/registrarse" }}
-                  className="text-purple-500 hover:underline"
-                  onClick={() => saveRegisterFormToStorage(formData, step)}
-                >
-                  Términos de Servicio
-                </Link>{" "}
-                y{" "}
-                <Link
-                  to="/politica-de-privacidad"
-                  state={{ from: "/registrarse" }}
-                  className="text-purple-500 hover:underline"
-                  onClick={() => saveRegisterFormToStorage(formData, step)}
-                >
-                  Políticas de Privacidad
-                </Link>
-              </>
-            }
-            name="termsAccepted"
-            checked={formData.termsAccepted}
-            onChange={handleChange}
-          />
-          <div className="flex justify-between space-x-8">
-            <Button onClick={handleBack} disabled={isRegistering}>
-              Atrás
-            </Button>
+            <Input
+              label="Nombres"
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              errorMessage={errors.firstName}
+              icon="bi-person-fill"
+              placeholder="Ingresa tus nombres"
+              className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200 pr-12"
+              labelClassName="text-gray-300 font-medium mb-2"
+              errorClassName="text-red-400 text-sm mt-1"
+            />
+            <Input
+              label="Apellidos"
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              errorMessage={errors.lastName}
+              onChange={handleChange}
+              icon="bi-person-fill"
+              placeholder="Ingresa tus apellidos"
+              className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200 pr-12"
+              labelClassName="text-gray-300 font-medium mb-2"
+              errorClassName="text-red-400 text-sm mt-1"
+            />
+            <Input
+              label="Correo"
+              type="email"
+              name="email"
+              value={formData.email}
+              errorMessage={errors.email}
+              onChange={handleChange}
+              icon="bi-envelope-fill"
+              placeholder="Ingresa tu correo"
+              className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200 pr-12"
+              labelClassName="text-gray-300 font-medium mb-2"
+              errorClassName="text-red-400 text-sm mt-1"
+            />
             <Button
-              onClick={handleSubmit}
-              type="submit"
-              disabled={isStep2SubmitDisabled || isRegistering} // Aqui usa el nuevo perro estado :/
-              className={`${
-                isStep2SubmitDisabled || isRegistering
+              onClick={handleNext}
+              disabled={isSubmitDisabled || isValidating}
+              className={`w-full mt-4 bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md hover:from-purple-600 hover:to-purple-400 transition-all duration-200 ${
+                isSubmitDisabled || isValidating
                   ? "opacity-50 cursor-not-allowed"
                   : ""
               }`}
             >
-              Registrar
+              Siguiente
             </Button>
-          </div>
+          </form>
+        </>
+      ) : (
+        <>
+          <h1 className="text-3xl font-bold text-center mb-6 text-white">
+            Registrar cuenta
+          </h1>
+          <p className="text-gray-400 text-center mb-8">
+            ¡Casi listo! Continúa con la creación de tu contraseña.
+          </p>
+          <form
+            onSubmit={handleSubmit}
+            className="border border-slate-800/40 rounded-3xl shadow-lg p-8 w-full hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 backdrop-blur-md"
+          >
+            <PasswordInput
+              label="Crear Contraseña"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Ingresa tu contraseña"
+              className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200"
+              labelClassName="text-gray-300 font-medium mb-2"
+              errorClassName="text-red-400 text-sm mt-1"
+            />
+            <PasswordValidator password={formData.password} />
+            <PasswordInput
+              label="Confirmar Contraseña"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              errorMessage={
+                formData.confirmPassword &&
+                formData.confirmPassword !== formData.password
+                  ? "Las contraseñas no coinciden"
+                  : ""
+              }
+              placeholder="Confirma tu contraseña"
+              className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200"
+              labelClassName="text-gray-300 font-medium mb-2"
+              errorClassName="text-red-400 text-sm mt-1"
+            />
+            <Checkbox
+              label={
+                <>
+                  Acepto los{" "}
+                  <Link
+                    to="/terminos"
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-400 hover:underline font-semibold"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >
+                    Términos de Servicio
+                  </Link>{" "}
+                  y{" "}
+                  <Link
+                    to="/politica-de-privacidad"
+                    state={{ from: "/registrarse" }}
+                    className="text-purple-400 hover:underline font-semibold"
+                    onClick={() => saveRegisterFormToStorage(formData, step)}
+                  >
+                    Políticas de Privacidad
+                  </Link>
+                </>
+              }
+              name="termsAccepted"
+              checked={formData.termsAccepted}
+              onChange={handleChange}
+            />
+            <div className="flex justify-between space-x-8 mt-4">
+              <Button
+                onClick={handleBack}
+                disabled={isRegistering}
+                className="bg-slate-700 text-white font-bold py-3 rounded-xl shadow-md hover:bg-slate-600 transition-all duration-200 w-1/2"
+              >
+                Atrás
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                type="submit"
+                disabled={isStep2SubmitDisabled || isRegistering}
+                className={`w-1/2 bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md hover:from-purple-600 hover:to-purple-400 transition-all duration-200 ${
+                  isStep2SubmitDisabled || isRegistering
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                Registrar
+              </Button>
+            </div>
+          </form>
         </>
       )}
     </FormContainer>

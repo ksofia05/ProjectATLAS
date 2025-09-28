@@ -10,7 +10,6 @@ import {
   showErrorToast,
 } from "../../components/common/popUp/Loading";
 import toast from "react-hot-toast";
-import { client } from "../../supabase/client";
 import useUserStore from "../../stores/useUserStore";
 import { login } from "../../services/authService";
 import { getUserProfile } from "../../services/userService";
@@ -21,7 +20,7 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, recheckAuth } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,13 +29,13 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const params = new URLSearchParams(location.search);
+  const exp =params.get("exp");
   const next = params.get("next") || "/dashboard-create-project";
   const idProyecto = params.get("id_proyecto");
 
   useEffect(() => {
     const fromPasswordReset = localStorage.getItem("fromPasswordReset");
     if (isAuthenticated && !isLoading && !fromPasswordReset) {
-      console.log('Usuario autenticado detectado, redirigiendo...');
       setTimeout(() => {
         navigate(next);
       }, 100);
@@ -57,11 +56,14 @@ const Login = () => {
       if (error) {
         let errorMessage = "Error al iniciar sesión";
         if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
+          errorMessage =
+            "Credenciales inválidas. Verifica tu correo y contraseña.";
         } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Por favor confirma tu correo electrónico antes de iniciar sesión.";
+          errorMessage =
+            "Por favor confirma tu correo electrónico antes de iniciar sesión.";
         } else if (error.message.includes("Too many requests")) {
-          errorMessage = "Demasiados intentos. Intenta nuevamente en unos minutos.";
+          errorMessage =
+            "Demasiados intentos. Intenta nuevamente en unos minutos.";
         }
         showErrorToast(errorMessage);
         setErrors((prev) => ({
@@ -72,69 +74,69 @@ const Login = () => {
       }
 
       if (data.user && data.session) {
-        console.log('✅ Login exitoso, token guardado, esperando AuthProvider...');
-        
-        // Guardar token para compatibilidad
         localStorage.setItem("token", data.session.access_token);
-
         localStorage.removeItem("fromPasswordReset");
 
-        // MANTENER compatibilidad con useUserStore temporalmente
         try {
           const userProfile = await getUserProfile(data.user.id);
-          
+
           const fullUserData = {
             auth_user_id: data.user.id,
             email: data.user.email,
             user_metadata: data.user.user_metadata,
             ...userProfile,
           };
-          
+
           useUserStore.getState().setUser(fullUserData);
-          console.log('Usuario guardado en store (compatibilidad):', fullUserData.nombre);
         } catch (profileError) {
-          console.error('Error obteniendo perfil en login:', profileError);
           useUserStore.getState().setUser({
             auth_user_id: data.user.id,
             email: data.user.email,
             user_metadata: data.user.user_metadata,
           });
         }
-        
+
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
-        
-        // Lógica de asociación de colaborador
+
         if (idProyecto && formData.email) {
           try {
-            const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id_proyecto: idProyecto,
-                email: formData.email,
-              }),
-            });
+            const response = await fetch(
+              "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id_proyecto: idProyecto,
+                  email: formData.email,
+                  exp: params.get("exp"),
+                }),
+              }
+            );
             const data = await response.json();
             if (!response.ok) {
               if (
-                data.error === "Un colaborador no puede estar en más de un proyecto." ||
-                data.error === "Un administrador no puede asociarse como colaborador."
+                data.error ===
+                  "Un colaborador no puede estar en más de un proyecto." ||
+                data.error ===
+                  "Un administrador no puede asociarse como colaborador."
               ) {
                 localStorage.setItem("showProjectLimitModal", "1");
                 localStorage.setItem("projectLimitMessage", data.error);
               } else {
-                showErrorToast(data.error || "Error al asociar colaborador al proyecto.");
+                showErrorToast(
+                  data.error || "Error al asociar colaborador al proyecto."
+                );
               }
             } else {
               let idUsuario = null;
               const userStore = useUserStore.getState().user;
-              if (userStore?.idUsuario){
+              if (userStore?.idUsuario) {
                 idUsuario = userStore.idUsuario;
-              } else if (userProfile?.idUsuario){
+              } else if (userProfile?.idUsuario) {
                 idUsuario = userProfile.idUsuario;
               }
-              if (idUsuario && !isNaN(Number(idUsuario))){
+              if (idUsuario && !isNaN(Number(idUsuario))) {
                 await actualizarHistorialColaborador(
                   Number(idUsuario),
                   Number(idProyecto),
@@ -147,21 +149,14 @@ const Login = () => {
           }
         }
 
-        console.log('Login completado, forzando recheck del AuthProvider...');
-
-        // FORZAR RECHECK 
         setTimeout(async () => {
           if (recheckAuth) {
             await recheckAuth();
-            console.log('Recheck completado, AuthProvider debería estar actualizado');
-          } else {
-            console.error('recheckAuth no está disponible');
           }
         }, 1000);
       }
     } catch (error) {
       toast.dismiss(toastId);
-      console.error("Error de login:", error);
       showErrorToast("No se pudo conectar con el servidor.");
       setErrors((prev) => ({
         ...prev,
@@ -231,16 +226,22 @@ const Login = () => {
         Iniciar sesión
       </h1>
       <p className="text-gray-400 text-center mb-8">Bienvenido de nuevo</p>
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        className="border border-slate-800/40 rounded-3xl shadow-lg p-8 w-full hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 backdrop-blur-md"
+      >
         <Input
           label="Correo Electrónico"
-          type="email"
           name="email"
+          type="email"
           value={formData.email}
           onChange={handleChange}
           errorMessage={errors.email}
-          icon="bi-envelope-fill"
           placeholder="Ingresa tu correo"
+          icon="bi-envelope-fill"
+          className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200 pr-12"
+          labelClassName="text-gray-300 font-medium mb-2"
+          errorClassName="text-red-400 text-sm mt-1"
         />
         <PasswordInput
           label="Contraseña"
@@ -249,15 +250,17 @@ const Login = () => {
           value={formData.password}
           onChange={handleChange}
           errorMessage={errors.password}
-          icon="bi-eye-fill"
           placeholder="Ingresa tu contraseña"
+          className="w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200"
+          labelClassName="text-gray-300"
+          errorClassName="text-red-400"
         />
         <Button
           type="submit"
           disabled={isButtonDisabled()}
           loading={isLoggingIn}
           loadingText="Ingresando..."
-          className={`w-full mt-4 ${
+          className={`w-full mt-4 bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold py-3 rounded-xl shadow-md hover:from-purple-600 hover:to-purple-400 transition-all duration-200 ${
             isButtonDisabled() ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -274,7 +277,9 @@ const Login = () => {
         <p className="text-gray-400 mt-2">
           ¿Olvidaste tu contraseña?{" "}
           <Link
-            to={`/recuperar-contrasena${next || idProyecto ? `?${params.toString()}` : ""}`}
+            to={`/recuperar-contrasena${
+              next || idProyecto ? `?${params.toString()}` : ""
+            }`}
             className="text-purple-400 hover:underline"
           >
             Recuperar contraseña

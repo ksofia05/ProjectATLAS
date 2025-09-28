@@ -19,7 +19,7 @@ const PasswordInput = ({
   };
 
   const defaultInputStyles =
-    "w-full px-4 py-3 bg-[#2A273A] text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200";
+    "w-full px-4 py-3 bg-[#232336] text-white border border-slate-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400 transition-all duration-200";
 
   const inputStyles = className || defaultInputStyles;
 
@@ -54,7 +54,7 @@ const PasswordInput = ({
         ></i>
       </div>
       {errorMessage && (
-        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+        <p className="text-red-400 text-sm mt-1">{errorMessage}</p>
       )}
     </div>
   );

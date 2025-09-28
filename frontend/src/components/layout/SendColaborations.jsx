@@ -16,10 +16,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [showModal, setShowModal] = useState(open);
   const [isSending, setIsSending] = useState(false);
   const [activeTab, setActiveTab] = useState("miembros");
-
+  const [tick, setTick] = useState(0);
   const { projectName, fetchProjectInfo } = useProjectStore();
-  const { collaborators, fetchCollaborators, forceRefresh } = useCollaboratorsStore();
-  
+  const { collaborators, fetchCollaborators, forceRefresh } =
+    useCollaboratorsStore();
+
   const invitationsStore = useInvitationsStore();
   const {
     invitacionesPendientes,
@@ -28,45 +29,61 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     confirmOptimisticInvitation,
     cancelOptimisticInvitation,
     syncInvitationsFromServer,
-    filterPendingInvitations
+    filterPendingInvitations,
   } = invitationsStore;
 
   const colaboradoresActivos = useMemo(() => {
     return collaborators?.filter((colab) => colab.estado === "Activo") || [];
   }, [collaborators]);
 
+  useEffect(() => {
+    if (!open || !projectId) return;
+    invitationsStore.filterPendingInvitations(projectId, colaboradoresActivos);
+    const interval = setInterval(() => {
+      invitationsStore.filterPendingInvitations(projectId, colaboradoresActivos);
+      setTick(t => t + 1); // Forzar re-render cada segundo SIN tocar el tab
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [open, projectId]);
+
+
+  
+
   const getInvitacionesPendientes = () => {
     if (!projectId) return [];
-    
+
     const pendientes = invitacionesPendientes[projectId] || [];
     const optimistas = invitacionesOptimistas[projectId] || [];
-    
+
     // Combinar invitaciones reales + optimistas
     const todasLasInvitaciones = [...pendientes, ...optimistas];
-    
+
     // Filtrar las que ya son colaboradores activos
     const emailsColaboradores = colaboradoresActivos
       .map(c => c.correo ? c.correo.toLowerCase() : '')
       .filter(email => email);
+
+    const now = Math.floor(Date.now() / 1000);
     
     return todasLasInvitaciones.filter(inv => 
-      inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+      inv.email &&
+      !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+      (!inv.expiracion || now < inv.expiracion) // Solo si no ha expirado
     );
   };
 
-  const invitacionesList = getInvitacionesPendientes();
-
+  const invitacionesList = useMemo(() => getInvitacionesPendientes(), [
+    tick,
+    invitacionesPendientes,
+    invitacionesOptimistas,
+    colaboradoresActivos,
+    projectId,
+  ]);
    useEffect(() => {
     setShowModal(open);
     if (open && projectId) {
       fetchProjectInfo(projectId);
       fetchCollaborators(projectId);
-        const loadInvitations = async () => {
-        await syncInvitationsFromServer(projectId);
-        filterPendingInvitations(projectId, colaboradoresActivos);
-      };
-      
-      loadInvitations();
     }
   }, [
     open,
@@ -75,13 +92,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     fetchCollaborators,
     colaboradoresActivos,
     filterPendingInvitations,
-    syncInvitationsFromServer // ✅ NUEVO
   ]);
 
   useEffect(() => {
     const handleStateChange = () => {
       if (open && projectId) {
-        console.log("Actualizando colaboradores por cambio de estado");
         forceRefresh(projectId);
       }
     };
@@ -113,26 +128,29 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
       return;
     }
 
-    const emailExiste = colaboradoresActivos.some(colab => 
-      colab.correo && colab.correo.toLowerCase() === email.trim().toLowerCase()
+    const emailExiste = colaboradoresActivos.some(
+      (colab) =>
+        colab.correo &&
+        colab.correo.toLowerCase() === email.trim().toLowerCase()
     );
-    
+
     if (emailExiste) {
       showErrorToast("Este usuario ya es colaborador del proyecto");
       return;
     }
 
-    const invitacionExiste = invitacionesList.some(inv => 
-      inv.email && inv.email.toLowerCase() === email.trim().toLowerCase()
+    const invitacionExiste = invitacionesList.some(
+      (inv) =>
+        inv.email && inv.email.toLowerCase() === email.trim().toLowerCase()
     );
-    
+
     if (invitacionExiste) {
       showErrorToast("Ya hay una invitación pendiente para este correo");
       return;
     }
 
     const emailToSend = email.trim();
-    
+
     // Agregar invitación optimista INMEDIATAMENTE
     addOptimisticInvitation(projectId, emailToSend, userName);
 
@@ -192,10 +210,10 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
           </span>
         </p>
 
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-6 flex-wrap">
           <input
             type="email"
-            className="flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400"
+            className="flex-1 min-w-0 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400"
             placeholder="Correo del colaborador"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -204,7 +222,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
           />
           <button
             type="submit"
-            className={`bg-purple-600 text-white px-4 py-2 rounded transition ${
+            className={`w-full sm:w-24 bg-purple-600 text-white px-4 py-2 rounded transition ${
               isSending
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-purple-700"
@@ -281,7 +299,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
             invitacionesList.map((invitation, idx) => (
               <div
                 className={`flex items-center gap-3 ${
-                  invitation.isOptimistic ? 'opacity-75' : ''
+                  invitation.isOptimistic ? "opacity-75" : ""
                 }`}
                 key={invitation.id || invitation.email || idx}
               >
@@ -293,16 +311,16 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
                     {invitation.email}
                   </div>
                   <div className="text-gray-400 text-xs">
-                    {invitation.isOptimistic ? (
-                      "Enviando..."
-                    ) : (
-                      `Enviado ${new Date(invitation.fecha_invitacion).toLocaleDateString()}`
-                    )}
+                    {invitation.isOptimistic
+                      ? "Enviando..."
+                      : `Enviado ${new Date(
+                          invitation.fecha_invitacion
+                        ).toLocaleDateString()}`}
                   </div>
                 </div>
-                <span 
+                <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    invitation.isOptimistic 
+                    invitation.isOptimistic
                       ? "bg-yellow-600 text-yellow-100"
                       : "bg-orange-600 text-orange-100"
                   }`}

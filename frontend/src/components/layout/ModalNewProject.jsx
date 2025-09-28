@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { showErrorToast, showSuccessToast } from "../../components/common/popUp/Loading";
+import {showErrorToast, showSuccessToast,} from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
 
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
@@ -13,37 +13,40 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!nombre.trim()) {
-      showErrorToast('Por favor, ingresa un nombre para el proyecto.');
+      showErrorToast("Por favor, ingresa un nombre para el proyecto.");
       setIsSubmitting(false);
       return;
     }
     try {
-      const response = await fetch("http://localhost:8000/tasks/api/v1/save_proyect/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ nombreproyecto: nombre }),
-      });
+      const response = await fetch(
+        "http://localhost:8000/tasks/api/v1/save_proyect/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ nombreproyecto: nombre }),
+        }
+      );
       if (response.ok) {
-        const data = await response.json();
+        const { proyecto } = await response.json();
         showSuccessToast("Proyecto creado con éxito.");
         onClose();
-        setNombre('');
+        setNombre("");
         if (onCreate) {
-          onCreate(data.proyecto);
+          onCreate(proyecto);
           if (window.refreshUserAndProjects) {
             window.refreshUserAndProjects();
           }
         }
       } else {
         const errorData = await response.json();
-        if (errorData.mensaje === 'ya tiene un proyecto asociado a su cuenta') {
-          showErrorToast('Ya tienes un proyecto asociado a tu cuenta.');
-          setNombre('');
+        if (errorData.mensaje === "ya tiene un proyecto asociado a su cuenta") {
+          showErrorToast("Ya tienes un proyecto asociado a tu cuenta.");
+          setNombre("");
         } else {
           showErrorToast("Error al crear el proyecto.");
         }
@@ -63,7 +66,9 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
             <i className="bi bi-folder-fill text-yellow-400 text-2xl"></i>
             Nuevo proyecto
           </h2>
-          <p className="text-gray-300 mb-6">¿Qué nombre recibirá tu proyecto?</p>
+          <p className="text-gray-300 mb-6">
+            ¿Qué nombre recibirá tu proyecto?
+          </p>
           <form onSubmit={handleSubmit}>
             <input
               type="text"

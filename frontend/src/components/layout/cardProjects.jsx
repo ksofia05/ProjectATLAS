@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Edit, Plus, X } from "lucide-react";
+import { Users, X } from "lucide-react";
 import {
   showErrorToast,
   showSuccessToast,
@@ -56,6 +56,7 @@ const InventoryCard = ({
           }),
         }
       );
+      window.dispatchEvent(new Event("collaboratorStateChanged"));
       const data = await response.json();
       toast.dismiss(toastId);
       if (response.ok && data.success) {
@@ -113,6 +114,23 @@ const InventoryCard = ({
             <h3 className="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors duration-300 line-clamp-2">
               {project.nombreproyecto}
             </h3>
+
+            {/* Estado del colaborador */}
+            {isColaborador && (
+              <div className="mb-2 flex items-center gap-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold
+          ${
+            estado === "Activo"
+              ? "bg-green-700/30 text-green-400"
+              : "bg-red-700/30 text-red-400"
+          }
+        `}
+                >
+                  {estado === "Activo" ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+            )}
 
             {/* Estadísticas del proyecto */}
             <div className="space-y-3 mb-6">

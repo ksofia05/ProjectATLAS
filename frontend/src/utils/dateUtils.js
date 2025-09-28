@@ -34,23 +34,11 @@ export const dateUtils = {
   getCurrentMonth: () => dayjs().month(),
 };
 
-
-// export function isDayBlocked(date) {
-//     const today = new Date();
-//     today.setHours(0, 0, 0, 0); // Solo compara la fecha, no la hora
-//     const target = new Date(date);
-//     target.setHours(0, 0, 0, 0);
-//     // Bloquea si es antes de hoy
-//     return target < today;
-//     // ...puedes agregar más condiciones aquí si lo necesitas...
-// }
-
 export function isDayBlocked(date) {
     return isBlockedDay(date); // Solo bloquea domingos y festivos
 }
 
 // prueba si se puede clicar el día
 export function canClickDay(date, isCurrentMonth = true) {
-  // return isCurrentMonth && !isDayBlocked(date);
   return isCurrentMonth;
 }
