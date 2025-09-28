@@ -7,6 +7,7 @@ import EstateAdEquipmentModal from "./EstateAdEquipmentModal";
 import { client as supabase } from "../../supabase/client";
 import { dateUtils } from "../../utils/dateUtils";
 import React, { useState, useEffect, useRef } from "react";
+import Button from "../common/Button";
 
 const EquipmentClientModal = ({
   cliente,
@@ -19,7 +20,20 @@ const EquipmentClientModal = ({
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [comentarioSalida, setComentarioSalida] = useState("");
+  const [comentarioEntradaEdit, setComentarioEntradaEdit] = useState("");
+  const [savingEntrada, setSavingEntrada] = useState(false);
   const salidaRef = useRef(null);
+
+  // Helper para ordenar duplicados de forma estable: fechaIngreso, luego id único
+  const ordenarDuplicados = (a, b) => {
+    const fechaA = new Date(a.ingreso);
+    const fechaB = new Date(b.ingreso);
+    if (fechaA < fechaB) return -1;
+    if (fechaA > fechaB) return 1;
+    const idA = Number(a.agendamiento_equipo) || 0;
+    const idB = Number(b.agendamiento_equipo) || 0;
+    return idA - idB;
+  };
 
   useEffect(() => {
     if (!cliente) return;
@@ -39,7 +53,7 @@ const EquipmentClientModal = ({
         const { data: equipoAgs, error: errorEqAg } = await supabase
           .from("EquipoAgendamiento")
           .select(
-            "agendamiento_equipo, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado, fotoEquipo"
+            "agendamiento_equipo, agendamiento_idAgendamiento, equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, Estado, fotoEquipo"
           )
           .in("agendamiento_idAgendamiento", idsAgendamiento);
         if (errorEqAg || !equipoAgs.length) {
@@ -72,6 +86,7 @@ const EquipmentClientModal = ({
             salida: ea.fechaSalida,
             estado: ea.Estado,
             agendamiento_equipo: ea.agendamiento_equipo,
+            agendamiento_idAgendamiento: ea.agendamiento_idAgendamiento,
             fotoEquipo: ea.fotoEquipo || equipo.fotoEquipo || "",
           };
         });
@@ -87,17 +102,29 @@ const EquipmentClientModal = ({
           repeticiones: contador[eq.numeroSerie],
         }));
         setEquipos(equiposFinal);
-        // Inicializar registroActual según el número de serie seleccionado
-        if (numeroSerieSeleccionado) {
-          const idx = equiposFinal.findIndex(
-            (e) => e.numeroSerie === numeroSerieSeleccionado
-          );
-          setRegistroActual(idx >= 0 ? idx : 0);
-        } else if (equipo) {
-          const idx = equiposFinal.findIndex(
-            (e) => e.numeroSerie === equipo.numeroSerie
-          );
-          setRegistroActual(idx >= 0 ? idx : 0);
+        // Inicializar registroActual apuntando al último duplicado (más reciente) del número de serie seleccionado
+        const seriePreferida =
+          numeroSerieSeleccionado || (equipo && equipo.numeroSerie) ||
+          (equiposFinal[0] ? equiposFinal[0].numeroSerie : null);
+
+        if (seriePreferida) {
+          // Buscar duplicados de esa serie
+          let dups = equiposFinal.filter((e) => e.numeroSerie === seriePreferida);
+          if (dups.length > 1) {
+            // Ordenar con el helper y seleccionar el último
+            dups = dups.sort(ordenarDuplicados);
+            const ultimo = dups[dups.length - 1];
+            // Ubicar su índice real dentro de equiposFinal
+            const idxUltimo = equiposFinal.findIndex(
+              (e) => e.agendamiento_equipo === ultimo.agendamiento_equipo
+            );
+            setRegistroActual(idxUltimo >= 0 ? idxUltimo : 0);
+          } else {
+            const idx = equiposFinal.findIndex(
+              (e) => e.numeroSerie === seriePreferida
+            );
+            setRegistroActual(idx >= 0 ? idx : 0);
+          }
         } else {
           setRegistroActual(0);
         }
@@ -114,9 +141,11 @@ const EquipmentClientModal = ({
   useEffect(() => {
     if (equipos.length > 0 && registroActual >= 0) {
       const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
-      const duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
+      let duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
       let equipoActual = {};
       if (duplicados.length > 1) {
+        // Ordenar igual que en el render para mantener consistencia
+        duplicados = duplicados.sort(ordenarDuplicados);
         equipoActual = duplicados[registroActual] || {};
       } else {
         equipoActual = equipos.find((eq) => eq.numeroSerie === serie) || {};
@@ -127,11 +156,22 @@ const EquipmentClientModal = ({
       } else {
         setComentarioSalida("");
       }
+
+      // Inicializar comentario de entrada editable con el valor actual (o vacío)
+      setComentarioEntradaEdit(
+        equipoActual.comentarioEntrada ? String(equipoActual.comentarioEntrada) : ""
+      );
     }
   }, [equipos, registroActual, numeroSerieSeleccionado, equipo]);
 
   const handleConfirmInactivar = async () => {
-    const equipoActual = equipos[registroActual];
+    // Determinar el registro actual de forma consistente con el render
+    const serieSel = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
+    let lista = equipos.filter((eq) => eq.numeroSerie === serieSel);
+    if (lista.length > 1) {
+      lista = lista.sort(ordenarDuplicados);
+    }
+    const equipoActual = lista[registroActual] || lista[0];
     const nuevoEstado =
       equipoActual.estado === "Activo" ? "Inactivo" : "Activo";
     const fechaSalida =
@@ -159,8 +199,8 @@ const EquipmentClientModal = ({
       }
 
       setEquipos((prevEquipos) =>
-        prevEquipos.map((eq, idx) =>
-          idx === registroActual
+        prevEquipos.map((eq) =>
+          eq.agendamiento_equipo === equipoActual.agendamiento_equipo
             ? {
                 ...eq,
                 estado: nuevoEstado,
@@ -175,14 +215,60 @@ const EquipmentClientModal = ({
     } finally {
       setShowConfirmModal(false);
       setComentarioSalida("");
-      setComentarioSalida("");
     }
   };
 
   const handleSwitchChange = () => {
-    const equipoActual = equipos[registroActual];
-    if (equipoActual.estado === "Activo") {
+    // Debe usar el mismo item que se muestra en pantalla
+    const serieSel = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
+    if (!serieSel) return;
+    let lista = equipos.filter((eq) => eq.numeroSerie === serieSel);
+    if (lista.length > 1) {
+      lista = lista.sort(ordenarDuplicados);
+    }
+    const seleccionado = lista[registroActual] || lista[0];
+    if (seleccionado && seleccionado.estado === "Activo") {
       setShowConfirmModal(true);
+    }
+  };
+
+  // Guardar comentario de entrada editado
+  const handleGuardarEntrada = async () => {
+    const serieSel = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
+    if (!serieSel) return;
+    let lista = equipos.filter((eq) => eq.numeroSerie === serieSel);
+    if (lista.length > 1) lista = lista.sort(ordenarDuplicados);
+    const actual = lista[registroActual] || lista[0];
+    if (!actual || !actual.agendamiento_equipo) return;
+
+    // Evitar guardar si no hay cambios
+    const original = (actual.comentarioEntrada || "").trim();
+    const nuevo = (comentarioEntradaEdit || "").trim();
+    if (original === nuevo) return;
+
+    try {
+      setSavingEntrada(true);
+      const { error } = await supabase
+        .from("EquipoAgendamiento")
+        .update({ comentarioEntrada: nuevo })
+        .eq("agendamiento_equipo", actual.agendamiento_equipo);
+      if (error) {
+        console.error("Error guardando comentario de entrada:", error);
+        alert("No se pudo guardar el comentario de entrada.");
+        return;
+      }
+      // Reflejar el cambio en memoria
+      setEquipos((prev) =>
+        prev.map((e) =>
+          e.agendamiento_equipo === actual.agendamiento_equipo
+            ? { ...e, comentarioEntrada: nuevo }
+            : e
+        )
+      );
+    } catch (e) {
+      console.error("Error inesperado al guardar comentario de entrada:", e);
+    } finally {
+      setSavingEntrada(false);
     }
   };
 
@@ -195,15 +281,8 @@ const EquipmentClientModal = ({
     const serie = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
     let duplicados = equipos.filter((eq) => eq.numeroSerie === serie);
     if (duplicados.length > 1) {
-      // Ordenar por fechaIngreso y luego por agendamiento_idAgendamiento
-      duplicados = duplicados.sort((a, b) => {
-        const fechaA = new Date(a.ingreso);
-        const fechaB = new Date(b.ingreso);
-        if (fechaA < fechaB) return -1;
-        if (fechaA > fechaB) return 1;
-        // Si la fecha es igual, ordenar por agendamiento_idAgendamiento
-        return String(a.agendamiento_idAgendamiento).localeCompare(String(b.agendamiento_idAgendamiento));
-      });
+      // Ordenar por fechaIngreso y, si son iguales, por una llave estable (agendamiento_equipo)
+      duplicados = duplicados.sort(ordenarDuplicados);
       equiposFiltrados = duplicados;
       equipoActual = equiposFiltrados[registroActual] || {};
     } else {
@@ -213,14 +292,18 @@ const EquipmentClientModal = ({
   }
 
   const hasUnsavedChanges = () => {
-    return (
+    const salidaDirty =
       equipoActual.estado === "Activo" &&
-      comentarioSalida.trim() !== (equipoActual.comentarioSalida || "").trim()
-    );
+      comentarioSalida.trim() !== (equipoActual.comentarioSalida || "").trim();
+    const entradaDirty =
+      (comentarioEntradaEdit || "").trim() !==
+      (equipoActual.comentarioEntrada || "").trim();
+    return salidaDirty || entradaDirty;
   };
 
   const handleDiscardChanges = () => {
     setComentarioSalida(equipoActual.comentarioSalida || "");
+    setComentarioEntradaEdit(equipoActual.comentarioEntrada || "");
     if (onClose) onClose();
   };
 
@@ -275,6 +358,21 @@ const EquipmentClientModal = ({
                   className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
                 />
               </div>
+                {/* Botón Guardar ubicado en la columna izquierda */}
+                <div className="flex justify-end items-center gap-4 mt-2"> 
+                  <Button
+                    onClick={handleGuardarEntrada}
+                    loading={savingEntrada}
+                    disabled={
+                      equipoActual.estado !== "Activo" ||
+                      (comentarioEntradaEdit || "").trim() ===
+                        (equipoActual.comentarioEntrada || "").trim()
+                    }
+                    className="w-full py-4 text-lg"
+                  >
+                    Guardar
+                  </Button>
+                </div>
             </div>
           </div>
 
@@ -310,10 +408,24 @@ const EquipmentClientModal = ({
                 name="comentarioEntrada"
                 as="textarea"
                 rows={2}
-                value={equipoActual.comentarioEntrada || "Sin comentario"}
-                readOnly
+                value={comentarioEntradaEdit}
+                readOnly={equipoActual.estado !== "Activo"}
+                disabled={equipoActual.estado !== "Activo"}
+                onChange={(e) => {
+                  if (equipoActual.estado !== "Activo") return;
+                  const v = e.target.value || "";
+                  if (v.length <= 120) setComentarioEntradaEdit(v);
+                }}
                 className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
               />
+              <div
+                className="text-right text-xs mt-1"
+                style={{
+                  color: comentarioEntradaEdit.length === 120 ? "#f87171" : "#a78bfa",
+                }}
+              >
+                {comentarioEntradaEdit.length}/120 caracteres
+              </div>
             </div>
             <div className="flex flex-row gap-4 items-start">
               <div className="flex-1">
@@ -346,7 +458,7 @@ const EquipmentClientModal = ({
     )}
               </div>
             </div>
-            {/* Switch, estado y navegación juntos y alineads a la derecha (jodido boton de mrd) */}
+            {/* Controles a la derecha: switch y navegación */}
             <div className="flex justify-end items-center gap-4 mt-2">
               <div className="flex items-center gap-3">
                 <Switch

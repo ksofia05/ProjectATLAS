@@ -67,7 +67,7 @@ const useEquipmentsStore = create((set, get) => ({
       // Obtener equipoagendamiento
       const { data: equipoAgs, error: errorEqAg } = await client
         .from("EquipoAgendamiento")
-        .select("equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida")
+        .select("equipo_numeroSerie, fechaIngreso, comentarioEntrada, comentarioSalida, fechaSalida, agendamiento_equipo")
         .in("agendamiento_idAgendamiento", idsAgendamiento);
 
       if (errorEqAg) throw errorEqAg;
@@ -105,20 +105,41 @@ const useEquipmentsStore = create((set, get) => ({
           comentarioEntrada: ea.comentarioEntrada,
           comentarioSalida: ea.comentarioSalida,
           salida: ea.fechaSalida,
+          agendamiento_equipo: ea.agendamiento_equipo,
         };
       });
 
-      // Agrupar por numeroSerie y contar repeticiones
+      // Agrupar por numeroSerie, contar repeticiones y elegir el más reciente por ingreso
+      // Con empate por fecha, se elige el de mayor agendamiento_equipo (último insertado)
       const contador = {};
+      const ultimoPorSerie = {};
       equiposCompletos.forEach(eq => {
-        if (!contador[eq.numeroSerie]) contador[eq.numeroSerie] = 0;
-        contador[eq.numeroSerie]++;
+        const serie = eq.numeroSerie;
+        if (!contador[serie]) contador[serie] = 0;
+        contador[serie]++;
+
+        const prev = ultimoPorSerie[serie];
+        if (!prev) {
+          ultimoPorSerie[serie] = eq;
+        } else {
+          const fPrev = new Date(prev.ingreso);
+          const fCurr = new Date(eq.ingreso);
+          if (fCurr > fPrev) {
+            ultimoPorSerie[serie] = eq;
+          } else if (+fCurr === +fPrev) {
+            const idPrev = Number(prev.agendamiento_equipo) || 0;
+            const idCurr = Number(eq.agendamiento_equipo) || 0;
+            if (idCurr > idPrev) {
+              ultimoPorSerie[serie] = eq;
+            }
+          }
+        }
       });
 
-      const equiposUnicos = Object.keys(contador).map(numSerie => {
-        const eq = equiposCompletos.find(e => e.numeroSerie === numSerie);
-        return { ...eq, repeticiones: contador[numSerie] };
-      });
+      const equiposUnicos = Object.keys(contador).map(numSerie => ({
+        ...ultimoPorSerie[numSerie],
+        repeticiones: contador[numSerie]
+      }));
 
       // Guardar en store
       set(state => ({
