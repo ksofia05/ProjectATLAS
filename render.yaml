@@ -44,7 +44,7 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_BASE
-        value: "https://projectatlas-backend.onrender.com/"
+        value: "https://projectatlas-backend.onrender.com"
       - key: VITE_SUPABASE_URL
         value: "https://ukpjvbvzqmehjormyrza.supabase.co"
       - key: VITE_SUPABASE_ANON_KEY
