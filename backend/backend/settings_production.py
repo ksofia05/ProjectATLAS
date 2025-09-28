@@ -4,8 +4,11 @@ from pathlib import Path
 import dj_database_url
 from decouple import config
 
-# Build paths - CRÍTICO: Apuntar correctamente a la raíz del proyecto
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # backend/backend/settings_production.py -> raíz
+# Build paths - Apuntar a la raíz del proyecto completo
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Agregar la raíz al path de Python para encontrar las apps
+sys.path.insert(0, str(BASE_DIR))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -19,10 +22,10 @@ RENDER = config('RENDER', default=False, cast=bool)
 # Production allowed hosts
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# Application definition - INCLUIR TODAS LAS APPS
+# Application definition - SOLO APPS QUE REALMENTE EXISTEN
 INSTALLED_APPS = [
     'admin_interface',
-    'colorfield',
+    'colorfield', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,13 +35,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_extensions',
-    # Apps del proyecto (están en la raíz)
-    'autenticacion',
-    'tasks',
-    'proyectos',
-    'colaboradores',
-    'calendario',
-    'inventario',
+    # Solo apps que realmente existen - empezar con las básicas
+    'tasks',  # Verificar que esta existe y funciona
 ]
 
 MIDDLEWARE = [
@@ -137,17 +135,19 @@ if RENDER:
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Cambiar temporalmente para debug
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
 # Debug info para logs
 print("=== CONFIGURACIÓN DE PRODUCCIÓN ===")
 print(f"BASE_DIR: {BASE_DIR}")
+print(f"Python path: {sys.path[:3]}")
 print(f"DEBUG: {DEBUG}")
 print(f"RENDER: {RENDER}")
 print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 print(f"Apps directory exists:")
-print(f"  - autenticacion: {(BASE_DIR / 'autenticacion').exists()}")
-print(f"  - tasks: {(BASE_DIR / 'tasks').exists()}")
+print(f"  - BASE_DIR exists: {BASE_DIR.exists()}")
+print(f"  - tasks path: {BASE_DIR / 'tasks'}")
+print(f"  - tasks exists: {(BASE_DIR / 'tasks').exists()}")
 print("===================================")
