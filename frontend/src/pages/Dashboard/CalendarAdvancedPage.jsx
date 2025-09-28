@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import CalendarView from "../../components/dashboard/CalendarView";
 import { dateUtils } from "../../utils/dateUtils";
 import dayjs from "dayjs";
+import "dayjs/locale/es"; 
+
+dayjs.locale("es"); 
 
 export default function CalendarAdvancedPage() {
   const [currentYear, setCurrentYear] = useState(dateUtils.getCurrentYear());
@@ -198,8 +201,42 @@ export default function CalendarAdvancedPage() {
         <BreadcrumbNavigation />
 
         {/* Navegación principal */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col-reverse md:flex-row md:items-center justify-between mb-6 gap-4">
+          {/* Botones de vista */}
+          <div className="flex flex-wrap gap-2 justify-center md:justify-start w-full md:w-auto">
+            <button
+              onClick={() => handleViewSelect("year")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "year"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
+              } w-full md:w-auto`}
+            >
+              Año
+            </button>
+            <button
+              onClick={() => handleViewSelect("month")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "month"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
+              } w-full md:w-auto`}
+            >
+              Mes
+            </button>
+            <button
+              onClick={() => handleViewSelect("day")}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                viewMode === "day"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
+              } w-full md:w-auto`}
+            >
+              Día
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4 justify-center md:justify-start">
             <button
               onClick={handlePrevious}
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -219,40 +256,6 @@ export default function CalendarAdvancedPage() {
               className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             >
               <i className="bi bi-chevron-right text-lg"></i>
-            </button>
-          </div>
-
-          {/* Botones de vista */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => handleViewSelect("year")}
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                viewMode === "year"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
-              }`}
-            >
-              Año
-            </button>
-            <button
-              onClick={() => handleViewSelect("month")}
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                viewMode === "month"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
-              }`}
-            >
-              Mes
-            </button>
-            <button
-              onClick={() => handleViewSelect("day")}
-              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                viewMode === "day"
-                  ? "bg-purple-600 text-white shadow-lg"
-                  : "bg-slate-700/25 hover:bg-slate-600/35 border border-slate-600/30 hover:border-purple-500/50 text-gray-300 hover:text-white backdrop-blur-sm"
-              }`}
-            >
-              Día
             </button>
           </div>
         </div>
