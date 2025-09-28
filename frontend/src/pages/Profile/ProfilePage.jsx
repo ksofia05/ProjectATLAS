@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SidebarProfile from "../../components/layout/SidebarProfile";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../hooks/useAuth";
@@ -10,6 +10,7 @@ import SecurityCard from "../../components/profile/SecurityCard";
 import BackButton from "../../components/common/BackButton";
 
 export default function ProfilePage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false); 
   const { user, isLoading } = useAuth();
   const {
     password,
@@ -37,19 +38,27 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-black flex">
-      <SidebarProfile onPhotoClick={() => setShowPhotoModal(true)} />
-      <div className="flex-1 flex flex-col" style={{ marginLeft: 300 }}>
+      <SidebarProfile
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onPhotoClick={() => setShowPhotoModal(true)}
+      />
+      <div
+        className={`
+          flex-1 flex flex-col transition-all duration-300 lg:ml-72
+        `}
+      >
         <div className="max-w-[1200px] mx-auto w-full px-8">
-          {/* Navbar */}
           <div className="pt-6">
             <Navbar
               backButton={<BackButton onClick={handleBackClick} />}
               hideUserMenu={true}
               title="Mi perfil"
               subtitle="Gestiona tu información personal y seguridad"
+              onSidebarToggle={() => setSidebarOpen((open) => !open)}
+              isSidebarOpen={sidebarOpen}
             />
           </div>
-          {/* Tarjetas */}
           <main className="flex-1 flex flex-col mt-6 w-full">
             <PersonalInfoCard
               nombres={nombres}
