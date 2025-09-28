@@ -88,12 +88,24 @@ export default function ClientEquipmentFields({
         <textarea
           name="comentario"
           value={form.comentario}
-          onChange={handleChange}
+          maxLength={120}
+          onChange={(e) => {
+            const v = e.target.value || "";
+            if (v.length <= 120) {
+              handleChange({ target: { name: "comentario", value: v } });
+            }
+          }}
           className={`w-full rounded-lg p-2 bg-[#232336] text-white ${errors.comentario ? "border border-red-500" : ""}`}
           rows={3}
           placeholder="Añade una descripción"
           onBlur={() => setTouched(prev => ({ ...prev, comentario: true }))}
         />
+        <div
+          className="text-right text-xs mt-1"
+          style={{ color: (form.comentario || "").length === 120 ? "#f87171" : "#a78bfa" }}
+        >
+          {(form.comentario || "").length}/120 caracteres
+        </div>
         {(touched.comentario || triedSubmit) && errors.comentario && (
           <span className="text-red-400 text-xs">{errors.comentario}</span>
         )}
