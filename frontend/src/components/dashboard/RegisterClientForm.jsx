@@ -334,7 +334,7 @@ export default function RegisterClientForm({
       if (err && err.message) {
         // Traducción para el toast de error de rango
         if (err.message.includes("is out of range for type integer")) {
-          showErrorToast("El valor de identificación es demasiado grande. Debe tener máximo 10 dígitos.");
+          showErrorToast("N identificación debe tener máximo 10 dígitos.");
         } 
         // Traducción para 'value too long for type character varying' (el error de 45 caracteres)
         else if (err.message.includes("value too long for type character varying")) {

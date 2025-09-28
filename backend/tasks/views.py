@@ -193,7 +193,7 @@ def invitacion_colaborador(request):
         
         # Despues de todas las validaciones anteriores, ahora si que se envie el correo
         # invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
-        invitacion_url = f"http://localhost/invitacion-proyecto/{id_proyecto}"
+        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}"
         asunto = 'Invitación a colaborar en un proyecto'
         html_content = render_to_string('mensajeColabo.html', {
             'email': email,

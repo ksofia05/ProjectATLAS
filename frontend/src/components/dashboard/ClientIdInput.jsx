@@ -9,8 +9,10 @@ export default function ClientIdInput({
   showSuggestions,
   loading,
   error,
+  errorMessage,
   onFocus,
   onBlur,
+  className,
 }) {
   return (
     <div className="relative">
@@ -20,7 +22,8 @@ export default function ClientIdInput({
         value={value}
         onChange={onChange}
         placeholder="Buscar por número de identificación"
-        inputClassName={`w-full ${error ? "border-red-500" : ""}`}
+        className={`w-full ${errorMessage ? "border-red-500" : ""}`}
+        errorMessage={errorMessage}
         autoComplete="off"
         onFocus={onFocus}
         onBlur={onBlur}

@@ -33,10 +33,13 @@ export default function ClientPersonalInfoFields({
           setTimeout(() => setShowSuggestions(false), 150);
           setTouched(prev => ({ ...prev, identificacion: true }));
         }}
+        errorMessage={(touched.identificacion || triedSubmit) && errors.identificacion ? errors.identificacion : undefined}
+        ClassName={`w-full ${errors.identificacion ? "border-red-500" : ""}`}
+        inputClassName={`w-full ${errors.identificacion ? "border-red-500" : ""}`}
       />
-      {(touched.identificacion || triedSubmit) && errors.identificacion && (
+      {/* {(touched.identificacion || triedSubmit) && errors.identificacion && (
         <span className="text-red-400 text-xs">{errors.identificacion}</span>
-      )}
+      )} */}
 
       <Input
         label="Nombre"
@@ -46,10 +49,8 @@ export default function ClientPersonalInfoFields({
         placeholder="Nombre del cliente"
         inputClassName={`w-full ${errors.nombre ? "border-red-500" : ""}`}
         onBlur={() => setTouched(prev => ({ ...prev, nombre: true }))}
-      />
-      {(touched.nombre || triedSubmit) && errors.nombre && (
-        <span className="text-red-400 text-xs">{errors.nombre}</span>
-      )}
+        errorMessage={(touched.nombre || triedSubmit) ? errors.nombre : undefined}
+      />  
 
       <Input
         label="Apellido"
@@ -59,10 +60,8 @@ export default function ClientPersonalInfoFields({
         placeholder="Apellido del cliente"
         inputClassName={`w-full ${errors.apellido ? "border-red-500" : ""}`}
         onBlur={() => setTouched(prev => ({ ...prev, apellido: true }))}
+        errorMessage={(touched.apellido || triedSubmit) ? errors.apellido : undefined}
       />
-      {(touched.apellido || triedSubmit) && errors.apellido && (
-        <span className="text-red-400 text-xs">{errors.apellido}</span>
-      )}
 
       <Input
         label="Email"
@@ -72,23 +71,19 @@ export default function ClientPersonalInfoFields({
         placeholder="Correo Electrónico"
         inputClassName={`w-full ${errors.email ? "border-red-500" : ""}`}
         onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
+        errorMessage={(touched.email || triedSubmit) ? errors.email : undefined}
       />
-      {(touched.email || triedSubmit) && errors.email && (
-        <span className="text-red-400 text-xs">{errors.email}</span>
-      )}
 
       <Input
         label="Teléfono"
         name="telefono"
         value={form.telefono}
         onChange={handleChange}
-        placeholder="Número de teléfono"
+        placeholder="+57 Número de teléfono"
         inputClassName={`w-full ${errors.telefono ? "border-red-500" : ""}`}
         onBlur={() => setTouched(prev => ({ ...prev, telefono: true }))}
+        errorMessage={(touched.telefono || triedSubmit) ? errors.telefono : undefined}
       />
-      {(touched.telefono || triedSubmit) && errors.telefono && (
-        <span className="text-red-400 text-xs">{errors.telefono}</span>
-      )}
     </>
   );
 }

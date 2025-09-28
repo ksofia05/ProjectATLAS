@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthProvider";
 import NoTenerCuenta from "../common/NoTenerCuenta";
 import { showErrorToast, showSuccessToast, showLoadingToast } from "./popUp/Loading";
 import { actualizarHistorialColaborador } from "./historialColaboradores";
+import { API_BASE } from "../../api/apiBase";
 
 const InvitacionProyectoRoute = () => {
   const { id } = useParams();
@@ -27,7 +28,7 @@ const InvitacionProyectoRoute = () => {
       const asociar = async () => {
         try {
           setAsociando(true);
-          const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+          const response = await fetch(`${API_BASE}/tasks/api/v1/asociar_colaborador/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
