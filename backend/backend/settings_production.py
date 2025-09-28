@@ -4,13 +4,11 @@ from pathlib import Path
 import dj_database_url
 from decouple import config
 
-# Build paths correctos
+# Build paths correctos - Las apps están en backend/
 BASE_DIR = Path(__file__).resolve().parent.parent  # backend/
 PROJECT_ROOT = BASE_DIR.parent  # ProjectATLAS/
 
-# CRÍTICO: Agregar la raíz del proyecto al Python path
-# Para que 'proyectos', 'inventario', 'autenticacion' sean encontrados
-sys.path.insert(0, str(PROJECT_ROOT))
+# NO necesitamos sys.path.insert porque todas las apps están en backend/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -24,7 +22,7 @@ RENDER = config('RENDER', default=False, cast=bool)
 # Production allowed hosts
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# Application definition
+# Application definition - TODAS las apps están en backend/
 INSTALLED_APPS = [
     'admin_interface',
     'colorfield',
@@ -37,14 +35,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_extensions',
-    # Apps en backend/
+    # Todas las apps están en backend/ - NO hay problema de paths
     'tasks',
-    # Apps en raíz del proyecto (PROJECT_ROOT)
-    'autenticacion',
-    'proyectos',     # ← Necesario para tasks/urls.py
-    'inventario',    # ← Necesario para tasks/urls.py
-    'colaboradores',
-    'calendario',
+    'proyectos',         # backend/proyectos/ ✅
+    'inventario',        # backend/inventario/ ✅ 
+    'colaboradores',     # backend/colaboradores/ ✅
+    'calendario',        # backend/calendario/ ✅
 ]
 
 MIDDLEWARE = [
@@ -147,15 +143,15 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Debug info crítico para verificar paths
+# Debug info para verificar que encuentra todas las apps
 print("=== CONFIGURACIÓN DE PRODUCCIÓN ===")
 print(f"BASE_DIR (backend/): {BASE_DIR}")
-print(f"PROJECT_ROOT (ProjectATLAS/): {PROJECT_ROOT}")
-print(f"Python path[0]: {sys.path[0]}")
+print(f"PROJECT_ROOT: {PROJECT_ROOT}")
 print(f"DEBUG: {DEBUG}, RENDER: {RENDER}")
-print("Verificando apps críticas:")
+print("Verificando apps en backend/:")
 print(f"  ✓ tasks: {(BASE_DIR / 'tasks').exists()}")
-print(f"  ✓ proyectos: {(PROJECT_ROOT / 'proyectos').exists()}")
-print(f"  ✓ inventario: {(PROJECT_ROOT / 'inventario').exists()}")
-print(f"  ✓ autenticacion: {(PROJECT_ROOT / 'autenticacion').exists()}")
+print(f"  ✓ proyectos: {(BASE_DIR / 'proyectos').exists()}")
+print(f"  ✓ inventario: {(BASE_DIR / 'inventario').exists()}")
+print(f"  ✓ colaboradores: {(BASE_DIR / 'colaboradores').exists()}")
+print(f"  ✓ calendario: {(BASE_DIR / 'calendario').exists()}")
 print("===================================")
