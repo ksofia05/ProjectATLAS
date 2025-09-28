@@ -104,12 +104,15 @@ const EquipmentClientModal = ({
         setEquipos(equiposFinal);
         // Inicializar registroActual apuntando al último duplicado (más reciente) del número de serie seleccionado
         const seriePreferida =
-          numeroSerieSeleccionado || (equipo && equipo.numeroSerie) ||
+          numeroSerieSeleccionado ||
+          (equipo && equipo.numeroSerie) ||
           (equiposFinal[0] ? equiposFinal[0].numeroSerie : null);
 
         if (seriePreferida) {
           // Buscar duplicados de esa serie
-          let dups = equiposFinal.filter((e) => e.numeroSerie === seriePreferida);
+          let dups = equiposFinal.filter(
+            (e) => e.numeroSerie === seriePreferida
+          );
           if (dups.length > 1) {
             // Ordenar con el helper y seleccionar el último
             dups = dups.sort(ordenarDuplicados);
@@ -159,7 +162,9 @@ const EquipmentClientModal = ({
 
       // Inicializar comentario de entrada editable con el valor actual (o vacío)
       setComentarioEntradaEdit(
-        equipoActual.comentarioEntrada ? String(equipoActual.comentarioEntrada) : ""
+        equipoActual.comentarioEntrada
+          ? String(equipoActual.comentarioEntrada)
+          : ""
       );
     }
   }, [equipos, registroActual, numeroSerieSeleccionado, equipo]);
@@ -310,18 +315,17 @@ const EquipmentClientModal = ({
   return (
     <>
       <WideFloatingModal
-        className="w-full max-w-3xl bg-[#232335] shadow-xl rounded-3xl border border-[#2d2d44] px-0"
+        className="w-full max-w-3xl bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl shadow-lg px-0"
         onClose={onClose}
         hasUnsavedChanges={hasUnsavedChanges}
         onDiscardChanges={handleDiscardChanges}
       >
-        
-        <h1 className="text-2xl md:text-3xl font-bold text-white text-center pt-4 pb-12">
+        <h1 className="text-3xl md:text-4xl font-bold text-purple-300 text-center pt-6 pb-8 drop-shadow">
           Equipos Registrados
         </h1>
-        <div className="flex flex-col md:flex-row gap-8 px-4 md:px-10 items-start">
-          {/* Columna izquierda: tiene la imagen, la marca y el numero de serie del pc */}
-          <div className="flex flex-col items-center md:items-start w-full md:w-1/3">
+        <div className="flex flex-col md:flex-row gap-10 px-6 md:px-12 items-start">
+          {/* Columna izquierda */}
+          <div className="flex flex-col items-center w-full md:w-1/3">
             <img
               src={
                 equipoActual.fotoEquipo && equipoActual.fotoEquipo !== ""
@@ -335,101 +339,83 @@ const EquipmentClientModal = ({
                   : ImagenGenerica
               }
               alt={equipoActual.marca ? equipoActual.marca : "Equipo"}
-              className="w-44 h-44 md:w-56 md:h-56 object-cover rounded-xl shadow-lg border-3 border-purple-400 bg-white mb-6"
+              className="w-44 h-44 md:w-56 md:h-56 object-cover rounded-2xl shadow-lg border-4 border-slate-800 bg-white mb-6"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = ImagenGenerica;
               }}
             />
-            <div className="w-full flex flex-col gap-4">
-              
-              <div>
-                <label className="text-gray-300 font-semibold">No. Serie</label>
-                <Input
-                  name="serie"
-                  value={
-                    equipoActual.numeroSerie
-                      ? equipoActual.repeticiones > 1
-                        ? `${equipoActual.numeroSerie} (${registroActual + 1})`
-                        : equipoActual.numeroSerie
-                      : "Sin número de serie"
-                  }
-                  readOnly
-                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
-                />
-              </div>
-                {/* Botón Guardar ubicado en la columna izquierda */}
-                <div className="flex justify-end items-center gap-4 mt-2"> 
-                  <Button
-                    onClick={handleGuardarEntrada}
-                    loading={savingEntrada}
-                    disabled={
-                      equipoActual.estado !== "Activo" ||
-                      (comentarioEntradaEdit || "").trim() ===
-                        (equipoActual.comentarioEntrada || "").trim()
-                    }
-                    className="w-full py-4 text-lg"
-                  >
-                    Guardar
-                  </Button>
-                </div>
+            <div className="w-full flex flex-col gap-2">
+              <label className="text-purple-300 font-semibold mb-1">
+                No. Serie
+              </label>
+              <Input
+                name="serie"
+                value={
+                  equipoActual.numeroSerie
+                    ? equipoActual.repeticiones > 1
+                      ? `${equipoActual.numeroSerie} (${registroActual + 1})`
+                      : equipoActual.numeroSerie
+                    : "Sin número de serie"
+                }
+                readOnly
+                className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
+              />
             </div>
           </div>
-
-          {/* Columna derecha: resto de la info */}
-          <div className="w-full md:w-2/3 flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Columna derecha */}
+          <div className="w-full md:w-2/3 flex flex-col gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-gray-300 font-semibold">Ingreso</label>
+                <label className="text-purple-300 font-semibold mb-1">
+                  Ingreso
+                </label>
                 <Input
                   name="ingreso"
                   type="date"
                   value={equipoActual.ingreso || ""}
                   readOnly
                   icon="bi-calendar"
-                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
                 />
               </div>
               <div>
-                <label className="text-gray-300 font-semibold">Salida</label>
+                <label className="text-purple-300 font-semibold mb-1">
+                  Salida
+                </label>
                 <InputCalendario
                   value={equipoActual.salida || ""}
                   readOnly
                   ref={salidaRef}
-                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
                 />
               </div>
             </div>
-            <div>
-              <label className="text-gray-300 font-semibold">
-                Comentario Entrada
-              </label>
-              <Input
-                name="comentarioEntrada"
-                as="textarea"
-                rows={2}
-                value={comentarioEntradaEdit}
-                readOnly={equipoActual.estado !== "Activo"}
-                disabled={equipoActual.estado !== "Activo"}
-                onChange={(e) => {
-                  if (equipoActual.estado !== "Activo") return;
-                  const v = e.target.value || "";
-                  if (v.length <= 120) setComentarioEntradaEdit(v);
-                }}
-                className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
-              />
-              <div
-                className="text-right text-xs mt-1"
-                style={{
-                  color: comentarioEntradaEdit.length === 120 ? "#f87171" : "#a78bfa",
-                }}
-              >
-                {comentarioEntradaEdit.length}/120 caracteres
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+              <div>
+                <label className="text-purple-300 font-semibold mb-1">
+                  Comentario Entrada
+                </label>
+                <Input
+                  name="comentarioEntrada"
+                  as="textarea"
+                  rows={2}
+                  value={comentarioEntradaEdit}
+                  readOnly={equipoActual.estado !== "Activo"}
+                  disabled={equipoActual.estado !== "Activo"}
+                  onChange={(e) => {
+                    if (equipoActual.estado !== "Activo") return;
+                    const v = e.target.value || "";
+                    if (v.length <= 120) setComentarioEntradaEdit(v);
+                  }}
+                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1 resize-none"
+                />
+                <div className="text-right text-xs mt-1 text-purple-400">
+                  {comentarioEntradaEdit.length}/120 caracteres
+                </div>
               </div>
-            </div>
-            <div className="flex flex-row gap-4 items-start">
-              <div className="flex-1">
-                <label className="text-gray-300 font-semibold">
+              <div>
+                <label className="text-purple-300 font-semibold mb-1">
                   Comentario Salida
                 </label>
                 <Input
@@ -441,38 +427,43 @@ const EquipmentClientModal = ({
                       ? equipoActual.comentarioSalida
                       : comentarioSalida || equipoActual.comentarioSalida
                   }
-                   onChange={(e) => {
-    if (e.target.value.length <= 120) setComentarioSalida(e.target.value);
-  }}
-                  className="bg-[#232335] border border-purple-700 text-white rounded-lg mt-1"
+                  onChange={(e) => {
+                    if (e.target.value.length <= 120)
+                      setComentarioSalida(e.target.value);
+                  }}
+                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1 resize-none"
                 />
-                 {equipoActual.estado !== "Inactivo" && (
-      <div
-        className="text-right text-xs mt-1"
-        style={{
-          color: comentarioSalida.length === 120 ? "#f87171" : "#a78bfa",
-        }}
-      >
-        {comentarioSalida.length}/120 caracteres
-      </div>
-    )}
+                <div className="text-right text-xs mt-1 text-purple-400">
+                  {comentarioSalida.length}/120 caracteres
+                </div>
               </div>
             </div>
-            {/* Controles a la derecha: switch y navegación */}
-            <div className="flex justify-end items-center gap-4 mt-2">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-row items-center justify-between mt-6">
+              <Button
+                onClick={handleGuardarEntrada}
+                loading={savingEntrada}
+                disabled={
+                  equipoActual.estado !== "Activo" ||
+                  (comentarioEntradaEdit || "").trim() ===
+                    (equipoActual.comentarioEntrada || "").trim()
+                }
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow transition w-full py-3"
+              >
+                Guardar
+              </Button>
+              <div className="flex items-center gap-3 ml-6">
                 <Switch
                   checked={equipoActual.estado === "Activo"}
                   onChange={handleSwitchChange}
                   disabled={equipoActual.estado !== "Activo"}
                 />
                 <span
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full font-semibold text-lg
-        ${
-          equipoActual.estado === "Activo"
-            ? "bg-green-900/30 text-green-400"
-            : "bg-red-900/30 text-red-400"
-        }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-lg
+            ${
+              equipoActual.estado === "Activo"
+                ? "bg-green-900/30 text-green-400"
+                : "bg-red-900/30 text-red-400"
+            }`}
                 >
                   {equipoActual.estado === "Activo" ? (
                     <i className="bi bi-check-circle-fill text-green-400 text-xl"></i>
@@ -483,7 +474,7 @@ const EquipmentClientModal = ({
                 </span>
               </div>
               {/* Navegación */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 ml-6">
                 {equiposFiltrados.length > 1 ? (
                   <>
                     <button
@@ -531,6 +522,5 @@ const EquipmentClientModal = ({
 };
 
 export default EquipmentClientModal;
-
 
 //Psd : Si esta mrd funciona, porfavor no la toquen, att: luis
