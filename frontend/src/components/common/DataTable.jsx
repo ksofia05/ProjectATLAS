@@ -148,13 +148,34 @@ const DataTable = ({
                   >
                     {mobileConfig.keys.map((key, colIdx) => {
                       const column = columns.find((col) => col.key === key);
+                      // Detectar si existe una columna de acciones (descargar/editar)
+                      const actionsCol = columns.find(
+                        (c) => c.key === "descargar" || c.key === "actions"
+                      );
+
+                      // En móvil, queremos que las acciones aparezcan junto al icono de equipo
+                      if (key === "equipo" && actionsCol) {
+                        return (
+                          <div
+                            key={colIdx}
+                            className="text-center text-xs flex items-center justify-center gap-2"
+                          >
+                            {/* Icono Equipo */}
+                            <div>{column?.render ? column.render(item, idx) : item[key] || item[getAlternativeKey(key)] || "N/A"}</div>
+                            {/* Acciones: detener propagación para no disparar onRowClick */}
+                            {/* En móvil hacemos los iconos de acción más pequeños */}
+                            <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 scale-75 sm:scale-100">
+                              {actionsCol.render ? actionsCol.render(item, idx) : null}
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                         <div key={colIdx} className="text-center text-xs">
                           {column?.render
                             ? column.render(item, idx)
-                            : item[key] ||
-                              item[getAlternativeKey(key)] ||
-                              "N/A"}
+                            : item[key] || item[getAlternativeKey(key)] || "N/A"}
                         </div>
                       );
                     })}
