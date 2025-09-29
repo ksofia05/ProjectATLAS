@@ -174,7 +174,7 @@ const InventoryCard = ({
           onClose={() => setShowDeleteModal(false)}
           title="¿Estás seguro que quieres salir del proyecto?"
           message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto y aparecerás como 'Eliminado' en la lista de colaboradores."
-          confirmText="Salir del proyecto"
+          confirmText="Cancelar"
           showConfirm={true}
           onConfirm={handleRemoveAsCollaborator}
           loading={loading}

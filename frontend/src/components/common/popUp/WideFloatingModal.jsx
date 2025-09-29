@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import UnsaveChangesModal from "../../dashboard/UnsaveChangesModal"; 
+import UnsaveChangesModal from "../../dashboard/UnsaveChangesModal";
 
 const ANIMATION_DURATION = 300;
 
@@ -9,8 +9,8 @@ const WideFloatingModal = ({
   showClose = true,
   open = true,
   className = "max-w-5xl",
-  hasUnsavedChanges,     
-  onDiscardChanges        
+  hasUnsavedChanges,
+  onDiscardChanges,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [show, setShow] = useState(open);
@@ -29,12 +29,14 @@ const WideFloatingModal = ({
       }
     } else if (mounted) {
       setShow(false);
-      timeoutRef.current = setTimeout(() => setMounted(false), ANIMATION_DURATION);
+      timeoutRef.current = setTimeout(
+        () => setMounted(false),
+        ANIMATION_DURATION
+      );
     }
     return () => clearTimeout(timeoutRef.current);
   }, [open, mounted]);
 
-  // Maneja el cierre con advertencia
   const handleClose = () => {
     if (hasUnsavedChanges && hasUnsavedChanges()) {
       setShowUnsavedModal(true);
@@ -46,7 +48,6 @@ const WideFloatingModal = ({
     }
   };
 
-  // Descarta cambios y cierra
   const handleDiscard = () => {
     setShowUnsavedModal(false);
     setShow(false);
@@ -56,7 +57,6 @@ const WideFloatingModal = ({
     }, ANIMATION_DURATION);
   };
 
-  // Continúa editando
   const handleStayEditing = () => {
     setShowUnsavedModal(false);
   };
@@ -66,30 +66,31 @@ const WideFloatingModal = ({
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
       <div
-        className={`
-          fixed inset-0 transition-all duration-300
-          ${show
-            ? "backdrop-blur-[2px] bg-black/5 opacity-100 pointer-events-auto"
-            : "backdrop-blur-0 bg-transparent opacity-0 pointer-events-auto"}
-        `}
-        style={{ transitionProperty: "backdrop-filter, background-color, opacity" }}
+        className={`fixed inset-0 transition-all duration-300 ${
+          show
+            ? "backdrop-blur-[2px] bg-black/50 opacity-100 pointer-events-auto"
+            : "backdrop-blur-0 bg-black/0 opacity-0 pointer-events-none"
+        }`}
+        style={{
+          transitionProperty: "background-color, opacity",
+        }}
         onClick={handleClose}
         aria-label="Cerrar modal"
       />
       <div
-        className={`
-          fixed inset-0 flex items-center justify-center z-50
-          transition-all duration-300
-          ${show
+        className={`fixed inset-0 flex items-center justify-center z-50 transition-all duration-300 ${
+          show
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-95 translate-y-8 pointer-events-none"}
-        `}
+            : "opacity-0 scale-75 translate-y-10 pointer-events-none"
+        }`}
         style={{
           transitionProperty: "opacity, transform",
         }}
       >
         <div
-          className={`border border-gray-700 relative bg-gradient-to-br from-[#181825] to-[#232335] rounded-2xl shadow-2xl p-8 w-full ${className}`}
+          className={`border border-slate-800 relative bg-[#0c0c14] rounded-3xl shadow-xl p-8 w-full ${className} transition-transform duration-300 ${
+            show ? "scale-100 translate-y-0" : "scale-75 translate-y-10"
+          }`}
           style={{ minHeight: "220px" }}
         >
           {showClose && onClose && (
@@ -101,7 +102,9 @@ const WideFloatingModal = ({
               ✕
             </button>
           )}
-          {typeof children === "function" ? children({ handleClose }) : children}
+          {typeof children === "function"
+            ? children({ handleClose })
+            : children}
         </div>
       </div>
       {showUnsavedModal && (
