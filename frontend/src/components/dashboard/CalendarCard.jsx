@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { dateUtils } from "../../utils/dateUtils";
 import dayjs from "dayjs";
+import { client as supabase } from "../../supabase/client";
+import useUserStore from "../../stores/useUserStore";
 
 const diasSemana = ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
 
@@ -20,19 +22,50 @@ const monthNames = [
   "Diciembre",
 ];
 
-const CalendarCard = ({
-  mes = null,
-  year = null,
-  diasConPendientes = [],
-  className,
-}) => {
+const CalendarCard = ({ mes = null, year = null, className }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const user = useUserStore((state) => state.user);
 
   const today = dayjs();
   const currentMonth = mes ? monthNames.indexOf(mes) : today.month();
   const currentYear = year || today.year();
   const monthName = monthNames[currentMonth];
+
+  const [diasConPendientes, setDiasConPendientes] = useState([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!user) return;
+
+      const startDate = dayjs()
+        .year(currentYear)
+        .month(currentMonth)
+        .startOf("month")
+        .format("YYYY-MM-DD");
+      const endDate = dayjs()
+        .year(currentYear)
+        .month(currentMonth)
+        .endOf("month")
+        .format("YYYY-MM-DD");
+
+      const { data, error } = await supabase
+        .from("Tareas")
+        .select("*")
+        .gte("fechaCreacion", startDate)
+        .lte("fechaCreacion", endDate)
+        .eq("id_usuario", user.idUsuario);
+
+      if (!error && data) {
+        const groupedDays = data.map((task) =>
+          dayjs(task.fechaCreacion).date()
+        );
+        setDiasConPendientes(groupedDays);
+      }
+    };
+
+    fetchTasks();
+  }, [currentMonth, currentYear, user]);
 
   const handleCalendarClick = () => {
     navigate(`/dashboard/${id}/calendario-avanzado`);
