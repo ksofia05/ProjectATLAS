@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { getUserProfile, getCompleteUserProfile } from '../services/userService';
+import { getUserProfile, getCompleteUserProfile } from '../services/userService'; 
 import { client } from '../supabase/client';
-import { getUserProfile } from '../services/userService';
 import useUserStore from '../stores/useUserStore';
 import { showErrorToast } from "../components/common/popUp/Loading"; 
 
