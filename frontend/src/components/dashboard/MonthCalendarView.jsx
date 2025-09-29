@@ -129,13 +129,13 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-700/40 bg-gradient-to-br from-[#08080e]/80 to-[#0c0c14]/80 backdrop-blur-sm shadow-lg">
+    <div className="overflow-x-auto rounded-xl border border-slate-700/40 bg-gradient-to-br from-[#08080e]/80 to-[#0c0c14]/80 backdrop-blur-sm shadow-lg">
       {/* Días de la semana */}
-      <div className="grid grid-cols-7 border-b border-slate-700/40">
+      <div className="min-w-[420px] grid grid-cols-7 border-b border-slate-700/40">
         {dayNames.map((dayName) => (
           <div
             key={dayName}
-            className="p-4 text-center text-gray-300 font-semibold border-r border-slate-700/40 last:border-r-0 bg-gradient-to-br from-slate-800/60 to-slate-900/60"
+            className="p-2 md:p-4 text-center text-xs md:text-base text-gray-300 font-semibold border-r border-slate-700/40 last:border-r-0 bg-gradient-to-br from-slate-800/60 to-slate-900/60"
           >
             {dayName}
           </div>
@@ -143,7 +143,7 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
       </div>
 
       {/* Días del mes */}
-      <div className="grid grid-cols-7">
+      <div className="min-w-[420px] grid grid-cols-7">
         {days.map((dayObj, index) => {
           const isToday = dayjs(dayObj.date).isSame(today, "day");
           const blocked = isDayBlocked(dayObj.date);
@@ -153,7 +153,7 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
             <div
               key={index}
               className={`
-                min-h-32 p-3 border-r border-b border-slate-700/40 last:border-r-0
+                min-h-20 md:min-h-32 p-2 md:p-3 border-r border-b border-slate-700/40 last:border-r-0
                 ${
                   dayObj.isCurrentMonth
                     ? "bg-gradient-to-br from-slate-800/30 to-slate-900/30"
@@ -174,7 +174,7 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 {/* Número del día */}
                 <div
                   className={`
-                    text-sm font-medium mb-2
+                    text-xs md:text-sm font-medium mb-1 md:mb-2
                     ${
                       dayObj.isCurrentMonth
                         ? isToday
@@ -193,11 +193,11 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                 {blocked && dayObj.isCurrentMonth && (
                   <div className="absolute top-1 right-1">
                     {isSunday(dayObj.date) ? (
-                      <span className="px-1.5 py-0.5 text-[9px] font-medium text-slate-400 bg-slate-700/60 rounded border border-slate-600/50 backdrop-blur-sm">
+                      <span className="px-1 py-0.5 text-[8px] md:text-[9px] font-medium text-slate-400 bg-slate-700/60 rounded border border-slate-600/50 backdrop-blur-sm">
                         DOMINICAL
                       </span>
                     ) : holidayInfo ? (
-                      <span className="px-1.5 py-0.5 text-[9px] font-medium text-amber-300 bg-amber-500/20 rounded border border-amber-400/40 backdrop-blur-sm">
+                      <span className="px-1 py-0.5 text-[8px] md:text-[9px] font-medium text-amber-300 bg-amber-500/20 rounded border border-amber-400/40 backdrop-blur-sm">
                         FESTIVO
                       </span>
                     ) : null}
@@ -218,9 +218,9 @@ const MonthCalendarView = ({ year, month, onDaySelect }) => {
                   )}
                 </div>
 
-                {/* Se trae el nombre del dia festivo pa que se vea mas bonito */}
+                {/* Nombre del festivo */}
                 {holidayInfo && dayObj.isCurrentMonth && (
-                  <div className="absolute bottom-0 left-0 right-0 text-[10px] text-center text-amber-300/80 bg-amber-500/10 backdrop-blur-sm rounded-b px-1 py-0.5 border-t border-amber-500/20">
+                  <div className="absolute bottom-0 left-0 right-0 text-[8px] md:text-[10px] text-center text-amber-300/80 bg-amber-500/10 backdrop-blur-sm rounded-b px-1 py-0.5 border-t border-amber-500/20">
                     {holidayInfo.name}
                   </div>
                 )}
