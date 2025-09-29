@@ -84,3 +84,59 @@ export const pingSupabase = async () => {
         return { success: false, error };
     }
 };
+
+export const getUserFromDjango = async (email) => {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/usuarios/?correoelectronico=${email}`);
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+            return data[0]; // Retorna el primer usuario encontrado
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error obteniendo usuario desde Django:', error);
+        throw error;
+    }
+};
+
+// Función mejorada que combina Supabase + Django
+export const getCompleteUserProfile = async (authUserId, email) => {
+    try {
+        // 1. Intentar obtener desde Supabase
+        const supabaseProfile = await getUserProfile(authUserId).catch(() => null);
+        
+        // 2. Obtener datos actualizados desde Django
+        let djangoUser = null;
+        if (email) {
+            djangoUser = await getUserFromDjango(email).catch(() => null);
+        }
+        
+        // 3. Combinar datos, dando prioridad a Django para el rol
+        const combinedProfile = {
+            ...supabaseProfile,
+            ...djangoUser,
+            // Asegurar campos críticos
+            rol_idRol: djangoUser?.rol_idrol || djangoUser?.rol_idRol || supabaseProfile?.rol_idRol,
+            idUsuario: djangoUser?.idusuario || djangoUser?.idUsuario || supabaseProfile?.idUsuario,
+        };
+        
+        console.log('Perfil combinado obtenido:', {
+            supabase: !!supabaseProfile,
+            django: !!djangoUser,
+            rol: combinedProfile.rol_idRol
+        });
+        
+        return combinedProfile;
+    } catch (error) {
+        console.error('Error en getCompleteUserProfile:', error);
+        // Fallback al método original
+        return await getUserProfile(authUserId);
+    }
+};

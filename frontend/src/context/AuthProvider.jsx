@@ -1,5 +1,5 @@
-// frontend/src/context/AuthProvider.jsx
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { getUserProfile, getCompleteUserProfile } from '../services/userService';
 import { client } from '../supabase/client';
 import { getUserProfile } from '../services/userService';
 import useUserStore from '../stores/useUserStore';
@@ -111,10 +111,18 @@ export const AuthProvider = ({ children }) => {
   // maneja sesiones de usuario (mover arriba para reutilizar)
   const handleUserSession = async (session) => {
     try {
-      const profile = await getUserProfile(session.user.id);
+      // Usar la nueva función que combina Supabase + Django
+      const profile = await getCompleteUserProfile(
+        session.user.id, 
+        session.user.email
+      );
       
       if (profile) {
-        console.log('Perfil obtenido en AuthProvider:', profile.nombre);
+        console.log('Perfil completo obtenido en AuthProvider:', {
+          nombre: profile.nombre,
+          rol: profile.rol_idRol,
+          fuente: profile.idusuario ? 'django+supabase' : 'solo-supabase'
+        });
         
         const fullUserData = {
           ...profile,
@@ -127,16 +135,18 @@ export const AuthProvider = ({ children }) => {
         setUserProfile(fullUserData);
         setIsAuthenticated(true);
         
-        // Sincronizar con store (evita duplicar si ya está)
+        // Sincronizar con store
         const currentUser = useUserStore.getState().user;
-        if (!currentUser || currentUser.auth_user_id !== session.user.id) {
+        if (!currentUser || currentUser.auth_user_id !== session.user.id || 
+            currentUser.rol_idRol !== fullUserData.rol_idRol) {
           useUserStore.getState().setUser(fullUserData);
-          console.log('Usuario sincronizado AuthProvider -> Store');
+          console.log('Usuario sincronizado AuthProvider -> Store con rol:', fullUserData.rol_idRol);
         } else {
           console.log('Store ya tiene el usuario correcto');
         }
       } else {
         console.warn('No se encontró perfil para el usuario');
+        // Fallback sin perfil completo
         setUser(session.user);
         setIsAuthenticated(true);
         
@@ -148,7 +158,8 @@ export const AuthProvider = ({ children }) => {
       }
       setupHeartbeat();
     } catch (profileError) {
-      console.error('Error obteniendo perfil:', profileError);
+      console.error('Error obteniendo perfil completo:', profileError);
+      // Fallback al comportamiento original
       setUser(session.user);
       setIsAuthenticated(true);
       
@@ -360,13 +371,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserProfile = async () => {
+    if (!user?.email) return;
+    
+    try {
+      console.log('Refrescando perfil de usuario...');
+      const updatedProfile = await getCompleteUserProfile(user.id, user.email);
+      
+      if (updatedProfile) {
+        const fullUserData = {
+          ...updatedProfile,
+          auth_user_id: user.id,
+          email: user.email,
+          user_metadata: user.user_metadata
+        };
+        
+        setUserProfile(fullUserData);
+        useUserStore.getState().setUser(fullUserData);
+        console.log('Perfil actualizado con rol:', updatedProfile.rol_idRol);
+      }
+    } catch (error) {
+      console.error('Error refrescando perfil:', error);
+    }
+  };
+
   const value = {
     user,
     userProfile,
     isAuthenticated,
     isLoading,
     logout,
-    recheckAuth
+    recheckAuth,
+    refreshUserProfile
   };
 
   return (
