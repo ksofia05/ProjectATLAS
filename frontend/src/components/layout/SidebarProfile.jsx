@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthProvider";
 import UpdateProfilePhotoModal from "./UpdateProfilePhotoModal";
 import userAtlas from "../../assets/atlasUser.png";
-export default function SidebarProfile({ isOpen = false, onClose }) {
+export default function SidebarProfile({ isOpen = false, onClose, onPhotoClick, isSidebarFixed }) {
   const { user } = useAuth();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
@@ -58,7 +58,13 @@ export default function SidebarProfile({ isOpen = false, onClose }) {
               />
               <div
                 className="absolute bottom-6 right-2 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors shadow-lg"
-                onClick={() => setShowPhotoModal(true)}
+                onClick={() => {
+                  if (!isSidebarFixed) {
+                    setShowPhotoModal(true); 
+                  } else {
+                    onPhotoClick && onPhotoClick(); 
+                  }
+                }}
                 title="Actualizar foto de perfil"
               >
                 <i className="bi bi-camera-fill text-white text-sm"></i>
@@ -89,7 +95,8 @@ export default function SidebarProfile({ isOpen = false, onClose }) {
             &copy; 2025 AtlasCo.
           </span>
         </footer>
-        {showPhotoModal && (
+        {/* Modal local solo si NO es sidebar fijo */}
+        {!isSidebarFixed && showPhotoModal && (
           <UpdateProfilePhotoModal
             onClose={() => setShowPhotoModal(false)}
             onSave={() => setShowPhotoModal(false)}

@@ -8,6 +8,7 @@ import CancelProfileConfigModal from "./CancelProfileConfigModal";
 import PersonalInfoCard from "../../components/profile/PersonalInfoCard";
 import SecurityCard from "../../components/profile/SecurityCard";
 import BackButton from "../../components/common/BackButton";
+import { useIsLargeScreen } from "../../hooks/useIsLargeScreen";
 
 export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false); 
@@ -27,6 +28,7 @@ export default function ProfilePage() {
     handleBackClick,
     navigate,
   } = useProfileLogic();
+  const isLargeScreen = useIsLargeScreen();
 
   if (isLoading) {
     return <div className="text-white text-center mt-10">Cargando...</div>;
@@ -42,6 +44,7 @@ export default function ProfilePage() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onPhotoClick={() => setShowPhotoModal(true)}
+        isSidebarFixed={isLargeScreen}
       />
       <div
         className={`
@@ -77,7 +80,8 @@ export default function ProfilePage() {
           </main>
         </div>
       </div>
-      {showPhotoModal && (
+      {/* Modal global solo en pantallas grandes */}
+      {isLargeScreen && showPhotoModal && (
         <UpdateProfilePhotoModal
           onClose={() => setShowPhotoModal(false)}
           onSave={() => setShowPhotoModal(false)}
