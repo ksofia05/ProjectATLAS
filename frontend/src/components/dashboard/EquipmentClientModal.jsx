@@ -241,37 +241,59 @@ const EquipmentClientModal = ({
   const handleGuardarEntrada = async () => {
     const serieSel = numeroSerieSeleccionado || (equipo && equipo.numeroSerie);
     if (!serieSel) return;
+
     let lista = equipos.filter((eq) => eq.numeroSerie === serieSel);
     if (lista.length > 1) lista = lista.sort(ordenarDuplicados);
     const actual = lista[registroActual] || lista[0];
     if (!actual || !actual.agendamiento_equipo) return;
 
     // Evitar guardar si no hay cambios
-    const original = (actual.comentarioEntrada || "").trim();
-    const nuevo = (comentarioEntradaEdit || "").trim();
-    if (original === nuevo) return;
+    const originalEntrada = (actual.comentarioEntrada || "").trim();
+    const nuevoEntrada = (comentarioEntradaEdit || "").trim();
+    const originalSalida = (actual.comentarioSalida || "").trim();
+    const nuevoSalida = (comentarioSalida || "").trim();
+
+    if (originalEntrada === nuevoEntrada && originalSalida === nuevoSalida)
+      return;
 
     try {
       setSavingEntrada(true);
+
+      const updates = {};
+      if (originalEntrada !== nuevoEntrada) {
+        updates.comentarioEntrada = nuevoEntrada;
+      }
+      if (originalSalida !== nuevoSalida) {
+        updates.comentarioSalida = nuevoSalida;
+      }
+
       const { error } = await supabase
         .from("EquipoAgendamiento")
-        .update({ comentarioEntrada: nuevo })
+        .update(updates)
         .eq("agendamiento_equipo", actual.agendamiento_equipo);
+
       if (error) {
-        console.error("Error guardando comentario de entrada:", error);
-        alert("No se pudo guardar el comentario de entrada.");
+        console.error("Error guardando información:", error);
+        alert("No se pudo guardar la información.");
         return;
       }
-      // Reflejar el cambio en memoria
+
       setEquipos((prev) =>
         prev.map((e) =>
           e.agendamiento_equipo === actual.agendamiento_equipo
-            ? { ...e, comentarioEntrada: nuevo }
+            ? { ...e, ...updates }
             : e
         )
       );
+
+      if (updates.comentarioEntrada) {
+        setComentarioEntradaEdit(updates.comentarioEntrada);
+      }
+      if (updates.comentarioSalida) {
+        setComentarioSalida(updates.comentarioSalida);
+      }
     } catch (e) {
-      console.error("Error inesperado al guardar comentario de entrada:", e);
+      console.error("Error inesperado al guardar información:", e);
     } finally {
       setSavingEntrada(false);
     }
@@ -298,10 +320,9 @@ const EquipmentClientModal = ({
 
   const hasUnsavedChanges = () => {
     const salidaDirty =
-      equipoActual.estado === "Activo" &&
       comentarioSalida.trim() !== (equipoActual.comentarioSalida || "").trim();
     const entradaDirty =
-      (comentarioEntradaEdit || "").trim() !==
+      comentarioEntradaEdit.trim() !==
       (equipoActual.comentarioEntrada || "").trim();
     return salidaDirty || entradaDirty;
   };
@@ -315,7 +336,7 @@ const EquipmentClientModal = ({
   return (
     <>
       <WideFloatingModal
-        className="w-full max-w-3xl bg-gradient-to-br from-[#08080e]/95 to-[#0c0c14]/95 via-[#0a0a12]/95 backdrop-blur-md border border-slate-800/40 rounded-3xl shadow-lg px-0"
+        
         onClose={onClose}
         hasUnsavedChanges={hasUnsavedChanges}
         onDiscardChanges={handleDiscardChanges}
@@ -323,9 +344,9 @@ const EquipmentClientModal = ({
         <h1 className="text-3xl md:text-4xl font-bold text-purple-300 text-center pt-6 pb-8 drop-shadow">
           Equipos Registrados
         </h1>
-        <div className="flex flex-col md:flex-row gap-10 px-6 md:px-12 items-start">
-          {/* Columna izquierda */}
-          <div className="flex flex-col items-center w-full md:w-1/3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-6 md:px-12">
+          {/* Columna izquierda: Imagen */}
+          <div className="flex flex-col items-center">
             <img
               src={
                 equipoActual.fotoEquipo && equipoActual.fotoEquipo !== ""
@@ -339,59 +360,81 @@ const EquipmentClientModal = ({
                   : ImagenGenerica
               }
               alt={equipoActual.marca ? equipoActual.marca : "Equipo"}
-              className="w-44 h-44 md:w-56 md:h-56 object-cover rounded-2xl shadow-lg border-4 border-slate-800 bg-white mb-6"
+              className="w-48 h-48 md:w-56 md:h-56 object-cover rounded-2xl shadow-lg border-4 border-slate-800 bg-white mb-6"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = ImagenGenerica;
               }}
             />
-            <div className="w-full flex flex-col gap-2">
-              <label className="text-purple-300 font-semibold mb-1">
-                No. Serie
-              </label>
-              <Input
-                name="serie"
-                value={
-                  equipoActual.numeroSerie
-                    ? equipoActual.repeticiones > 1
-                      ? `${equipoActual.numeroSerie} (${registroActual + 1})`
-                      : equipoActual.numeroSerie
-                    : "Sin número de serie"
-                }
-                readOnly
-                className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
-              />
+            <div className="w-full flex items-center justify-between">
+              <button
+                className={`flex items-center justify-center w-10 h-10 rounded-full bg-purple-600 shadow-md transition-all duration-200 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                  registroActual === 0 ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                onClick={() => {
+                  if (registroActual > 0) setRegistroActual(registroActual - 1);
+                }}
+                disabled={registroActual === 0}
+                aria-label="Anterior registro"
+              >
+                <i className="bi bi-chevron-left text-white text-lg"></i>
+              </button>
+              <div className="text-purple-300 font-semibold text-center">
+                No. Serie: {equipoActual.numeroSerie} ({registroActual + 1}/
+                {equiposFiltrados.length})
+              </div>
+              <button
+                className={`flex items-center justify-center w-10 h-10 rounded-full bg-purple-600 shadow-md transition-all duration-200 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                  registroActual === equiposFiltrados.length - 1
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                onClick={() => {
+                  if (registroActual < equiposFiltrados.length - 1)
+                    setRegistroActual(registroActual + 1);
+                }}
+                disabled={registroActual === equiposFiltrados.length - 1}
+                aria-label="Siguiente registro"
+              >
+                <i className="bi bi-chevron-right text-white text-lg"></i>
+              </button>
             </div>
           </div>
-          {/* Columna derecha */}
-          <div className="w-full md:w-2/3 flex flex-col gap-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+
+          <div className="col-span-2 flex flex-col gap-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="relative">
                 <label className="text-purple-300 font-semibold mb-1">
                   Ingreso
                 </label>
-                <Input
+                <InputCalendario
                   name="ingreso"
-                  type="date"
                   value={equipoActual.ingreso || ""}
-                  readOnly
-                  icon="bi-calendar"
-                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
+                  onChange={() => {}}
+                  required={false}
+                  containerClassName="relative"
+                  placeholder="Selecciona una fecha"
                 />
               </div>
-              <div>
+              <div className="relative">
                 <label className="text-purple-300 font-semibold mb-1">
                   Salida
                 </label>
                 <InputCalendario
-                  value={equipoActual.salida || ""}
-                  readOnly
-                  ref={salidaRef}
-                  className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1"
+                  name="salida"
+                  value={
+                    equipoActual.estado === "Activo"
+                      ? "Aún no ha salido"
+                      : equipoActual.salida || ""
+                  }
+                  onChange={() => {}}
+                  required={false}
+                  containerClassName="relative"
+                  placeholder="Selecciona una fecha"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="text-purple-300 font-semibold mb-1">
                   Comentario Entrada
@@ -410,7 +453,7 @@ const EquipmentClientModal = ({
                   }}
                   className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1 resize-none"
                 />
-                <div className="text-right text-xs mt-1 text-purple-400">
+                <div className="text-center text-xs mt-1 text-purple-400">
                   {comentarioEntradaEdit.length}/120 caracteres
                 </div>
               </div>
@@ -422,35 +465,35 @@ const EquipmentClientModal = ({
                   name="comentarioSalida"
                   as="textarea"
                   rows={2}
-                  value={
-                    equipoActual.estado === "Inactivo"
-                      ? equipoActual.comentarioSalida
-                      : comentarioSalida || equipoActual.comentarioSalida
-                  }
+                  value={comentarioSalida}
+                  readOnly={equipoActual.estado !== "Activo"}
+                  disabled={equipoActual.estado !== "Activo"}
                   onChange={(e) => {
-                    if (e.target.value.length <= 120)
-                      setComentarioSalida(e.target.value);
+                    if (equipoActual.estado !== "Activo") return;
+                    const v = e.target.value || "";
+                    if (v.length <= 120) setComentarioSalida(v);
                   }}
                   className="bg-[#1a1a26] border border-slate-600/40 rounded-xl text-white px-4 py-2.5 mt-1 resize-none"
                 />
-                <div className="text-right text-xs mt-1 text-purple-400">
+                <div className="text-center text-xs mt-1 text-purple-400">
                   {comentarioSalida.length}/120 caracteres
                 </div>
               </div>
             </div>
-            <div className="flex flex-row items-center justify-between mt-6">
-              <Button
+            <div className="w-full flex items-center justify-between mt-6">
+              <button
                 onClick={handleGuardarEntrada}
-                loading={savingEntrada}
                 disabled={
-                  equipoActual.estado !== "Activo" ||
-                  (comentarioEntradaEdit || "").trim() ===
-                    (equipoActual.comentarioEntrada || "").trim()
+                  equipoActual.estado !== "Activo" || !hasUnsavedChanges()
                 }
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow transition w-full py-3"
+                className={`w-full py-3 px-4 rounded-full font-semibold text-white bg-purple-600 shadow-md transition-all duration-200 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                  equipoActual.estado !== "Activo" || !hasUnsavedChanges()
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
-                Guardar
-              </Button>
+                Actualizar información
+              </button>
               <div className="flex items-center gap-3 ml-6">
                 <Switch
                   checked={equipoActual.estado === "Activo"}
@@ -458,12 +501,11 @@ const EquipmentClientModal = ({
                   disabled={equipoActual.estado !== "Activo"}
                 />
                 <span
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-lg
-            ${
-              equipoActual.estado === "Activo"
-                ? "bg-green-900/30 text-green-400"
-                : "bg-red-900/30 text-red-400"
-            }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-lg ${
+                    equipoActual.estado === "Activo"
+                      ? "bg-green-900/30 text-green-400"
+                      : "bg-red-900/30 text-red-400"
+                  }`}
                 >
                   {equipoActual.estado === "Activo" ? (
                     <i className="bi bi-check-circle-fill text-green-400 text-xl"></i>
@@ -472,40 +514,6 @@ const EquipmentClientModal = ({
                   )}
                   {equipoActual.estado}
                 </span>
-              </div>
-              {/* Navegación */}
-              <div className="flex items-center gap-3 ml-6">
-                {equiposFiltrados.length > 1 ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        setRegistroActual((prev) => Math.max(prev - 1, 0))
-                      }
-                      disabled={registroActual === 0}
-                      className="text-gray-400 hover:text-purple-500 text-2xl px-2 transition-colors"
-                      type="button"
-                    >
-                      <i className="bi bi-arrow-left-circle"></i>
-                    </button>
-                    <span className="text-white font-semibold">
-                      {registroActual + 1} / {equiposFiltrados.length}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setRegistroActual((prev) =>
-                          Math.min(prev + 1, equiposFiltrados.length - 1)
-                        )
-                      }
-                      disabled={registroActual === equiposFiltrados.length - 1}
-                      className="text-gray-400 hover:text-purple-500 text-2xl px-2 transition-colors"
-                      type="button"
-                    >
-                      <i className="bi bi-arrow-right-circle"></i>
-                    </button>
-                  </>
-                ) : (
-                  <span className="text-white font-semibold">1 / 1</span>
-                )}
               </div>
             </div>
           </div>
@@ -522,5 +530,3 @@ const EquipmentClientModal = ({
 };
 
 export default EquipmentClientModal;
-
-//Psd : Si esta mrd funciona, porfavor no la toquen, att: luis

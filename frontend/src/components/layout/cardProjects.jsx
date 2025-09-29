@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Users, X } from "lucide-react";
 import {
   showErrorToast,
@@ -8,7 +8,7 @@ import {
 import useUserStore from "../../stores/useUserStore";
 import WarningModal from "../dashboard/WarningModal";
 import toast from "react-hot-toast";
-import { actualizarHistorialColaborador } from "../common/historialColaboradores";
+import axios from "axios";
 
 const InventoryCard = ({
   project,
@@ -18,9 +18,29 @@ const InventoryCard = ({
   onProjectUpdate,
 }) => {
   const user = useUserStore((state) => state.user);
-
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [miembros, setMiembros] = useState(1); 
+
+  
+  useEffect(() => {
+    const fetchMiembros = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${project.id_proyecto}`
+        );
+        const colaboradores = response.data.colaboradores || [];
+        setMiembros(colaboradores.length + 1); 
+      } catch (error) {
+        console.error("Error al obtener miembros del proyecto:", error);
+        setMiembros(1);
+      }
+    };
+
+    if (project?.id_proyecto) {
+      fetchMiembros();
+    }
+  }, [project]);
 
   const handleCardClick = async (e) => {
     // Evitar que el click en el botón de eliminar abra el proyecto
@@ -136,9 +156,7 @@ const InventoryCard = ({
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
                 <i className="bi bi-people text-sm"></i>
-                <span className="text-sm">
-                  {project.miembros || 0} Miembros
-                </span>
+                <span className="text-sm">{miembros} Miembros</span>
               </div>
               <div className="flex items-center gap-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
                 <i className="bi bi-list-task text-sm"></i>
@@ -174,7 +192,7 @@ const InventoryCard = ({
           onClose={() => setShowDeleteModal(false)}
           title="¿Estás seguro que quieres salir del proyecto?"
           message="Esta acción es irreversible. Si sales, perderás el acceso al proyecto y aparecerás como 'Eliminado' en la lista de colaboradores."
-          confirmText="Salir del proyecto"
+          confirmText="Cancelar"
           showConfirm={true}
           onConfirm={handleRemoveAsCollaborator}
           loading={loading}

@@ -79,3 +79,7 @@
 .scrollbar-gutter-stable {
   scrollbar-gutter: stable;
 }
+
+.toast-container {
+  z-index: 99999; 
+}

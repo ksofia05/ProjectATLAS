@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useAuth } from "../../context/AuthProvider";
 import {showErrorToast, showSuccessToast,} from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
 
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshUserProfile } = useAuth();
 
   if (!visible) return null;
 
@@ -19,9 +21,10 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       setIsSubmitting(false);
       return;
     }
+    
     try {
       const response = await fetch(
-        "http://localhost:8000/tasks/api/v1/save_proyect/",
+        `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/save_proyect/`,
         {
           method: "POST",
           headers: {
@@ -33,11 +36,19 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       );
       if (response.ok) {
         const { proyecto } = await response.json();
-        showSuccessToast("Proyecto creado con éxito.");
-        onClose();
-        setNombre("");
-        if (onCreate) {
-          onCreate(proyecto);
+        if (proyecto) {
+          // Refrescar perfil del usuario para obtener rol actualizado
+          if (refreshUserProfile) {
+            await refreshUserProfile();
+          }
+          
+          showSuccessToast("Proyecto creado con éxito.");
+          onClose();
+          setNombre("");
+          
+          if (onCreate) {
+            onCreate(proyecto);
+          }
           if (window.refreshUserAndProjects) {
             window.refreshUserAndProjects();
           }
