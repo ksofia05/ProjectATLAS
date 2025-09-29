@@ -4,6 +4,7 @@ import CreateProjectPanel from "../components/layout/CreateProjectPanel";
 import ProjectList from "../components/layout/ProjectList";
 import { useAuth } from "../context/AuthProvider";
 import WarningModal from "../components/dashboard/WarningModal";
+import { clearProjectLimitFlags, PROJECT_LIMIT_TTL_MS } from "../utils/projectLimitModal";
 
 const DashboardCreateProject = () => {
   const { user, userProfile } = useAuth();
@@ -16,14 +17,34 @@ const DashboardCreateProject = () => {
   useEffect(() => {
     const shouldShow = localStorage.getItem("showProjectLimitModal");
     const message = localStorage.getItem("projectLimitMessage");
-    if (shouldShow === "1" && !showProjectLimitModal) {
+    const who = (localStorage.getItem("projectLimitWho") || "").toLowerCase();
+    const ts = Number(localStorage.getItem("projectLimitTs") || "0");
+
+    const currentEmail =
+      (user?.email || user?.correoElectronico || userProfile?.correoElectronico || "").toLowerCase();
+      const isCollaborator = userProfile?.rol_idRol === 2;
+      const notExpired = ts && Date.now() - ts < PROJECT_LIMIT_TTL_MS;
+
+    if (shouldShow === "1" && !showProjectLimitModal && isCollaborator && notExpired && who === currentEmail) {
       setShowProjectLimitModal(true);
       setProjectLimitMessage(
         message ||
           "Actualmente ya formas parte de otro proyecto. Si deseas unirte a este, primero debes eliminar tu proyecto actual desde la sección de proyectos. Luego vuelve a aceptar la invitación."
       );
     }
-  }, [showProjectLimitModal]);
+    const handler = (e) => {
+      const detailEmail = (e?.detail?.email || "").toLowerCase();
+      if (!isCollaborator) return;
+      if (detailEmail && detailEmail !== currentEmail) return;
+      setProjectLimitMessage(
+        e?.detail?.message ||
+          "Actualmente ya formas parte de otro proyecto. Si deseas unirte a éste, primero elimina el actual."
+      );
+      setShowProjectLimitModal(true);
+    };
+    window.addEventListener("projectLimitViolation", handler);
+    return () => window.removeEventListener("projectLimitViolation", handler);
+  }, [showProjectLimitModal, user, userProfile]);
 
   useEffect(() => {
     window.refreshUserAndProjects = async () => {
@@ -90,8 +111,7 @@ const DashboardCreateProject = () => {
         confirmText="Cerrar"
         onClose={() => {
           setShowProjectLimitModal(false);
-          localStorage.removeItem("showProjectLimitModal");
-          localStorage.removeItem("projectLimitMessage");
+          clearProjectLimitFlags();
           setTimeout(() => setShowInstructionsModal(true), 200);
         }}
         showCloseIcon={false}

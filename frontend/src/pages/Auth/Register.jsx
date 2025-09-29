@@ -18,6 +18,7 @@ import {
 import { toast } from "react-hot-toast";
 import { client } from "../../supabase/client";
 
+
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -259,42 +260,69 @@ const Register = () => {
         if (authData.session) {
           client.auth.signOut();
         }
-
-        if (next && next.startsWith("/dashboard/")) {
-          const idProyecto = next.split("/dashboard/")[1];
+        const idProyectoParam = params.get("id_proyecto");
+        let idProyectoToAssociate = idProyectoParam;
+        if (!idProyectoToAssociate && next) {
           try {
-            await fetch(
+            const qs = new URLSearchParams(next.split("?")[1] || "");
+            idProyectoToAssociate = qs.get("id_proyecto");
+          } catch {}
+        }
+        if (idProyectoToAssociate) {
+          try {
+            const response = await fetch(
               "http://localhost:8000/tasks/api/v1/asociar_colaborador/",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  id_proyecto: idProyecto,
+                  id_proyecto: idProyectoToAssociate,
                   email: formData.email,
                   exp: params.get("exp"),
                 }),
               }
             );
-            if (idUsuario && !isNaN(Number(idUsuario))) {
-              await actualizarHistorialColaborador(
-                Number(idUsuario),
-                Number(idProyecto),
-                "activo"
-              );
+            const data = await response.json().catch(()=>({}));
+
+            if (!response.ok){
+              if (data?.error === "Este usuario ya hace parte de este proyecto.") {
+                showSuccessToast("Ya haces parte de este proyecto.");
+              }
+              else if (data?.error === "Un administrador no puede asociarse como colaborador."){
+                showErrorToast(data.error);
+              } else if (data?.error === "Un colaborador no puede estar en más de un proyecto."){
+                showErrorToast(data.error);
+               }
+              else {
+                showErrorToast(data?.error || "Error al asociar colaborador al proyecto.");
+              }
+            } else {
+              // Asociación OK: historial (si tu helper existe) sin romper si no está definido
+              if (
+                typeof idUsuario !== "undefined" &&
+                idUsuario &&
+                !isNaN(Number(idUsuario)) &&
+                typeof actualizarHistorialColaborador === "function"
+              ) {
+                await actualizarHistorialColaborador(
+                  Number(idUsuario),
+                  Number(idProyectoToAssociate),
+                  "activo"
+                );
+              }
             }
           } catch (err) {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
         }
-
         let loginUrl = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
-        const idProyectoParam = params.get("id_proyecto");
         if (idProyectoParam) loginUrl += `&id_proyecto=${idProyectoParam}`;
         const expParam = params.get("exp");
         if (expParam) loginUrl += `&exp=${encodeURIComponent(expParam)}`;
 
         toast.dismiss(toastId);
         showSuccessToast("¡Cuenta creada! Ahora puedes iniciar sesión.");
+        sessionStorage.setItem("skipProjectLimitOnce", "1");
         navigate(loginUrl);
       } catch (err) {
         toast.dismiss(toastId);

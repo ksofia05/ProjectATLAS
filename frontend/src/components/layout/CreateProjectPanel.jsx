@@ -80,7 +80,7 @@ const CreateProjectPanel = ({
           setProjectStates(estados);
         } else{
           setProjects([]);
-+         setProjectStates({});
+          setProjectStates({});
         }
       } catch (error) {
         setProjects([]);

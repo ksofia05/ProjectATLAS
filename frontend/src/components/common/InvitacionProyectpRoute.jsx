@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthProvider";
 import NoTenerCuenta from "../common/NoTenerCuenta";
 import { showErrorToast, showSuccessToast, showLoadingToast } from "./popUp/Loading";
 import { actualizarHistorialColaborador } from "./historialColaboradores";
+import { triggerProjectLimit } from "../../utils/projectLimitModal";
 
 const InvitacionProyectoRoute = () => {
   const { id } = useParams();
@@ -36,7 +37,6 @@ const InvitacionProyectoRoute = () => {
       !asociacionIntentada.current
     ) {
       asociacionIntentada.current = true;
-
   
       const asociar = async () => {
         try {
@@ -81,27 +81,20 @@ const InvitacionProyectoRoute = () => {
           }
           if (response.status === 400 && data.error) {
             if (data.error === "Este usuario ya hace parte de este proyecto.") {
-              localStorage.setItem("showAlreadyInProjectModal", "1");
-              localStorage.setItem("alreadyInProjectMessage", data.error);
-              setTimeout(() => {
-                navigate("/dashboard-create-project", { replace: true });
-              }, 100);
+              navigate("/dashboard-create-project", { replace: true });
               return;
             }
-            if (
-              data.error === "Un colaborador no puede estar en más de un proyecto." ||
-              data.error === "Un administrador no puede asociarse como colaborador."
-            ) {
-              localStorage.setItem("showProjectLimitModal", "1");
-              localStorage.setItem("projectLimitMessage", data.error);
-              setTimeout(() => {
-                navigate("/dashboard-create-project", { replace: true });
-              }, 100);
+            if (data.error === "Un colaborador no puede estar en más de un proyecto.") {
+              const who = (userProfile?.correoelectronico || userProfile?.email || user?.email || "").toLowerCase();
+              triggerProjectLimit(data.error, who);
+              navigate("/dashboard-create-project", { replace: true });
               return;
             }
-            showErrorToast(data.error || "No se pudo asociar al proyecto.");
-            setAsociado(true);
-            return;
+            if (data.error === "Un administrador no puede asociarse como colaborador."){
+              showErrorToast(data.error || "No se pudo asociar al proyecto.");
+              navigate("/dashboard-create-project", { replace: true });
+              return;
+            }
           }
           showErrorToast("No se pudo asociar al proyecto.");
           setAsociado(true);
@@ -148,7 +141,7 @@ const InvitacionProyectoRoute = () => {
   }
 
   // PASA EL ID COMO QUERY PARAM EN NEXT
-  return <NoTenerCuenta next={`/dashboard-create-project?id_proyecto=${id}`} />;
+  return <NoTenerCuenta next={`/dashboard-create-project?id_proyecto=${cleanId}`} />;
 };
 
 export default InvitacionProyectoRoute;
