@@ -15,13 +15,13 @@ services:
       export DJANGO_SETTINGS_MODULE=backend.settings_production
       python manage.py migrate --noinput
       python manage.py migrate --run-syncdb --noinput
-      gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info
+      gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level debug
     plan: free
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: DEBUG
-        value: false
+        value: true  # ← Temporalmente true para ver errores
       - key: RENDER
         value: true
       - key: DJANGO_SETTINGS_MODULE

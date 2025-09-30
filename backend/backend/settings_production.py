@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BASE_DIR.parent
 
 # Security
-SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-production')
-DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-production-key-atlas-2024')
+DEBUG = config('DEBUG', default=True, cast=bool)  # ← True para debug
 RENDER = config('RENDER', default=False, cast=bool)
 
 # ✅ HOSTS CORRECTOS
@@ -18,7 +18,8 @@ ALLOWED_HOSTS = [
     'projectatlas-backend.onrender.com',
     'localhost',
     '127.0.0.1',
-    '.onrender.com'  # Permite subdominios
+    '.onrender.com',
+    '*'  # ← Temporalmente permitir todos
 ]
 
 # ✅ CORS CONFIGURADO
@@ -28,35 +29,40 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000'
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL', default=False, cast=bool)
+CORS_ALLOW_ALL_ORIGINS = True  # ← Temporalmente permitir todos
 
-# Applications
+# Applications - ORDEN CORRECTO
 INSTALLED_APPS = [
+    # Django core apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Third party ANTES de las apps custom
-    'corsheaders',  # ✅ CORS habilitado
+    
+    # Third party apps - ANTES de las custom apps
+    'corsheaders',
     'rest_framework',
     'django_extensions',
-    'admin_interface',
-    'colorfield',
-    # Apps del proyecto
+    
+    # Project apps
     'tasks',
     'proyectos',
     'inventario',
     'colaboradores',
     'calendario',
+    
+    # Admin interface AL FINAL
+    'admin_interface',
+    'colorfield',
 ]
 
 # ✅ MIDDLEWARE CORS AL INICIO
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # ✅ PRIMERO
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Para static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -91,17 +97,16 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
+    print(f"✅ Base de datos configurada desde DATABASE_URL")
 else:
+    # Fallback para desarrollo
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'Atlas',
-            'USER': 'usuario_backend',
-            'PASSWORD': 'atlas',
-            'HOST': 'localhost',
-            'PORT': '5432',
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    print("🔧 Usando SQLite para desarrollo")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -150,22 +155,20 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
 }
 
-# Security settings para producción
-if RENDER:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    X_FRAME_OPTIONS = 'DENY'
-
-# Logging para debug
+# Logging mejorado para debug
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
@@ -173,6 +176,11 @@ LOGGING = {
         'level': 'INFO',
     },
     'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
         'django.db': {
             'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'INFO',
@@ -181,10 +189,24 @@ LOGGING = {
     },
 }
 
-print(f"=== DJANGO PRODUCTION CONFIG ===")
+# Security settings
+if RENDER and not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# Debug info
+print("=== CONFIGURACIÓN DE PRODUCCIÓN ATLAS ===")
 print(f"DEBUG: {DEBUG}")
+print(f"RENDER: {RENDER}")
 print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 print(f"CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
-print(f"DATABASE_URL configured: {'✅' if DATABASE_URL else '❌'}")
-print(f"RENDER mode: {'✅' if RENDER else '❌'}")
-print("================================")
+print(f"DATABASE_URL configurado: {'✅' if DATABASE_URL else '❌'}")
+print(f"Verificando apps:")
+for app in ['tasks', 'proyectos', 'inventario', 'colaboradores', 'calendario']:
+    exists = (BASE_DIR / app).exists()
+    print(f"  {app}: {'✅' if exists else '❌'}")
+print("==========================================")

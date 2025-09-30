@@ -12,7 +12,7 @@ class TaskSerializer(serializers.ModelSerializer):
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = '__all__'  # O especifica los campos que quieres incluir
+        fields = "__all__"
 
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
