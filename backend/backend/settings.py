@@ -162,3 +162,17 @@ DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
 
 os.environ['SUPABASE_URL'] = "https://ukpjvbvzqmehjormyrza.supabase.co"
 os.environ['SUPABASE_SERVICE_ROLE'] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrcGp2YnZ6cW1laGpvcm15cnphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjQ1NzQ1MCwiZXhwIjoyMDYyMDMzNDUwfQ.Wex6pOxwagRhdI-DO7QYXPhRrcwBtIxrgwd6K6kqgvw"
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.TokenAuthentication',  # ← Para tokens Bearer
+#         'rest_framework.authentication.SessionAuthentication',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ],
+#     'DEFAULT_RENDERER_CLASSES': [
+#         'rest_framework.renderers.JSONRenderer',
+#         'rest_framework.renderers.BrowsableAPIRenderer',
+#     ],
+# }
