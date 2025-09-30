@@ -1,0 +1,77 @@
+import React, { useEffect, useRef, useState } from "react";
+import RegisterClientForm from "./RegisterClientForm";
+
+export default function RegisterClientDrawer({
+  open,
+  onClose,
+  onClienteAdded,
+  idproyecto,
+  usuarioIdActual,
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const timeoutRef = useRef();
+
+  useEffect(() => {
+    clearTimeout(timeoutRef.current);
+
+    if (open) {
+      setMounted(true);
+      timeoutRef.current = setTimeout(() => setShowDrawer(true), 10);
+    } else {
+      setShowDrawer(false);
+      timeoutRef.current = setTimeout(() => setMounted(false), 300);
+    }
+
+    return () => clearTimeout(timeoutRef.current);
+  }, [open]);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 pointer-events-none">
+      <div
+        className={`
+          fixed inset-0 transition-all duration-300
+          ${
+            showDrawer
+              ? "backdrop-blur-[2px] bg-black/5 pointer-events-auto"
+              : "backdrop-blur-0 bg-transparent pointer-events-none"
+          }
+        `}
+        onClick={onClose}
+        aria-label="Cerrar panel"
+      />
+      <aside
+        className={`
+          fixed top-0 right-0 h-full w-full max-w-md
+          bg-[#14141e] rounded-l-3xl border border-slate-700/50
+          shadow-lg p-8 overflow-y-auto
+          transition-transform duration-300 ease-in-out
+          ${showDrawer ? "translate-x-0" : "translate-x-full"}
+          pointer-events-auto
+        `}
+        style={{
+          boxShadow: "0 4px 32px 0 rgba(0,0,0,0.45)",
+        }}
+      >
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-white">Registro de cliente</h2>
+          <button
+            onClick={onClose}
+            className="text-white text-2xl"
+            tabIndex={0}
+          >
+            &times;
+          </button>
+        </div>
+        <RegisterClientForm
+          onClose={onClose}
+          onClienteAdded={onClienteAdded}
+          idproyecto={idproyecto}
+          usuarioIdActual={usuarioIdActual}
+        />
+      </aside>
+    </div>
+  );
+}

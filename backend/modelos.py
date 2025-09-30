@@ -8,51 +8,53 @@
 from django.db import models
 
 
-class Agendamiento(models.Model):
-    cliente_dni = models.ForeignKey('Cliente', models.DO_NOTHING, db_column='Cliente_dni', blank=True, null=True)  # Field name made lowercase.
-    usuario = models.ForeignKey('Usuario', models.DO_NOTHING, db_column='Usuario_id', blank=True, null=True)  # Field name made lowercase.
-    idagendamiento = models.AutoField(db_column='idAgendamiento', primary_key=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'Agendamiento'
 
 
-class Cliente(models.Model):
-    nombre = models.CharField(max_length=45)
-    apellido = models.CharField(max_length=45)
-    telefono = models.CharField(max_length=13)
-    correo = models.CharField(max_length=45)
-    dni = models.AutoField(primary_key=True)
+# class Agendamiento(models.Model):
+#     cliente_dni = models.ForeignKey('Cliente', models.DO_NOTHING, db_column='Cliente_dni', blank=True, null=True)  # Field name made lowercase.
+#     usuario = models.ForeignKey('Usuario', models.DO_NOTHING, db_column='Usuario_id', blank=True, null=True)  # Field name made lowercase.
+#     idagendamiento = models.AutoField(db_column='idAgendamiento', primary_key=True)  # Field name made lowercase.
 
-    class Meta:
-        managed = False
-        db_table = 'Cliente'
+#     class Meta:
+#         managed = False
+#         db_table = 'Agendamiento'
 
 
-class Equipo(models.Model):
-    marca = models.CharField(max_length=30)
-    fotoequipo = models.CharField(db_column='fotoEquipo', max_length=150, blank=True, null=True)  # Field name made lowercase.
-    numeroserie = models.CharField(db_column='numeroSerie', primary_key=True, max_length=30)  # Field name made lowercase.
+# class Cliente(models.Model):
+#     nombre = models.CharField(max_length=45)
+#     apellido = models.CharField(max_length=45)
+#     telefono = models.CharField(max_length=13)
+#     correo = models.CharField(max_length=45)
+#     dni = models.AutoField(primary_key=True)
 
-    class Meta:
-        managed = False
-        db_table = 'Equipo'
+#     class Meta:
+#         managed = False
+#         db_table = 'Cliente'
 
 
-class Equipoagendamiento(models.Model):
-    fechaingreso = models.DateField(db_column='fechaIngreso')  # Field name made lowercase.
-    fechasalida = models.DateField(db_column='fechaSalida', blank=True, null=True)  # Field name made lowercase.
-    comentarioentrada = models.CharField(db_column='comentarioEntrada', blank=True, null=True)  # Field name made lowercase.
-    comentariosalida = models.CharField(db_column='comentarioSalida', blank=True, null=True)  # Field name made lowercase.
-    estado = models.TextField(db_column='Estado')  # Field name made lowercase. This field type is a guess.
-    agendamiento_equipo = models.AutoField(primary_key=True)
-    equipo_numeroserie = models.ForeignKey(Equipo, models.DO_NOTHING, db_column='equipo_numeroSerie', blank=True, null=True)  # Field name made lowercase.
-    agendamiento_idagendamiento = models.ForeignKey(Agendamiento, models.DO_NOTHING, db_column='agendamiento_idAgendamiento', blank=True, null=True)  # Field name made lowercase.
+# class Equipo(models.Model):
+#     marca = models.CharField(max_length=30)
+#     fotoequipo = models.CharField(db_column='fotoEquipo', max_length=150, blank=True, null=True)  # Field name made lowercase.
+#     numeroserie = models.CharField(db_column='numeroSerie', primary_key=True, max_length=30)  # Field name made lowercase.
 
-    class Meta:
-        managed = False
-        db_table = 'EquipoAgendamiento'
+#     class Meta:
+#         managed = False
+#         db_table = 'Equipo'
+
+
+# class Equipoagendamiento(models.Model):
+#     fechaingreso = models.DateField(db_column='fechaIngreso')  # Field name made lowercase.
+#     fechasalida = models.DateField(db_column='fechaSalida', blank=True, null=True)  # Field name made lowercase.
+#     comentarioentrada = models.CharField(db_column='comentarioEntrada', blank=True, null=True)  # Field name made lowercase.
+#     comentariosalida = models.CharField(db_column='comentarioSalida', blank=True, null=True)  # Field name made lowercase.
+#     estado = models.TextField(db_column='Estado')  # Field name made lowercase. This field type is a guess.
+#     agendamiento_equipo = models.AutoField(primary_key=True)
+#     equipo_numeroserie = models.ForeignKey(Equipo, models.DO_NOTHING, db_column='equipo_numeroSerie', blank=True, null=True)  # Field name made lowercase.
+#     agendamiento_idagendamiento = models.ForeignKey(Agendamiento, models.DO_NOTHING, db_column='agendamiento_idAgendamiento', blank=True, null=True)  # Field name made lowercase.
+
+#     class Meta:
+#         managed = False
+#         db_table = 'EquipoAgendamiento'
 
 
 class Tareas(models.Model):
@@ -74,7 +76,7 @@ class Tareas(models.Model):
 #     apellido = models.CharField(max_length=45)
 #     estado = models.TextField()  # This field type is a guess.
 #     correoelectronico = models.CharField(db_column='correoElectronico', max_length=45)  # Field name made lowercase.
-#     contraseña = models.CharField(max_length=45)
+#     contraseï¿½a = models.CharField(max_length=45)
 #     rol_idrol = models.ForeignKey('Rol', models.DO_NOTHING, db_column='rol_idRol', blank=True, null=True)  # Field name made lowercase.
 #     suscripcion = models.TextField()  # This field type is a guess.
 #     idusuario = models.AutoField(db_column='idUsuario', primary_key=True)  # Field name made lowercase.
@@ -85,16 +87,16 @@ class Tareas(models.Model):
 #         db_table = 'Usuario'
 
 
-class Proyecto(models.Model):
-    nombreproyecto = models.CharField(db_column='nombreProyecto', max_length=30)  # Field name made lowercase.
-    fechacreacion = models.DateField(db_column='fechaCreacion')  # Field name made lowercase.
-    enlace = models.CharField(blank=True, null=True)
-    id_usuario = models.ForeignKey(Usuario, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
-    id_proyecto = models.AutoField(primary_key=True)
+# class Proyecto(models.Model):
+#     nombreproyecto = models.CharField(db_column='nombreProyecto', max_length=30)  # Field name made lowercase.
+#     fechacreacion = models.DateField(db_column='fechaCreacion')  # Field name made lowercase.
+#     enlace = models.CharField(blank=True, null=True)
+#     id_usuario = models.ForeignKey(Usuario, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
+#     id_proyecto = models.AutoField(primary_key=True)
 
-    class Meta:
-        managed = False
-        db_table = 'proyecto'
+#     class Meta:
+#         managed = False
+#         db_table = 'proyecto'
 
 
 # class Rol(models.Model):
@@ -102,9 +104,9 @@ class Proyecto(models.Model):
 #     administrador = models.CharField(max_length=45, blank=True, null=True)
 #     idrol = models.AutoField(db_column='idRol', primary_key=True)  # Field name made lowercase.
 
-#     class Meta:
-#         managed = False
-#         db_table = 'rol'
+    class Meta:
+        managed = False
+        db_table = 'rol'
 
 
 class Usuariotarea(models.Model):

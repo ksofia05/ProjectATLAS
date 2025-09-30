@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitación a Proyecto Atlas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 2px solid rgb(199, 199, 199);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #2d3748;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        .content p {
+            color: #4a5568;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .button:link{
+            color: white;
+        }
+        .footer {
+            background-color: #f7fafc;
+            padding: 24px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        .footer a {
+            color: #4299e1;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 30px 0;
+        }
+        .security-note {
+            background-color: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Invitación a Proyecto Atlas</h1>
+        </div>
+        <div class="content">
+            <h2>¡Atlas company!</h2>
+            <p>
+                <strong>{{ nombre_invitador }}</strong> te ha invitado a unirte a un proyecto como colaborador en Atlas.<br>
+                Haz clic en el botón de abajo para aceptar la invitación y unirte al proyecto.
+            </p>
+            <div style="text-align: center;">
+                <a href="{{ invitacion_url }}" class="button" style="color: white;" target="_blank">
+                    Unirse al proyecto
+                </a>
+            </div>
+            <div class="divider"></div>
+            <div class="security-note">
+                <p style="margin: 0; font-size: 14px;">
+                    <strong>🛡️ Nota de seguridad:</strong> Este enlace es válido por 10 minutos, si se te pasa vuelvelo a solicitar con el administrador.
+                </p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2025 Atlas. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
