@@ -26,7 +26,6 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       return;
     }
     
-    console.log('📤 Headers que se enviarán:', headers);
     console.log('📤 URL destino:', `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/save_proyect/`);
     console.log('📤 Body que se enviará:', { nombreproyecto: nombre });
     

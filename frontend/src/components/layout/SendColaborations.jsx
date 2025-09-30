@@ -163,7 +163,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
     try {
       const response = await fetch(
-        "${API_BASE_URL}/tasks/api/v1/invitacionColaborador/",
+        `${API_BASE_URL}/tasks/api/v1/invitacionColaborador/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

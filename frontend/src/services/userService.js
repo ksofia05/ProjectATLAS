@@ -5,7 +5,7 @@ export const getUserProfile = async (authUserId) => {
         // Intento principal
         const { data, error } = await client
             .from('Usuario')
-            .select('idUsuario, nombre, apellido, estado, correoElectronico, contraseña, auth_user_id, rol_idRol')
+            .select('idUsuario, nombre, apellido, estado, correoElectronico, contraseña, auth_user_id, rol_idrol')
             .eq('auth_user_id', authUserId)
             .single();
         
@@ -17,7 +17,7 @@ export const getUserProfile = async (authUserId) => {
             
             const secondAttempt = await client
                 .from('Usuario')
-                .select('idUsuario, nombre, apellido, estado, correoElectronico, contraseña, auth_user_id, rol_idRol')
+                .select('idUsuario, nombre, apellido, estado, correoElectronico, contraseña, auth_user_id, rol_idrol')
                 .eq('auth_user_id', authUserId)
                 .single();
             
