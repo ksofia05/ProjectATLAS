@@ -8,6 +8,7 @@ from .models import Proyect, Proyecto, ColaboradorProyecto
 from tasks.models import Rol, Usuario
 from proyectos.models import ColaboradorProyecto
 import jwt
+from datetime import datetime
 
 class ProyectView(viewsets.ModelViewSet):
     serializer_class = ProyectSerializer
@@ -42,55 +43,145 @@ class ProyectoUUIDViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 def save_proyect(request):
+    print("\n🔍 === DEBUG SAVE_PROYECT ===")
+    print(f"🌐 Headers recibidos: {dict(request.headers)}")
+    print(f"📝 Data recibida: {request.data}")
+    print(f"📋 Method: {request.method}")
+    print(f"🔗 Path: {request.path}")
+    
     auth_header = request.headers.get('Authorization')
-    if auth_header and (auth_header.startswith('Bearer') or auth_header.startswith('Token')):
+    print(f"🔐 Authorization header: {auth_header}")
+    
+    if auth_header:
+        if not auth_header.startswith('Bearer '):
+            print("❌ Header no tiene formato 'Bearer token'")
+            return Response({'error': 'Formato de token inválido'}, status=401)
+            
         token = auth_header.split(' ')[1]
-        print(f"Token recibido: {token}")
+        print(f"🎫 Token extraído: {token[:50]}...")
+        print(f"🎫 Token length: {len(token)}")
+        
         try:
+            # Intentar decodificar sin verificar la firma
             decoded = jwt.decode(token, options={"verify_signature": False})
-            print("Payload decodificado:", decoded)
+            print(f"✅ Token decodificado exitosamente")
+            print(f"📊 Payload completo: {decoded}")
+            
+            # Intentar obtener el UUID del usuario de diferentes campos posibles
             user_uuid = decoded.get('sub') or decoded.get('user_id') or decoded.get('id')
+            print(f"🆔 UUID extraído: {user_uuid}")
+            
+            # También verificar otros campos comunes
+            email = decoded.get('email')
+            print(f"📧 Email en token: {email}")
+            
             if not user_uuid:
-                return Response({'error': 'Token sin id'}, status=401)
+                print("❌ No se encontró UUID en el token")
+                print("🔍 Campos disponibles en token:", list(decoded.keys()))
+                return Response({'error': 'Token sin id de usuario'}, status=401)
+                
+            print(f"🔍 Buscando usuario con UUID: {user_uuid}")
             usuario = obtener_usuario_por_email_o_uuid(uuid=user_uuid)
+            
             if not usuario:
-                return Response({'error': 'Usuario no encontrado'}, status=401)
-            print(f"Usuario autenticado: {usuario}")
+                print(f"❌ Usuario no encontrado en BD con UUID: {user_uuid}")
+                # Intentar también por email si está disponible
+                if email:
+                    print(f"🔍 Intentando buscar por email: {email}")
+                    usuario = obtener_usuario_por_email_o_uuid(email=email)
+                    if usuario:
+                        print(f"✅ Usuario encontrado por email: {usuario}")
+                    else:
+                        print(f"❌ Usuario tampoco encontrado por email: {email}")
+                
+                if not usuario:
+                    return Response({'error': 'Usuario no encontrado en la base de datos'}, status=401)
+                    
+            print(f"✅ Usuario autenticado: {usuario}")
+            print(f"👤 Usuario ID: {usuario.idusuario}")
+            print(f"📧 Usuario Email: {usuario.correoelectronico}")
+            print(f"🆔 Usuario UUID: {usuario.uuid_supabase}")
+            
+            # Verificar si ya tiene proyecto
             if Proyecto.objects.filter(id_usuario=usuario).exists():
-                print("ya tiene un proyecto asociado")
+                print("⚠️ Usuario ya tiene un proyecto asociado")
                 return Response({'mensaje': 'ya tiene un proyecto asociado a su cuenta'}, status=400)
+                
+            # Verificar/asignar rol
             if not usuario.rol_idrol:
+                print("🔧 Asignando rol por defecto (Admin)")
                 rol = Rol.objects.get(idrol=1)
                 usuario.rol_idrol = rol
                 usuario.save()
             else:
                 rol = usuario.rol_idrol
+                print(f"👥 Rol actual: {rol}")
+                
+            # Crear proyecto
+            nombre_proyecto = request.data.get('nombreproyecto')
+            print(f"📁 Creando proyecto: {nombre_proyecto}")
+            
             proyecto = Proyecto.objects.create(
                 nombreproyecto=request.data.get('nombreproyecto'),
                 id_usuario=usuario
             )
-            return Response({'mensaje': 'Proyecto creado con éxito',
-                             'proyecto': {
-                                 'id': proyecto.id_proyecto,
-                                 'nombreproyecto': proyecto.nombreproyecto,
-                                 'fechacreacion': proyecto.fechacreacion,
-                             },
-                             'nombre': proyecto.nombreproyecto}, status=201)
+            
+            print(f"✅ Proyecto creado exitosamente: ID {proyecto.id_proyecto}")
+            
+            return Response({
+                'mensaje': 'Proyecto creado con éxito',
+                'proyecto': {
+                    'id': proyecto.id_proyecto,
+                    'nombreproyecto': proyecto.nombreproyecto,
+                    'fechacreacion': proyecto.fechacreacion,
+                },
+                'nombre': proyecto.nombreproyecto
+            }, status=201)
+            
+        except jwt.DecodeError as e:
+            print(f"❌ Error decodificando JWT: {e}")
+            return Response({'error': 'Token malformado'}, status=401)
+        except jwt.ExpiredSignatureError as e:
+            print(f"❌ Token expirado: {e}")
+            return Response({'error': 'Token expirado'}, status=401)
         except Exception as e:
-            print(e)
-            return Response({'error': 'Token inválido'}, status=401)
+            print(f"❌ Error inesperado procesando token: {e}")
+            print(f"❌ Tipo de error: {type(e)}")
+            import traceback
+            print(f"❌ Traceback: {traceback.format_exc()}")
+            return Response({'error': 'Error procesando token'}, status=401)
     else:
+        print("❌ No se recibió header Authorization")
         return Response({'error': 'Token no enviado'}, status=401)
 
 def obtener_usuario_por_email_o_uuid(email=None, uuid=None):
+    print(f"🔍 Buscando usuario - Email: {email}, UUID: {uuid}")
     try:
         if email:
-            return Usuario.objects.get(correoelectronico=email)
+            print(f"📧 Buscando por email: {email}")
+            usuario = Usuario.objects.get(correoelectronico=email)
+            print(f"✅ Usuario encontrado por email: {usuario}")
+            return usuario
         elif uuid:
-            return Usuario.objects.get(uuid_supabase=uuid)
+            print(f"🆔 Buscando por UUID: {uuid}")
+            usuario = Usuario.objects.get(uuid_supabase=uuid)
+            print(f"✅ Usuario encontrado por UUID: {usuario}")
+            return usuario
         else:
+            print("❌ No se proporcionó email ni UUID")
             return None
-    except Usuario.DoesNotExist:
+    except Usuario.DoesNotExist as e:
+        print(f"❌ Usuario no existe - Email: {email}, UUID: {uuid}")
+        print(f"❌ Error: {e}")
+        
+        # Debug adicional: mostrar algunos usuarios existentes
+        print("📋 Usuarios existentes en BD:")
+        for user in Usuario.objects.all()[:5]:  # Solo los primeros 5
+            print(f"  - ID: {user.idusuario}, Email: {user.correoelectronico}, UUID: {user.uuid_supabase}")
+        
+        return None
+    except Exception as e:
+        print(f"❌ Error inesperado buscando usuario: {e}")
         return None
 
 @api_view(['GET'])      
@@ -120,6 +211,15 @@ def get_user_projects(request):
 def asociar_colaborador(request):
     email = request.data.get('email')
     id_proyecto = request.data.get('id_proyecto')
+    exp = request.data.get('exp')
+
+    if exp:
+        now = int(datetime.utcnow().timestamp())
+        if now > int(exp):
+            return Response({
+                'success': False,
+                'message': 'El link de invitación ha expirado.'
+            }, status=410)
     
     if not email or not id_proyecto:
         return Response({'error': 'Faltan datos'}, status=400)

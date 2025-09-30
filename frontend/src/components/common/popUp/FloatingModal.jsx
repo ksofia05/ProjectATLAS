@@ -43,7 +43,7 @@ const FloatingModal = ({
   return (
     <>
       <div
-        className={`fixed inset-0 z-[99999] transition-all duration-400 pointer-events-auto ${
+        className={`fixed inset-0 z-[90000] transition-all duration-400 pointer-events-auto ${
           isVisible
             ? "bg-black/5 backdrop-blur-[2px] opacity-100"
             : "bg-black/0 backdrop-blur-0 opacity-0"

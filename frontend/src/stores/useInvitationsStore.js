@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import API_BASE_URL from '../api/apiBase';
+
+const INVITE_TTL_SECONDS = 60;
+function normalizeExpiracion(inv) {
+  if (inv.expiracion) return inv;
+  if (inv.fecha_invitacion) {
+    const ts = Math.floor(new Date(inv.fecha_invitacion).getTime() / 1000);
+    return { ...inv, expiracion: ts + INVITE_TTL_SECONDS };
+  }
+        // Si no tiene fecha, expira en 1 minuto desde ahora
+  return { ...inv, expiracion: Math.floor(Date.now() / 1000) + INVITE_TTL_SECONDS };
+}
 const useInvitationsStore = create(
   persist(
     (set, get) => ({
@@ -23,12 +34,39 @@ const useInvitationsStore = create(
           .map(c => c.correo ? c.correo.toLowerCase() : '')
           .filter(email => email);
         
-        return todasLasInvitaciones.filter(inv => 
-          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
-        );
+        const now = Math.floor(Date.now() / 1000);
+        return todasLasInvitaciones
+          .map(normalizeExpiracion)
+          .filter(inv =>
+            inv.email &&
+            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+            now < inv.expiracion // Solo si no ha expirado
+          );
       },
 
-      //  NUEVO: Sincronizar invitaciones desde el servidor
+      filterPendingInvitations: (projectId, colaboradoresActivos = []) => {
+        if (!projectId) return;
+        const pendientes = get().invitacionesPendientes[projectId] || [];
+        const emailsColaboradores = colaboradoresActivos
+          .map(c => c.correo ? c.correo.toLowerCase() : '')
+          .filter(email => email);
+
+        const now = Math.floor(Date.now() / 1000);
+        const invitacionesFiltradas = pendientes
+          .map(normalizeExpiracion)
+          .filter(inv =>
+            inv.email &&
+            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+            now < inv.expiracion
+          );
+
+        set(state => ({
+          invitacionesPendientes: {
+            ...state.invitacionesPendientes,
+            [projectId]: invitacionesFiltradas
+          }
+        }));
+      },
       syncInvitationsFromServer: async (projectId) => {
         if (!projectId) return;
 
@@ -125,6 +163,7 @@ const useInvitationsStore = create(
                     ...invitacionConfirmada,
                     isOptimistic: false,
                     fecha_invitacion: new Date().toISOString(),
+                    expiracion: Math.floor(Date.now() / 1000) + 60, // 1 minuto desde ahora
                     id: `confirmed-${Date.now()}`
                   }
                 ]
@@ -217,7 +256,30 @@ const useInvitationsStore = create(
       partialize: (state) => ({ 
         //  Solo persistir invitaciones confirmadas, no optimistas
         invitacionesPendientes: state.invitacionesPendientes 
-      })
+      }),
+      onRehydrateStorage: () => {
+        return () => {
+          try {
+            const state = get();
+            const proyectos = Object.keys(state.invitacionesPendientes || {});
+            proyectos.forEach((pid) => {
+              // Limpia expiradas al cargar
+              localStorage.removeItem('invitations-storage');
+              const pendientes = state.invitacionesPendientes[pid] || [];
+              const now = Math.floor(Date.now() / 1000);
+              const filtradas = pendientes
+                .map(normalizeExpiracion)
+                .filter(inv => inv.email && now < inv.expiracion);
+              set((s) => ({
+                invitacionesPendientes: {
+                  ...s.invitacionesPendientes,
+                  [pid]: filtradas
+                }
+              }));
+            });
+          } catch {}
+        };
+      }
     }
   )
 );

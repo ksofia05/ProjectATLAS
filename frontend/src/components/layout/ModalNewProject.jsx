@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useAuth } from "../../context/AuthProvider";
 import {showErrorToast, showSuccessToast,} from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
 import API_BASE_URL from "../../api/apiBase";
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshUserProfile } = useAuth();
 
   if (!visible) return null;
 
@@ -14,11 +16,20 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
     setIsSubmitting(true);
 
     const token = localStorage.getItem("token");
+    console.log('🔐 Token completo:', token);
+    console.log('🔐 Token length:', token ? token.length : 'null');
+    console.log('🔐 Token primeros 50 chars:', token ? token.substring(0, 50) : 'null');
+    
     if (!nombre.trim()) {
       showErrorToast("Por favor, ingresa un nombre para el proyecto.");
       setIsSubmitting(false);
       return;
     }
+    
+    console.log('📤 Headers que se enviarán:', headers);
+    console.log('📤 URL destino:', `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/save_proyect/`);
+    console.log('📤 Body que se enviará:', { nombreproyecto: nombre });
+    
     try {
       const response = await fetch(
         `${API_BASE_URL}/tasks/api/v1/save_proyect/`,
@@ -31,27 +42,54 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
           body: JSON.stringify({ nombreproyecto: nombre }),
         }
       );
+      console.log('📥 Respuesta del servidor:');
+      console.log('📥 Status:', response.status);
+      console.log('📥 Status Text:', response.statusText);
+      console.log('📥 Headers:', Object.fromEntries(response.headers.entries()));
+      
       if (response.ok) {
-        const { proyecto } = await response.json();
-        showSuccessToast("Proyecto creado con éxito.");
-        onClose();
-        setNombre("");
-        if (onCreate) {
-          onCreate(proyecto);
+        const responseData = await response.json();
+        console.log('✅ Respuesta exitosa:', responseData);
+        const { proyecto } = responseData;
+        if (proyecto) {
+          // Refrescar perfil del usuario para obtener rol actualizado
+          if (refreshUserProfile) {
+            await refreshUserProfile();
+          }
+          
+          showSuccessToast("Proyecto creado con éxito.");
+          onClose();
+          setNombre("");
+          
+          if (onCreate) {
+            onCreate(proyecto);
+          }
           if (window.refreshUserAndProjects) {
             window.refreshUserAndProjects();
           }
         }
       } else {
-        const errorData = await response.json();
-        if (errorData.mensaje === "ya tiene un proyecto asociado a su cuenta") {
-          showErrorToast("Ya tienes un proyecto asociado a tu cuenta.");
-          setNombre("");
-        } else {
+        console.log('❌ Error del servidor - Status:', response.status);
+        try {
+          const errorData = await response.json();
+          console.log('❌ Error Data:', errorData);
+          if (errorData.mensaje === "ya tiene un proyecto asociado a su cuenta") {
+            showErrorToast("Ya tienes un proyecto asociado a tu cuenta.");
+            setNombre("");
+          } else {
+            showErrorToast("Error al crear el proyecto.");
+          }
+        } catch (parseError) {
+          console.log('❌ Error parseando respuesta de error:', parseError);
+          console.log('❌ Respuesta raw:', await response.text());
           showErrorToast("Error al crear el proyecto.");
         }
       }
     } catch (error) {
+      console.log('💥 Error en la petición:', error);
+      console.log('💥 Error name:', error.name);
+      console.log('💥 Error message:', error.message);
+      console.log('💥 Error stack:', error.stack);
       showErrorToast("Error al guardar proyecto.");
     } finally {
       setIsSubmitting(false);

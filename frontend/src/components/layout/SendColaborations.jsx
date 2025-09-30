@@ -16,7 +16,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [showModal, setShowModal] = useState(open);
   const [isSending, setIsSending] = useState(false);
   const [activeTab, setActiveTab] = useState("miembros");
-
+  const [tick, setTick] = useState(0);
   const { projectName, fetchProjectInfo } = useProjectStore();
   const { collaborators, fetchCollaborators, forceRefresh } =
     useCollaboratorsStore();
@@ -36,6 +36,19 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     return collaborators?.filter((colab) => colab.estado === "Activo") || [];
   }, [collaborators]);
 
+  useEffect(() => {
+    if (!open || !projectId) return;
+    invitationsStore.filterPendingInvitations(projectId, colaboradoresActivos);
+    const interval = setInterval(() => {
+      invitationsStore.filterPendingInvitations(projectId, colaboradoresActivos);
+      setTick(t => t + 1); // Forzar re-render cada segundo SIN tocar el tab
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [open, projectId]);
+
+
+  
+
   const getInvitacionesPendientes = () => {
     if (!projectId) return [];
 
@@ -47,28 +60,30 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
     // Filtrar las que ya son colaboradores activos
     const emailsColaboradores = colaboradoresActivos
-      .map((c) => (c.correo ? c.correo.toLowerCase() : ""))
-      .filter((email) => email);
+      .map(c => c.correo ? c.correo.toLowerCase() : '')
+      .filter(email => email);
 
-    return todasLasInvitaciones.filter(
-      (inv) =>
-        inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+    const now = Math.floor(Date.now() / 1000);
+    
+    return todasLasInvitaciones.filter(inv => 
+      inv.email &&
+      !emailsColaboradores.includes(inv.email.toLowerCase()) &&
+      (!inv.expiracion || now < inv.expiracion) // Solo si no ha expirado
     );
   };
 
-  const invitacionesList = getInvitacionesPendientes();
-
-  useEffect(() => {
+  const invitacionesList = useMemo(() => getInvitacionesPendientes(), [
+    tick,
+    invitacionesPendientes,
+    invitacionesOptimistas,
+    colaboradoresActivos,
+    projectId,
+  ]);
+   useEffect(() => {
     setShowModal(open);
     if (open && projectId) {
       fetchProjectInfo(projectId);
       fetchCollaborators(projectId);
-      const loadInvitations = async () => {
-        await syncInvitationsFromServer(projectId);
-        filterPendingInvitations(projectId, colaboradoresActivos);
-      };
-
-      loadInvitations();
     }
   }, [
     open,
@@ -77,13 +92,11 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
     fetchCollaborators,
     colaboradoresActivos,
     filterPendingInvitations,
-    syncInvitationsFromServer, 
   ]);
 
   useEffect(() => {
     const handleStateChange = () => {
       if (open && projectId) {
-
         forceRefresh(projectId);
       }
     };
@@ -197,10 +210,10 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
           </span>
         </p>
 
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-6 flex-wrap">
           <input
             type="email"
-            className="flex-1 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400"
+            className="flex-1 min-w-0 border border-gray-700 bg-[#232136] rounded px-3 py-2 text-white placeholder-gray-400"
             placeholder="Correo del colaborador"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -209,7 +222,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
           />
           <button
             type="submit"
-            className={`bg-purple-600 text-white px-4 py-2 rounded transition ${
+            className={`w-full sm:w-24 bg-purple-600 text-white px-4 py-2 rounded transition ${
               isSending
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-purple-700"

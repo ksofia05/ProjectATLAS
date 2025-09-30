@@ -16,16 +16,19 @@ const NoTenerCuenta = ({ next: nextProp }) => {
     const nextParams = new URLSearchParams(next.split("?")[1]);
     id_proyecto = nextParams.get("id_proyecto");
   }
+  const exp = params.get("exp");
 
   const handleLogin = () => {
     let url = `/iniciar-sesion?next=${encodeURIComponent(next)}`;
     if (id_proyecto) url += `&id_proyecto=${id_proyecto}`;
+    if (exp) url += `&exp=${exp}`; 
     navigate(url);
   };
 
   const handleRegister = () => {
     let url = `/registrarse?next=${encodeURIComponent(next)}`;
     if (id_proyecto) url += `&id_proyecto=${id_proyecto}`;
+    if (exp) url += `&exp=${exp}`;
     navigate(url);
   };
 

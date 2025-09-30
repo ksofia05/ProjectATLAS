@@ -79,6 +79,9 @@ const CreateProjectPanel = ({
             }
           }
           setProjectStates(estados);
+        } else{
+          setProjects([]);
+          setProjectStates({});
         }
       } catch (error) {
         setProjects([]);

@@ -5,6 +5,7 @@ import NoTenerCuenta from "../common/NoTenerCuenta";
 import { showErrorToast, showSuccessToast, showLoadingToast } from "./popUp/Loading";
 import { actualizarHistorialColaborador } from "./historialColaboradores";
 import API_BASE_URL from "../../api/apiBase";
+import { triggerProjectLimit } from "../../utils/projectLimitModal";
 
 const InvitacionProyectoRoute = () => {
   const { id } = useParams();
@@ -13,7 +14,19 @@ const InvitacionProyectoRoute = () => {
   const [asociado, setAsociado] = useState(false);
   const { isAuthenticated, isLoading, userProfile, user, recheckAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const asociacionIntentada = useRef(false);
+
+  useEffect(()=>{
+    const params = new URLSearchParams(location.search);
+    const exp = params.get("exp");
+    if (exp){
+      const now = Math.floor(Date.now() / 1000);
+      if(now > Number(exp)){
+        navigate("/error404",{ replace: true });
+      }
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     if (
@@ -25,15 +38,19 @@ const InvitacionProyectoRoute = () => {
       !asociacionIntentada.current
     ) {
       asociacionIntentada.current = true;
+  
       const asociar = async () => {
         try {
           setAsociando(true);
+          const search = new URLSearchParams(location.search);
+          const expParam = search.get("exp");
           const response = await fetch(`${API_BASE_URL}/tasks/api/v1/asociar_colaborador/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id_proyecto: cleanId,
               email: userProfile.correoelectronico || userProfile.email || user?.email,
+              exp: expParam,
             }),
           });
           const data = await response.json();
@@ -65,27 +82,20 @@ const InvitacionProyectoRoute = () => {
           }
           if (response.status === 400 && data.error) {
             if (data.error === "Este usuario ya hace parte de este proyecto.") {
-              localStorage.setItem("showAlreadyInProjectModal", "1");
-              localStorage.setItem("alreadyInProjectMessage", data.error);
-              setTimeout(() => {
-                navigate("/dashboard-create-project", { replace: true });
-              }, 100);
+              navigate("/dashboard-create-project", { replace: true });
               return;
             }
-            if (
-              data.error === "Un colaborador no puede estar en más de un proyecto." ||
-              data.error === "Un administrador no puede asociarse como colaborador."
-            ) {
-              localStorage.setItem("showProjectLimitModal", "1");
-              localStorage.setItem("projectLimitMessage", data.error);
-              setTimeout(() => {
-                navigate("/dashboard-create-project", { replace: true });
-              }, 100);
+            if (data.error === "Un colaborador no puede estar en más de un proyecto.") {
+              const who = (userProfile?.correoelectronico || userProfile?.email || user?.email || "").toLowerCase();
+              triggerProjectLimit(data.error, who);
+              navigate("/dashboard-create-project", { replace: true });
               return;
             }
-            showErrorToast(data.error || "No se pudo asociar al proyecto.");
-            setAsociado(true);
-            return;
+            if (data.error === "Un administrador no puede asociarse como colaborador."){
+              showErrorToast(data.error || "No se pudo asociar al proyecto.");
+              navigate("/dashboard-create-project", { replace: true });
+              return;
+            }
           }
           showErrorToast("No se pudo asociar al proyecto.");
           setAsociado(true);
@@ -132,7 +142,7 @@ const InvitacionProyectoRoute = () => {
   }
 
   // PASA EL ID COMO QUERY PARAM EN NEXT
-  return <NoTenerCuenta next={`/dashboard-create-project?id_proyecto=${id}`} />;
+  return <NoTenerCuenta next={`/dashboard-create-project?id_proyecto=${cleanId}`} />;
 };
 
 export default InvitacionProyectoRoute;

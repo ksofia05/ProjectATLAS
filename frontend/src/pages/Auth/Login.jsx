@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { triggerProjectLimit } from "../../utils/projectLimitModal";
+import { clearProjectLimitFlags } from "../../utils/projectLimitModal"
 import FormContainer from "../../components/common/FormContainer";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
@@ -29,8 +31,11 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const params = new URLSearchParams(location.search);
+  const exp =params.get("exp");
   const next = params.get("next") || "/dashboard-create-project";
   const idProyecto = params.get("id_proyecto");
+  const skipPLOnce = sessionStorage.getItem("skipProjectLimitOnce") === "1";
+
 
   useEffect(() => {
     const fromPasswordReset = localStorage.getItem("fromPasswordReset");
@@ -98,7 +103,11 @@ const Login = () => {
         setErrors({});
         showSuccessToast("¡Ingreso exitoso!");
 
-        if (idProyecto && formData.email) {
+        if (!idProyecto || skipPLOnce){
+          clearProjectLimitFlags();
+        }
+
+        if (idProyecto && formData.email && !skipPLOnce) {
           try {
             const response = await fetch(
               `${API_BASE_URL}/tasks/api/v1/asociar_colaborador/`,
@@ -108,32 +117,30 @@ const Login = () => {
                 body: JSON.stringify({
                   id_proyecto: idProyecto,
                   email: formData.email,
+                  exp: params.get("exp"),
                 }),
               }
             );
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-              if (
-                data.error ===
-                  "Un colaborador no puede estar en más de un proyecto." ||
-                data.error ===
-                  "Un administrador no puede asociarse como colaborador."
-              ) {
-                localStorage.setItem("showProjectLimitModal", "1");
-                localStorage.setItem("projectLimitMessage", data.error);
+              if (response.status === 410) {
+                showErrorToast(data?.message || "El enlace de invitación ha expirado.");
+              } else if (data?.error === "Este usuario ya hace parte de este proyecto.") {
+                showSuccessToast("Ya haces parte de este proyecto.");
+              } else if (data?.error === "Un colaborador no puede estar en más de un proyecto.") {
+                triggerProjectLimit(data.error, (formData.email || "").toLowerCase());
+              } else if (data?.error === "Un administrador no puede asociarse como colaborador.") {
+                showErrorToast(data.error);
               } else {
-                showErrorToast(
-                  data.error || "Error al asociar colaborador al proyecto."
-                );
+                showErrorToast(data?.error || "Error al asociar colaborador al proyecto.");
               }
+            
             } else {
               let idUsuario = null;
               const userStore = useUserStore.getState().user;
               if (userStore?.idUsuario) {
                 idUsuario = userStore.idUsuario;
-              } else if (userProfile?.idUsuario) {
-                idUsuario = userProfile.idUsuario;
-              }
+              } 
               if (idUsuario && !isNaN(Number(idUsuario))) {
                 await actualizarHistorialColaborador(
                   Number(idUsuario),
@@ -146,12 +153,14 @@ const Login = () => {
             showErrorToast("Error al asociar colaborador al proyecto.");
           }
         }
-
         setTimeout(async () => {
           if (recheckAuth) {
             await recheckAuth();
           }
-        }, 1000);
+        }, 500);
+        if (skipPLOnce) {
+          sessionStorage.removeItem("skipProjectLimitOnce");
+        }
       }
     } catch (error) {
       toast.dismiss(toastId);
