@@ -94,7 +94,11 @@ const App = () => {
         <Route path="/404" element={<Error404 />} />
         <Route path="*" element={<Error404 />} />
       </Routes>
-      <Toaster />
+      <Toaster
+      position="top-center"
+      containerStyle={{
+        zIndex: 99999,
+      }} />
       </NavbarTitleProvider>
       </AuthProvider >
     </BrowserRouter>

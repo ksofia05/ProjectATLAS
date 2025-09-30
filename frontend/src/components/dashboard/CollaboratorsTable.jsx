@@ -130,17 +130,27 @@ export default function CollaboratorsTable() {
   useEffect(() => {
     if (!projectId) return;
     const channel = supabase
-      .channel("historial_colaboradores_changes")
+      .channel(`historial_colaboradores_changes_${projectId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "historial_colaboradores", filter: `proyecto_id=eq.${projectId}` },
-        () => {
+        { 
+          event: "*", 
+          schema: "public", 
+          table: "historial_colaboradores", 
+          filter: `proyecto_id=eq.${projectId}`, 
+        },
+        (payload) => {
           loadHistorialEliminados();
+          const evt = payload?.eventType;
+          const estadoNuevo = payload?.new?.estado;
+          if ((evt === "INSERT" || evt === "UPDATE") && estadoNuevo !== "eliminado") {
+            fetchCollaborators(projectId, { force: true });
+          }
         }
       )
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, [projectId]);
+  }, [projectId, fetchCollaborators]);
 
 
   const handleSwitch = async (colaborador, idx) => {
