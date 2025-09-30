@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthProvider";
 import {showErrorToast, showSuccessToast,} from "../../components/common/popUp/Loading";
 import FloatingModal from "../common/popUp/FloatingModal";
-
+import API_BASE_URL from "../../api/apiBase";
 const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
   const [nombre, setNombre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,13 +26,12 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       return;
     }
     
-    console.log('📤 Headers que se enviarán:', headers);
     console.log('📤 URL destino:', `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/save_proyect/`);
     console.log('📤 Body que se enviará:', { nombreproyecto: nombre });
     
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE || 'http://localhost:8000'}/tasks/api/v1/save_proyect/`,
+        `${API_BASE_URL}/tasks/api/v1/save_proyect/`,
         {
           method: "POST",
           headers: {

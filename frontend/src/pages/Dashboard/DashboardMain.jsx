@@ -5,7 +5,7 @@ import CalendarCard from "../../components/dashboard/CalendarCard";
 import ClientHistoryTable from "../../components/dashboard/ClientHistoryTable";
 import { useAuth } from "../../context/AuthProvider";
 import { useNavbarTitle } from "../../context/NavbarTitleContext";
-
+import API_BASE_URL from "../../api/apiBase";
 export default function DashboardMain() {
   const { id } = useParams();
   const [projectName, setProjectName] = useState("");
@@ -20,7 +20,7 @@ export default function DashboardMain() {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          `http://localhost:8000/tasks/api/v1/Proyecto/?id_proyecto=${id}`,
+          `${API_BASE_URL}/tasks/api/v1/Proyecto/?id_proyecto=${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

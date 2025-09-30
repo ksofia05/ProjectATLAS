@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import axios from 'axios';
-
+import API_BASE_URL from '../api/apiBase';
 const useClientsStore = create(
   subscribeWithSelector((set, get) => ({
     // Estado
@@ -35,7 +35,7 @@ const useClientsStore = create(
       try {
         // Obtener usuario
         const usuarioRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+          `${API_BASE_URL}/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
         
         if (!usuarioRes.data || usuarioRes.data.length === 0) {
@@ -46,7 +46,7 @@ const useClientsStore = create(
 
         // Obtener proyectos
         const proyectosRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+          `${API_BASE_URL}/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
         );
         
         const proyectos = proyectosRes.data;
@@ -67,7 +67,7 @@ const useClientsStore = create(
 
         // Obtener clientes
         const clientesRes = await axios.get(
-          `http://localhost:8000/tasks/api/v1/clientes_por_proyecto/?id_proyecto=${idProyecto}`
+          `${API_BASE_URL}/tasks/api/v1/clientes_por_proyecto/?id_proyecto=${idProyecto}`
         );
 
         set({

@@ -8,9 +8,12 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
-
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+# Detectar ambiente de producción (Render)
+if os.environ.get('RENDER'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings_production')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = get_wsgi_application()

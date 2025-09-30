@@ -5,7 +5,7 @@ import { showLoadingToast } from "../common/popUp/Loading";
 import { useAuth } from "../../context/AuthProvider";
 import toast from "react-hot-toast";
 import useUserStore from "../../stores/useUserStore";
-
+import API_BASE_URL from "../../api/apiBase";
 const ProjectList = ({ isColaborador = false, refreshProjects }) => {
   const { userProfile, isLoading } = useAuth();
 
@@ -42,7 +42,7 @@ const ProjectList = ({ isColaborador = false, refreshProjects }) => {
         }
 
         const usuarioResponse = await axios.get(
-          `http://localhost:8000/tasks/api/v1/usuarios/?correoelectronico=${email}`
+          `${API_BASE_URL}/tasks/api/v1/usuarios/?correoelectronico=${email}`
         );
         const usuarioDb = usuarioResponse.data[0];
         if (!usuarioDb || !usuarioDb.idusuario) {
@@ -55,12 +55,12 @@ const ProjectList = ({ isColaborador = false, refreshProjects }) => {
 
         if (usuarioDb.rol_idrol === 1) {
           const proyectosResponse = await axios.get(
-            `http://localhost:8000/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
+            `${API_BASE_URL}/tasks/api/v1/Proyecto/?id_usuario=${usuarioId}`
           );
           setProjects(proyectosResponse.data);
         } else if (usuarioDb.rol_idrol === 2) {
           const colaboradorResponse = await axios.get(
-            `http://localhost:8000/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
+            `${API_BASE_URL}/tasks/api/v1/proyectos_colaboradores/?id_usuario=${usuarioId}`
           );
           const proyectos = colaboradorResponse.data.proyectos || [];
           setProjects(proyectos);
@@ -69,7 +69,7 @@ const ProjectList = ({ isColaborador = false, refreshProjects }) => {
           for (const proyecto of proyectos) {
             try {
               const res = await axios.get(
-                `http://localhost:8000/tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
+                `${API_BASE_URL}/tasks/api/v1/filtro_colaborador/?id_proyecto=${proyecto.id_proyecto}`
               );
               const colaborador = res.data.colaboradores.find(
                 (c) => c.correo === email

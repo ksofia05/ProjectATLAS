@@ -10,7 +10,7 @@ import FloatingModal from "../common/popUp/FloatingModal";
 import useProjectStore from "../../stores/useProjectsStore";
 import useCollaboratorsStore from "../../stores/useCollaboratorsStore";
 import useInvitationsStore from "../../stores/useInvitationsStore";
-
+import API_BASE_URL from "../../api/apiBase";
 const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
   const [email, setEmail] = useState("");
   const [showModal, setShowModal] = useState(open);
@@ -163,7 +163,7 @@ const SendColaboration = ({ open = false, onClose, userName, projectId }) => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/tasks/api/v1/invitacionColaborador/",
+        `${API_BASE_URL}/tasks/api/v1/invitacionColaborador/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

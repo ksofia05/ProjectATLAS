@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthProvider";
 import NoTenerCuenta from "../common/NoTenerCuenta";
 import { showErrorToast, showSuccessToast, showLoadingToast } from "./popUp/Loading";
 import { actualizarHistorialColaborador } from "./historialColaboradores";
+import API_BASE_URL from "../../api/apiBase";
 import { triggerProjectLimit } from "../../utils/projectLimitModal";
 
 const InvitacionProyectoRoute = () => {
@@ -43,7 +44,7 @@ const InvitacionProyectoRoute = () => {
           setAsociando(true);
           const search = new URLSearchParams(location.search);
           const expParam = search.get("exp");
-          const response = await fetch("http://localhost:8000/tasks/api/v1/asociar_colaborador/", {
+          const response = await fetch(`${API_BASE_URL}/tasks/api/v1/asociar_colaborador/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -10,7 +10,7 @@ import {
   showErrorToast,
 } from "../../components/common/popUp/Loading";
 import { client } from "../../supabase/client";
-
+import API_BASE_URL from "../../api/apiBase";
 const PasswordRecovery = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ const PasswordRecovery = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/tasks/api/v1/verificar-correo/",
+        `${API_BASE_URL}/tasks/api/v1/verificar-correo/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

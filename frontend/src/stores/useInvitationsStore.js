@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import API_BASE_URL from '../api/apiBase';
 
 const INVITE_TTL_SECONDS = 60;
 function normalizeExpiracion(inv) {
@@ -11,7 +12,6 @@ function normalizeExpiracion(inv) {
         // Si no tiene fecha, expira en 1 minuto desde ahora
   return { ...inv, expiracion: Math.floor(Date.now() / 1000) + INVITE_TTL_SECONDS };
 }
-
 const useInvitationsStore = create(
   persist(
     (set, get) => ({
@@ -66,6 +66,48 @@ const useInvitationsStore = create(
             [projectId]: invitacionesFiltradas
           }
         }));
+      },
+      syncInvitationsFromServer: async (projectId) => {
+        if (!projectId) return;
+
+        set(state => ({ loading: true }));
+        
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/tasks/api/v1/invitacionesProyecto/${projectId}/`,
+            {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const invitacionesServidor = data.invitaciones || [];
+
+            set(state => ({
+              invitacionesPendientes: {
+                ...state.invitacionesPendientes,
+                [projectId]: invitacionesServidor.map(inv => ({
+                  email: inv.email,
+                  fecha_invitacion: inv.fecha_invitacion,
+                  nombre_invitador: inv.nombre_invitador,
+                  isOptimistic: false,
+                  id: `server-${inv.id}`
+                }))
+              },
+              loading: false
+            }));
+
+            console.log(' Invitaciones sincronizadas desde servidor para proyecto:', projectId);
+          } else {
+            console.warn('No se pudieron obtener invitaciones del servidor');
+            set(state => ({ loading: false }));
+          }
+        } catch (error) {
+          console.error('Error sincronizando invitaciones:', error);
+          set(state => ({ loading: false }));
+        }
       },
 
       //  Agregar invitación optimista
@@ -156,28 +198,29 @@ const useInvitationsStore = create(
       },
 
       //  Filtrar invitaciones pendientes (mejorado con sync)
-      filterPendingInvitations: (projectId, colaboradoresActivos = []) => {
+      filterPendingInvitations: async (projectId, colaboradoresActivos = []) => {
         if (!projectId) return;
+        
+        // Primero sincronizar desde servidor
+        await get().syncInvitationsFromServer(projectId);
+        
+        // Luego filtrar localmente
         const pendientes = get().invitacionesPendientes[projectId] || [];
         const emailsColaboradores = colaboradoresActivos
           .map(c => c.correo ? c.correo.toLowerCase() : '')
           .filter(email => email);
-
-        const now = Math.floor(Date.now() / 1000);
-        const invitacionesFiltradas = pendientes
-          .map(normalizeExpiracion)
-          .filter(inv =>
-            inv.email &&
-            !emailsColaboradores.includes(inv.email.toLowerCase()) &&
-            now < inv.expiracion
-          );
-
+        
+        const invitacionesFiltradas = pendientes.filter(inv => 
+          inv.email && !emailsColaboradores.includes(inv.email.toLowerCase())
+        );
+        
         set(state => ({
           invitacionesPendientes: {
             ...state.invitacionesPendientes,
             [projectId]: invitacionesFiltradas
           }
         }));
+        
         console.log(' Invitaciones filtradas para proyecto:', projectId);
       },
 

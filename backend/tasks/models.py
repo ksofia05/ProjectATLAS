@@ -10,16 +10,16 @@ class Task(models.Model):
 
 
 class Usuario(models.Model):
+    idusuario = models.AutoField(db_column='idUsuario', primary_key=True)
     nombre = models.CharField(max_length=45)
     apellido = models.CharField(max_length=45)
     estado = models.TextField() 
     correoelectronico = models.CharField(db_column='correoElectronico', max_length=45)
     contraseña = models.CharField(max_length=45)
-    rol_idrol = models.ForeignKey('Rol', models.CASCADE, db_column='rol_idRol', blank=True, null=True)
+    rol_idrol = models.ForeignKey('Rol', on_delete=models.CASCADE, db_column='rol_idrol', blank=True, null=True)
     suscripcion = models.TextField()
-    idusuario = models.AutoField(models.CASCADE, db_column='idUsuario', primary_key=True)
     terminoservicio = models.BooleanField(db_column='terminoServicio')
-    token = models.CharField(max_length=255, blank=True, null=True)
+    token = models.CharField(max_length=250, blank=True, null=True)
     uuid_supabase = models.UUIDField(unique=False, null=True, blank=True)
     enlacePerfil = models.URLField(blank=True, null=True)
 
@@ -28,10 +28,10 @@ class Usuario(models.Model):
 
 class Rol(models.Model):
     nombre = models.CharField(max_length=45, null=False, blank=False)
-    idrol = models.AutoField(models.CASCADE, primary_key=True)
+    idrol = models.AutoField(primary_key=True)
 
     class Meta:
-        db_table = 'rol'
+        db_table = 'Rol'
 
 # todo para la tabla tarea (no lo cambien porfi)
 

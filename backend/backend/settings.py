@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-+b73z!#*22o!aco(j-14+b=b)adq@61a4y!gc+ry_*px4o4*wq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["https://projectatlas-frontend.onrender.com", "localhost"]
 
 
 # Application definition
@@ -53,9 +53,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
