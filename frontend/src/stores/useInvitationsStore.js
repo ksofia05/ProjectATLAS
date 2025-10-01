@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import API_BASE_URL from '../api/apiBase';
 
+console.log('🔍 API_BASE_URL en InvitationsStore:', API_BASE_URL);
+
 const INVITE_TTL_SECONDS = 60;
 function normalizeExpiracion(inv) {
   if (inv.expiracion) return inv;
