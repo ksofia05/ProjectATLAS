@@ -115,24 +115,12 @@ def recuperacion_contra(request):
     request.session['reset_token'] = token
     request.session['reset_email'] = email
 
-    base_url = getattr(settings, 'FRONTEND_BASE_URL', None)
-    
-    if not base_url:
-        # Fallback: detectar por el host del request
-        request_host = request.get_host()
-        print(f"🔍 Host detectado: {request_host}")
+    if settings.DEBUG:
+        base_url = "http://localhost:5173"
+    else:
+        base_url = "https://atlassdev.com"
         
-        if 'localhost' in request_host or '127.0.0.1' in request_host:
-            base_url = "http://localhost:5173"
-        else:
-            base_url = "https://atlassdev.com"
-    
     reset_url = f"{base_url}/password-reset/{token}?email={email}"
-    
-    print(f"🔗 DEBUG - Settings.DEBUG: {settings.DEBUG}")
-    print(f"🔗 DEBUG - Request host: {request.get_host()}")
-    print(f"🔗 DEBUG - URL generada: {reset_url}")
-    
     asunto = 'Recuperacion de contrasena'
     html_content = render_to_string('autenticacion/email_recuperacion.html', {
         'usuario': usuario,
