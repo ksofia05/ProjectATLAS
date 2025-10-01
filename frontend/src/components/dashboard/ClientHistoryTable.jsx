@@ -106,7 +106,7 @@ export default function ClientHistoryTable() {
         body: equipoAgs.map((item) => [
           item.equipo_numeroSerie,
           item.fechaIngreso,
-          item.fechaSalida || "No hay salida aún",
+          item.fechaSalida || "En proceso",
           item.comentarioEntrada || "",
           item.comentarioSalida || "",
         ]),

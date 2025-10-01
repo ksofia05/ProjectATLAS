@@ -39,12 +39,13 @@ export default function ClientEquipmentFields({
         onChange={handleChange}
         inputClassName={`w-full ${errors.entrada ? "border-red-500" : ""}`}
         onBlur={() => setTouched(prev => ({ ...prev, entrada: true }))}
+        min={new Date().toISOString().split("T")[0]} 
       />
       {(touched.entrada || triedSubmit) && errors.entrada && (
         <span className="text-red-400 text-xs">{errors.entrada}</span>
       )}
 
-      <div className="relative mb-6">
+      <div className="relative mb-2">
         <label className="text-white block mb-2">No. Serie</label>
         <input
           type="text"
@@ -55,11 +56,14 @@ export default function ClientEquipmentFields({
             setSerieAutocompletada(false); // Si el usuario escribe, desbloquea
           }}
           placeholder="Número de serie"
-          className={`w-full px-4 py-3 bg-[#2A273A] text-white border ${errors.serie ? 'border-red-500' : 'border-gray-600'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+          className={`w-full px-4 py-3 bg-[#2A273A] text-white border  border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
           disabled={loadingSerie}
           readOnly={serieBloqueada}
           onFocus={() => setShowSugerencias(true)}
-          onBlur={() => setTimeout(() => setShowSugerencias(false), 100)}
+          onBlur={() => {
+            setTouched(prev => ({ ...prev, serie: true }));
+            setTimeout(() => setShowSugerencias(false), 100);
+          }}
         />
         {showSugerencias && filteredSeries.length > 0 && (
           <div className="absolute left-0 right-0 mt-1 bg-[#232336] border-2 border-purple-400 rounded-xl shadow-lg z-50">
@@ -80,7 +84,7 @@ export default function ClientEquipmentFields({
         )}
       </div>
       {(touched.serie || triedSubmit) && errors.serie && (
-        <span className="text-red-400 text-xs">{errors.serie}</span>
+        <span className="text-red-400 text-sm mt-1 block">{errors.serie}</span>
       )}
 
       <div className="mb-4">
@@ -107,7 +111,7 @@ export default function ClientEquipmentFields({
           {(form.comentario || "").length}/120 caracteres
         </div>
         {(touched.comentario || triedSubmit) && errors.comentario && (
-          <span className="text-red-400 text-xs">{errors.comentario}</span>
+          <span className="text-red-400 text-sm mt-1 block">{errors.comentario}</span>
         )}
       </div>
     </>

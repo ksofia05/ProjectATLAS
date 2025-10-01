@@ -3,25 +3,35 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function validateClientForm(form) {
   const newErrors = {};
   if (!form.identificacion) {
-    newErrors.identificacion = "Campo obligatorio";
+    newErrors.identificacion = "El campo es obligatorio";
   } else if (!/^\d+$/.test(form.identificacion)) {
-    newErrors.identificacion = "Solo números";
+    newErrors.identificacion = "Solo se permiten números";
+  } else if (form.identificacion.length > 10) {
+    newErrors.identificacion = "Máximo 10 dígitos";
   }
-  if (!form.nombre) newErrors.nombre = "Campo obligatorio";
-  if (!form.apellido) newErrors.apellido = "Campo obligatorio";
+  if (!form.nombre) {
+    newErrors.nombre = "El campo es obligatorio";
+  } else if (/\d/.test(form.nombre)) {
+    newErrors.nombre = "El nombre no puede contener números";
+  }
+  if (!form.apellido) {
+    newErrors.apellido = "El campo es obligatorio";
+  } else if (/\d/.test(form.apellido)) {
+    newErrors.apellido = "El apellido no puede contener números";
+  }
+  if (!form.serie) newErrors.serie = "El campo es obligatorio";
+  if (!form.comentario) newErrors.comentario = "El campo es obligatorio";
   if (!form.email) {
-    newErrors.email = "Campo obligatorio";
+    newErrors.email = "El campo es obligatorio";
   } else if (!emailRegex.test(form.email)) {
-    newErrors.email = "Correo inválido";
+    newErrors.email = "debe cumplir con el formato ";
   }
   if (!form.telefono) {
-    newErrors.telefono = "Campo obligatorio";
+    newErrors.telefono = "El campo es obligatorio";
   } else if (!/^\d+$/.test(form.telefono)) {
-    newErrors.telefono = "Solo números";
+    newErrors.telefono = "Solo se permiten números";
+  } else if (form.telefono.length < 10) {
+    newErrors.telefono = "Debe tener al menos 10 dígitos";
   }
-  if (!form.entrada) newErrors.entrada = "Campo obligatorio";
-  if (!form.serie) newErrors.serie = "Campo obligatorio";
-  if (!form.comentario) newErrors.comentario = "Campo obligatorio";
-  if (!form.imagen) newErrors.imagen = "Debes adjuntar una imagen";
   return newErrors;
 }
