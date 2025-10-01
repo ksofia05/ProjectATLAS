@@ -110,6 +110,15 @@ export const AuthProvider = ({ children }) => {
   // maneja sesiones de usuario (mover arriba para reutilizar)
   const handleUserSession = async (session) => {
     try {
+      const storeUser = useUserStore.getState().user;
+      if (storeUser && storeUser.auth_user_id === session.user.id && storeUser.nombre) {
+        console.log('✅ Nueva pestaña - usando datos existentes sin validar');
+        setUser(session.user);
+        setUserProfile(storeUser);
+        setIsAuthenticated(true);
+        setupHeartbeat();
+        return; // No hacer validaciones adicionales
+      }
       // Usar la nueva función que combina Supabase + Django
       const profile = await getCompleteUserProfile(
         session.user.id, 
