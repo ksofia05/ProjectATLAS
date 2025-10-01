@@ -114,7 +114,13 @@ def recuperacion_contra(request):
     token = str(uuid.uuid4())
     request.session['reset_token'] = token
     request.session['reset_email'] = email
-    reset_url = f"http://localhost:5173/password-reset/{token}?email={email}"
+
+    if settings.DEBUG:
+        base_url = "http://localhost:5173"
+    else:
+        base_url = "https://atlassdev.com"
+        
+    reset_url = f"{base_url}/password-reset/{token}?email={email}"
     asunto = 'Recuperacion de contrasena'
     html_content = render_to_string('autenticacion/email_recuperacion.html', {
         'usuario': usuario,
@@ -188,12 +194,17 @@ def invitacion_colaborador(request):
                     }, status=400)
             
         except Usuario.DoesNotExist:
-            # Si el usuario no existe, está bien enviar la invitación
             pass
         
-        # Despues de todas las validaciones anteriores, ahora si que se envie el correo
         expiracion = (datetime.utcnow() + timedelta(minutes=10)).timestamp()
-        invitacion_url = f"http://localhost:5173/invitacion-proyecto/{id_proyecto}?exp={int(expiracion)}"
+        
+        # Determinar URL base según el entorno
+        if settings.DEBUG:
+            base_url = "http://localhost:5173"
+        else:
+            base_url = "https://atlassdev.com"
+            
+        invitacion_url = f"{base_url}/invitacion-proyecto/{id_proyecto}?exp={int(expiracion)}"
         asunto = 'Invitación a colaborar en un proyecto'
         html_content = render_to_string('mensajeColabo.html', {
             'email': email,
@@ -223,9 +234,12 @@ def invitacion_colaborador(request):
             'message': 'El proyecto no existe.'
         }, status=404)
     except Exception as e:
+        print(f"Error en invitacion_colaborador: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return Response({
             'success': False, 
-            'message': 'Error interno del servidor.' #Solo por si acaso (Verdad anny?)
+            'message': f'Error interno del servidor: {str(e)}'
         }, status=500)
 
 @api_view(['POST'])
