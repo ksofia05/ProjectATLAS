@@ -10,6 +10,7 @@ import WarningModal from "../dashboard/WarningModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 import API_BASE_URL from "../../api/apiBase";
+import { actualizarHistorialColaborador } from "../common/historialColaboradores";
 const InventoryCard = ({
   project,
   isColaborador = false,

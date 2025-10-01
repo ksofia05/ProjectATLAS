@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
+import dj_database_url
 
 
 
@@ -24,13 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+b73z!#*22o!aco(j-14+b=b)adq@61a4y!gc+ry_*px4o4*wq'
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = ["https://projectatlas-frontend.onrender.com", "localhost"]
+ALLOWED_HOSTS = ["atlassdev.com", "www.atlassdev.com", "localhost"]
 
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", cast=bool)
 
 # Application definition
 
@@ -86,15 +89,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.ukpjvbvzqmehjormyrza',
-        'PASSWORD': 'Atlas1234*',
-        'HOST': 'aws-0-sa-east-1.pooler.supabase.com',
-        'PORT': '6543',
-    }
+    'default': dj_database_url.config(default=config("DATABASE_URL"))
 }
 
 
@@ -140,8 +137,13 @@ STATICFILES_DIRS = [BASE_DIR / "backend" / "autenticacion" / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+
 #cords headers
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = config(
+        'CORS_ALLOWED_ORIGINS', 
+        cast=lambda v: [s.strip() for s in v.split(',')]
+    )
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
@@ -149,6 +151,10 @@ REST_FRAMEWORK = {
 
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 #Emails
 
 EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
@@ -160,8 +166,8 @@ EMAIL_HOST_PASSWORD= 'yddt w ajh wuho dnrp'
 DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
 
 
-os.environ['SUPABASE_URL'] = "https://ukpjvbvzqmehjormyrza.supabase.co"
-os.environ['SUPABASE_SERVICE_ROLE'] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrcGp2YnZ6cW1laGpvcm15cnphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjQ1NzQ1MCwiZXhwIjoyMDYyMDMzNDUwfQ.Wex6pOxwagRhdI-DO7QYXPhRrcwBtIxrgwd6K6kqgvw"
+SUPABASE_URL = config("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE = config("SUPABASE_SERVICE_ROLE")
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': [

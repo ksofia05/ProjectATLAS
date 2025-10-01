@@ -44,7 +44,7 @@ const useProjectStore = create(
                   lastProjectId: projectId,
                   isLoading: false
                 });
-                console.log("✅ Proyecto cargado:", nombreProyecto);
+                console.log("Proyecto cargado:", nombreProyecto);
                 return; // Salir si encontramos datos válidos
               }
             } catch (endpointError) {

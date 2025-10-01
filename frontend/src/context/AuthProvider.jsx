@@ -110,6 +110,15 @@ export const AuthProvider = ({ children }) => {
   // maneja sesiones de usuario (mover arriba para reutilizar)
   const handleUserSession = async (session) => {
     try {
+      const storeUser = useUserStore.getState().user;
+      if (storeUser && storeUser.auth_user_id === session.user.id && storeUser.nombre) {
+        console.log('Nueva pestaña - usando datos existentes sin validar');
+        setUser(session.user);
+        setUserProfile(storeUser);
+        setIsAuthenticated(true);
+        setupHeartbeat();
+        return; // No hacer validaciones adicionales
+      }
       // Usar la nueva función que combina Supabase + Django
       const profile = await getCompleteUserProfile(
         session.user.id, 
@@ -227,7 +236,7 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log('Iniciando validación de autenticación...');
         
-        // ✅ ESPERAR tiempo para sincronización completa
+        // ESPERAR tiempo para sincronización completa
         await new Promise(resolve => setTimeout(resolve, 500));
         
         const { data: { session }, error: sessionError } = await client.auth.getSession();
@@ -282,7 +291,17 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         
+        // NUEVA LÓGICA: Ignorar SIGNED_IN si viene de registro
         if (event === 'SIGNED_IN' && session?.user) {
+          // Verificar si es un registro reciente (usuario sin datos en BD)
+          const userAge = new Date() - new Date(session.user.created_at);
+          const isRecentUser = userAge < 30000; // 30 segundos
+          
+          if (isRecentUser) {
+            console.log('🚫 Ignorando SIGNED_IN de usuario recién registrado');
+            return; // No hacer auto-login para usuarios recién registrados
+          }
+          
           console.log('SIGNED_IN detectado en listener');
           setIsLoading(true);
           
