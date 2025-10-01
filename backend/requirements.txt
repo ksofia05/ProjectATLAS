@@ -11,4 +11,5 @@ psycopg2-binary==2.9.9
 whitenoise==6.7.0
 python-decouple==3.8
 coreapi==2.3.3
-coreschema==0.0.4resend>=0.7.0
+coreschema==0.0.4
+resend>=0.7.0
