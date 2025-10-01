@@ -15,7 +15,7 @@ RENDER = config('RENDER', default=False, cast=bool)
 
 # HOSTS CORRECTOS
 ALLOWED_HOSTS = [
-    'projectatlas-backend.onrender.com',
+    'https://atlassdev.com',
     'localhost',
     '127.0.0.1',
     '.onrender.com',
