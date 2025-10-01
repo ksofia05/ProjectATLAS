@@ -48,7 +48,7 @@ const ModalNuevoProyecto = ({ visible, onClose, onCreate }) => {
       
       if (response.ok) {
         const responseData = await response.json();
-        console.log('✅ Respuesta exitosa:', responseData);
+        console.log('Respuesta exitosa:', responseData);
         const { proyecto } = responseData;
         if (proyecto) {
           // Refrescar perfil del usuario para obtener rol actualizado

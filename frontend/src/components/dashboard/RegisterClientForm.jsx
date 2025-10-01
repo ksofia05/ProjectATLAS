@@ -23,7 +23,7 @@ export default function RegisterClientForm({
     apellido: "",
     email: "",
     telefono: "",
-    entrada: dateUtils.getToday(), // ✅ Usar dateUtils
+    entrada: dateUtils.getToday(), // Usar dateUtils
     serie: "",
     comentario: "",
     imagen: null,

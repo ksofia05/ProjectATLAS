@@ -13,7 +13,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY', default='django-insecure-change-me-in-p
 DEBUG = config('DEBUG', default=True, cast=bool)  # ← True para debug
 RENDER = config('RENDER', default=False, cast=bool)
 
-# ✅ HOSTS CORRECTOS
+# HOSTS CORRECTOS
 ALLOWED_HOSTS = [
     'projectatlas-backend.onrender.com',
     'localhost',
@@ -22,7 +22,7 @@ ALLOWED_HOSTS = [
     '*'  # ← Temporalmente permitir todos
 ]
 
-# ✅ CORS CONFIGURADO
+# CORS CONFIGURADO
 CORS_ALLOWED_ORIGINS = [
     "https://atlassdev.com",
     "http://atlassdev.com",
@@ -59,9 +59,9 @@ INSTALLED_APPS = [
     'colorfield',
 ]
 
-# ✅ MIDDLEWARE CORS AL INICIO
+# MIDDLEWARE CORS AL INICIO
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # ✅ PRIMERO
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -92,13 +92,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ✅ DATABASE CONFIGURADA CORRECTAMENTE
+# DATABASE CONFIGURADA CORRECTAMENTE
 DATABASE_URL = config('DATABASE_URL', default=None)
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
-    print(f"✅ Base de datos configurada desde DATABASE_URL")
+    print(f"Base de datos configurada desde DATABASE_URL")
 else:
     # Fallback para desarrollo
     DATABASES = {
@@ -131,7 +131,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# ✅ STATIC FILES CONFIGURADOS
+# STATIC FILES CONFIGURADOS
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATICFILES_DIRS = []
@@ -144,7 +144,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ✅ REST FRAMEWORK CONFIGURADO
+# REST FRAMEWORK CONFIGURADO
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

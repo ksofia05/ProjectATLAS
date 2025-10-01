@@ -19,7 +19,7 @@ export const useProjectAccess = () => {
     if (validateOnce.current) return;
     
     const validateAccess = async () => {
-      // ✅ ESPERAR: AuthProvider termine de cargar
+      // ESPERAR: AuthProvider termine de cargar
       if (authLoading) return;
       
       if (!isAuthenticated) {
