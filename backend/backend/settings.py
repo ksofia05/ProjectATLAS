@@ -155,16 +155,30 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-#Emails
 
-EMAIL_BACKEND= 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST= 'smtp.gmail.com'
-EMAIL_PORT= 587
-EMAIL_USE_TLS= True
-EMAIL_HOST_USER= 'atlas.inovationcompany@gmail.com'
-EMAIL_HOST_PASSWORD= 'yddt w ajh wuho dnrp'
-DEFAULT_FROM_EMAIL= EMAIL_HOST_USER
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@atlassdev.com')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
+# Configuración adicional
+EMAIL_SUBJECT_PREFIX = '[ATLAS] '
+EMAIL_USE_LOCALTIME = False
+EMAIL_TIMEOUT = 30
+
+# Resend API Configuration (no SMTP ports, works with Render free tier)
+if RESEND_API_KEY:
+    EMAIL_BACKEND = 'backend.email_backends.ResendEmailBackend'
+else:
+    # Fallback a la configuración Gmail existente
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = 'atlas.inovationcompany@gmail.com'
+    EMAIL_HOST_PASSWORD = 'yddt w ajh wuho dnrp'
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+FRONTEND_BASE_URL = config('FRONTEND_BASE_URL', default='http://localhost:5173')
 
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE = config("SUPABASE_SERVICE_ROLE")
