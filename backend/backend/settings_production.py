@@ -24,9 +24,10 @@ ALLOWED_HOSTS = [
 
 # ✅ CORS CONFIGURADO
 CORS_ALLOWED_ORIGINS = [
-    'https://atlassdev.com',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
+    "https://atlassdev.com",
+    "http://atlassdev.com",
+    "http://localhost",
+    "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # ← Temporalmente permitir todos
